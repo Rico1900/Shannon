@@ -1,4 +1,4 @@
-package edu.nju.seg.data;
+package edu.nju.seg.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,10 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExperimentConfig {
+public class Instance {
 
-    private String inputFolder;
-
-    private String resultFolder;
+    private String name;
 
 }
