@@ -24,9 +24,9 @@ public class UMLetHandler extends DefaultHandler {
 
     private boolean betweenPanelAttributes;
 
-    private String elementId;
+    private String elementId = "";
 
-    private String elementContent;
+    private String elementContent = "";
 
     public UMLetHandler() {
         this.result = new ArrayList<>();
@@ -60,13 +60,11 @@ public class UMLetHandler extends DefaultHandler {
     @Override
     public void characters(char[] ch, int start, int len) {
         if (betweenDiagram && betweenElement && betweenId) {
-            elementId = new String(ch, start, len);
-            betweenId = false;
+            elementId += new String(ch, start, len);
         }
 
         if (betweenDiagram && betweenElement && betweenPanelAttributes) {
-            elementContent = new String(ch, start, len);
-            betweenPanelAttributes = false;
+            elementContent += new String(ch, start, len);
         }
     }
 
@@ -79,6 +77,8 @@ public class UMLetHandler extends DefaultHandler {
         if (qName.equalsIgnoreCase("element")) {
             betweenElement = false;
             result.add(new ElementContent(UMLType.valueOf(elementId), elementContent));
+            elementId = "";
+            elementContent = "";
         }
 
         if (qName.equalsIgnoreCase("id")) {
