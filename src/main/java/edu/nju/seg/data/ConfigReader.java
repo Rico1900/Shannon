@@ -16,7 +16,7 @@ public class ConfigReader {
     }
 
     /**
-     * parse experiment config from the file
+     * parser experiment config from the file
      * @return maybe the config class
      */
     public Optional<ExperimentConfig> getConfig() {
