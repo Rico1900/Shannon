@@ -11,11 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 public class IntFragment extends Fragment {
 
-    private int priority;
+    private int priority = 0;
 
-    private int min;
+    private int min = 1;
 
-    private int max;
+    private int max = 1;
 
     private String instruction;
 

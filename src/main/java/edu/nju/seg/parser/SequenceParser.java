@@ -14,9 +14,15 @@ public class SequenceParser {
 
     private static Pattern FRAGMENT_PATTERN = Pattern.compile("^combinedFragment=(.*?)~(.*?)$");
 
-    private static Pattern MESSAGE_PATTERN = Pattern.compile("^(.*?)->>>(.*?)[\\s.*]:[\\s.*](.*?)[\\s;*]$");
+    private static Pattern MESSAGE_PATTERN = Pattern.compile("^(.*?)->>>(.*?)[\\s*]:[\\s.*](.*?)[\\s*;]$");
 
-    private static Pattern INT_PATTERN = Pattern.compile("^int[\\s.*]\\(p=(.*)\\)[\\s.*]$");
+    private static Pattern FULL_INT_PATTERN = Pattern.compile("^int\\s*\\(p=(.*)\\)\\s*\\((.*),(.*)\\)\\s*\\[(.*)\\]\\s*(.*)$");
+
+    private static Pattern LIMIT_INT_PATTERN = Pattern.compile("^int\\s*\\(p=(.*)\\)\\s*\\((.*),(.*)\\)\\s*(.*)$");
+
+    private static Pattern INSTRUCTION_INT_PATTERN = Pattern.compile("^int\\s*\\(p=(.*)\\)\\s*\\[(.*)\\]\\s*(.*)$");
+
+    private static Pattern SIMPLE_INT_PATTERN = Pattern.compile("^int\\s*\\(p=(.*)\\)\\s*(.*)$");
 
     private static Pattern MESSAGE_INFO_PATTERN = Pattern.compile("^\\((.*),(.*),(.*)\\)$");
 
@@ -97,14 +103,91 @@ public class SequenceParser {
         }
     }
 
-    private Fragment consFragment(String message) {
-        Matcher intMat = INT_PATTERN.matcher(message);
-        if (intMat.find()) {
-
+    /**
+     * construct fragment corresponding to the fragment language
+     * @param info the fragment information
+     * @return fragment
+     */
+    private Fragment consFragment(String info) {
+        info = info.trim();
+        if (info.startsWith("int")) {
+            return consIntFragment(info);
+        } else if (info.startsWith("loop")) {
+            // TODO
+            return null;
+        } else if (info.startsWith("alt")) {
+            // TODO
+            return null;
+        } else {
+            throw new ParseException("no corresponding combined fragment");
         }
-        throw new ParseException("no corresponding combined fragment");
     }
 
+    private IntFragment consIntFragment(String info) {
+        int bracketCount = 0;
+        int parenthesisCount = 0;
+        for (char c: info.toCharArray()) {
+            if (c == '[') {
+                bracketCount++;
+            }
+            if (c == '(') {
+                parenthesisCount++;
+            }
+        }
+        if (bracketCount == 1 && parenthesisCount == 2) {
+            Matcher m = FULL_INT_PATTERN.matcher(info);
+            checkIntFragMat(m);
+            return new IntFragment(new ArrayList<>(),
+                    Integer.parseInt(m.group(1)),
+                    Integer.parseInt(m.group(2)),
+                    Integer.parseInt(m.group(3)),
+                    m.group(4),
+                    m.group(5));
+        } else if (bracketCount == 0 && parenthesisCount == 2) {
+            Matcher m = LIMIT_INT_PATTERN.matcher(info);
+            checkIntFragMat(m);
+            return new IntFragment(new ArrayList<>(),
+                    Integer.parseInt(m.group(1)),
+                    Integer.parseInt(m.group(2)),
+                    Integer.parseInt(m.group(3)),
+                    "",
+                    m.group(4));
+        } else if (bracketCount == 1 && parenthesisCount == 1) {
+            Matcher m = INSTRUCTION_INT_PATTERN.matcher(info);
+            checkIntFragMat(m);
+            return new IntFragment(new ArrayList<>(),
+                    Integer.parseInt(m.group(1)),
+                    1,
+                    1,
+                    m.group(2),
+                    m.group(3));
+        } else if (bracketCount == 0 && parenthesisCount == 1) {
+            Matcher m = SIMPLE_INT_PATTERN.matcher(info);
+            checkIntFragMat(m);
+            return new IntFragment(new ArrayList<>(),
+                    Integer.parseInt(m.group(1)),
+                    1,
+                    1,
+                    "",
+                    m.group(2));
+        } else {
+            throw new ParseException("wrong int fragment modeling language");
+        }
+    }
+
+    private void checkIntFragMat(Matcher m) {
+        if (!m.find()) {
+            throw new ParseException("wrong int fragment modeling language");
+        }
+    }
+
+    /**
+     * construct message
+     * @param fromVar start instance variable
+     * @param toVar ending instance variable
+     * @param info message information
+     * @return the message
+     */
     private Message consMessage(String fromVar, String toVar, String info) {
         Message m = new Message();
         Matcher infoMat = MESSAGE_INFO_PATTERN.matcher(info);
@@ -149,7 +232,7 @@ public class SequenceParser {
         if (text.size() == 0) {
             return text;
         } else {
-            if (text.get(0).equals("")) {
+            if (text.get(0).trim().equals("")) {
                 return trimBlankLine(text.subList(1, text.size()));
             } else {
                 return text;
@@ -163,9 +246,18 @@ public class SequenceParser {
      * @return the index of ending symbols or throw exception
      */
     private int searchEndIndex(List<String> text) {
-        for (int i = text.size() - 1; i >= 0; i--) {
-            if (text.get(i).equals("--")) {
-                return i;
+        int fragCount = 0;
+        int endCount = 0;
+        for (int i = 0; i < text.size(); i++) {
+            String current = text.get(i);
+            if (current.startsWith("combinedFragment")) {
+                fragCount++;
+            }
+            if (current.startsWith("--")) {
+                endCount++;
+                if (fragCount == endCount) {
+                    return i;
+                }
             }
         }
         throw new ParseException("missing fragment ending symbols --");
