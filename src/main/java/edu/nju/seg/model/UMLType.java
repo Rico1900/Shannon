@@ -6,6 +6,9 @@ package edu.nju.seg.model;
 public enum UMLType {
 
     UMLSequenceAllInOne,
-    UMLNote
+    UMLNote,
+    UMLSpecialState,
+    UMLState,
+    Relation
 
 }

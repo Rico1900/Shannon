@@ -1,6 +1,6 @@
 package edu.nju.seg.parser;
 
-import edu.nju.seg.model.ElementContent;
+import edu.nju.seg.model.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,7 +18,7 @@ public class UMLetParser {
      * @param f the UMLet .uxf file
      * @return maybe the elements
      */
-    public static Optional<List<ElementContent>> parseElement(File f) {
+    public static Optional<List<Element>> parseElement(File f) {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {
             SAXParser parser = factory.newSAXParser();

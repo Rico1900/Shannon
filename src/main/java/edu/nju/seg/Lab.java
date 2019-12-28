@@ -3,7 +3,8 @@ package edu.nju.seg;
 
 import edu.nju.seg.data.ConfigReader;
 import edu.nju.seg.model.*;
-import edu.nju.seg.parser.SequenceParser;
+import edu.nju.seg.parser.Parser;
+import edu.nju.seg.parser.ParserDispather;
 import edu.nju.seg.parser.UMLetParser;
 
 import java.io.File;
@@ -25,57 +26,35 @@ public class Lab {
         maybe.ifPresent(Lab::runExperiment);
     }
 
+    /**
+     * parse uxf files and run the experiments
+     * @param config experiment configuration
+     */
     private static void runExperiment(ExperimentConfig config) {
         String inputPath = config.getInputFolder();
         File inputFolder = new File(inputPath);
-        List<SequenceDiagram> sd = new ArrayList<>();
         if (inputFolder.isDirectory()) {
+            List<Diagram> diagrams = new ArrayList<>();
             for (File f : Objects.requireNonNull(inputFolder.listFiles())) {
                 UMLetParser.parseElement(f)
-                        .ifPresent(contents -> Lab.parserDispatch(contents, sd));
+                        .map(contents -> Lab.parseDiagram(f.getName(), contents))
+                        .ifPresent(diagrams::add);
             }
+            System.out.println(diagrams);
         } else {
             System.err.println("the input path is not a directory");
         }
     }
 
     /**
-     * dispatch the contents to the appropriate parser
-     * @param contents the UMLet model language
-     * @param sequenceDiagrams the sequence diagram list
+     * parse the diagram according to the given parser
+     * @param fileName the uxf file name
+     * @param content the element list
+     * @return the structure diagram
      */
-    private static void parserDispatch(List<ElementContent> contents,
-                                       List<SequenceDiagram> sequenceDiagrams) {
-        if (isSequenceDiagram(contents)) {
-            SequenceParser parser = new SequenceParser(contents.get(0), contents.get(1));
-            sequenceDiagrams.add(parser.parseSequenceDiagram());
-        } else {
-
-        }
-    }
-
-    /**
-     * check if contents belong to a sequence diagram; this method has effects
-     * @param contents the contents list parsed from XML file
-     * @return if contents belong to a sequence diagram
-     */
-    private static boolean isSequenceDiagram(List<ElementContent> contents) {
-        if (contents.size() == 2) {
-            if (contents.get(0).getType() == UMLType.UMLNote
-                    && contents.get(1).getType() == UMLType.UMLSequenceAllInOne) {
-                return true;
-            } else if (contents.get(0).getType() == UMLType.UMLSequenceAllInOne
-                    && contents.get(1).getType() == UMLType.UMLNote) {
-                ElementContent temp = contents.get(0);
-                contents.set(0, contents.get(1));
-                contents.set(1, temp);
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+    private static Diagram parseDiagram(String fileName, List<Element> content) {
+        Parser p = ParserDispather.dispatch(fileName, content);
+        return p.parse();
     }
 
 }

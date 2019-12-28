@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SequenceParser {
+public class SequenceParser implements Parser {
 
     private static Pattern TITLE_PATTERN = Pattern.compile("^title=(.*)$");
 
@@ -28,23 +28,20 @@ public class SequenceParser {
 
     private static Pattern MESSAGE_INSTRUCTION_PATTERN = Pattern.compile("^(.*)\\{(.*)\\}$");
 
-    private ElementContent note;
+    private Element note;
 
-    private ElementContent diagram;
+    private Element diagram;
 
     private Map<String, String> instanceMap;
 
-    public SequenceParser(ElementContent note, ElementContent diagram) {
+    public SequenceParser(Element note, Element diagram) {
         this.note = note;
         this.diagram = diagram;
         this.instanceMap = new HashMap<>();
     }
 
-    /**
-     * parse sequence diagram from the raw text
-     * @return the sequence diagram
-     */
-    public SequenceDiagram parseSequenceDiagram() {
+    @Override
+    public Diagram parse() {
         SequenceDiagram sd = new SequenceDiagram();
         // parse constraints in the note element
         sd.setConstraints(parseConstraints());

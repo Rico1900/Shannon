@@ -1,7 +1,5 @@
 package edu.nju.seg.model;
 
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -11,9 +9,12 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-public class SequenceDiagram extends Diagram {
+public class AutomatonDiagram extends Diagram {
 
-    private Fragment container;
+    private State initial;
+
+    private List<State> allStates;
+
+    private List<Relation> allRelations;
 
 }
