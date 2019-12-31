@@ -24,6 +24,10 @@ public class SequenceParser implements Parser {
 
     private static Pattern SIMPLE_INT_PATTERN = Pattern.compile("^int\\s*\\(p=(.*)\\)\\s*(.*)$");
 
+    private static Pattern LOOP_PATTERN = Pattern.compile("^loop\\s*\\(\\s*(.*)\\s*,\\s*(.*)\\s*\\)$");
+
+    private static Pattern ALT_PATTERN = Pattern.compile("^alt\\s*\\(\\s*(.*)\\s*,\\s*(.*)\\s*\\)$");
+
     private static Pattern MESSAGE_INFO_PATTERN = Pattern.compile("^\\((.*),(.*),(.*)\\)$");
 
     private static Pattern MESSAGE_INSTRUCTION_PATTERN = Pattern.compile("^(.*)\\{(.*)\\}$");
@@ -76,7 +80,7 @@ public class SequenceParser implements Parser {
      */
     private Fragment parseFragment(List<String> text) {
         Fragment fragment = new Fragment(new ArrayList<>());
-        parseHelper(fragment, text);
+        parseHelper(fragment, text, false);
         return fragment;
     }
 
@@ -84,8 +88,9 @@ public class SequenceParser implements Parser {
      * parse recursively
      * @param parent parent context
      * @param text text
+     * @param elseMode alt fragment else mode
      */
-    private void parseHelper(Fragment parent, List<String> text) {
+    private void parseHelper(Fragment parent, List<String> text, boolean elseMode) {
         if (text.size() == 0) {
             return;
         }
@@ -95,16 +100,25 @@ public class SequenceParser implements Parser {
             int end = searchEndIndex(text);
             Fragment f = consFragment(fragMat.group(1));
             parent.addChild(f);
-            parseHelper(f, trimBlankLine(text.subList(1, end)));
-            parseHelper(parent, trimBlankLine(text.subList(end + 1, text.size())));
+            parseHelper(f, trimBlankLine(text.subList(1, end)), false);
+            parseHelper(parent, trimBlankLine(text.subList(end + 1, text.size())), false);
         } else {
             Matcher msgMat = MESSAGE_PATTERN.matcher(current);
             if (msgMat.find()) {
                 Message m = consMessage(msgMat.group(1), msgMat.group(2), msgMat.group(3));
-                parent.addChild(m);
-                parseHelper(parent, trimBlankLine(text.subList(1, text.size())));
+                if (elseMode) {
+                    ((AltFragment) parent).addToElse(m);
+                } else {
+                    parent.addChild(m);
+                }
+                parseHelper(parent, trimBlankLine(text.subList(1, text.size())), false);
             } else {
-                throw new ParseException("wrong modeling language");
+                if (current.trim().equals("..")) {
+                    // alt fragment else part
+                    parseHelper(parent, trimBlankLine(text.subList(1, text.size())), true);
+                } else {
+                    throw new ParseException("wrong modeling language");
+                }
             }
         }
     }
@@ -119,11 +133,9 @@ public class SequenceParser implements Parser {
         if (info.startsWith("int")) {
             return consIntFragment(info);
         } else if (info.startsWith("loop")) {
-            // TODO
-            return null;
+            return consLoopFragment(info);
         } else if (info.startsWith("alt")) {
-            // TODO
-            return null;
+            return consAltFragment(info);
         } else {
             throw new ParseException("no corresponding combined fragment");
         }
@@ -132,7 +144,7 @@ public class SequenceParser implements Parser {
     /**
      * construct interrupt fragment
      * @param info interrupt fragment information
-     * @return structure fragment
+     * @return interrupt fragment
      */
     private IntFragment consIntFragment(String info) {
         int bracketCount = 0;
@@ -182,7 +194,40 @@ public class SequenceParser implements Parser {
                     "",
                     m.group(2));
         } else {
-            throw new ParseException("wrong int fragment modeling language");
+            throw new ParseException("wrong int fragment modeling language: " + info);
+        }
+    }
+
+    /**
+     * construct loop fragment
+     * @param info loop fragment information
+     * @return loop fragment
+     */
+    private LoopFragment consLoopFragment(String info) {
+        Matcher m = LOOP_PATTERN.matcher(info);
+        if (m.matches()) {
+            return new LoopFragment(Integer.parseInt(m.group(1)),
+                    Integer.parseInt(m.group(2)),
+                    new ArrayList<>());
+        } else {
+            throw new ParseException("error loop fragment: " + info);
+        }
+    }
+
+    /**
+     * construct alt fragment
+     * @param info alt fragment information
+     * @return alt fragment
+     */
+    private AltFragment consAltFragment(String info) {
+        Matcher m = ALT_PATTERN.matcher(info);
+        if (m.matches()) {
+            return new AltFragment(m.group(1),
+                    m.group(2),
+                    new ArrayList<>(),
+                    new ArrayList<>());
+        } else {
+            throw new ParseException("error alt fragment: " + info);
         }
     }
 
