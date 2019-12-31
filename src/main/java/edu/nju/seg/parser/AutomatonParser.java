@@ -48,6 +48,10 @@ public class AutomatonParser implements Parser {
         return ad;
     }
 
+    /**
+     * parse automaton
+     * @param ad the structure automaton
+     */
     private void parseAutomaton(AutomatonDiagram ad) {
         List<Element> relationEles = partitionRelation();
         List<Element> stateEles = partitionState();
@@ -77,6 +81,11 @@ public class AutomatonParser implements Parser {
         ad.setAllRelations(relations);
     }
 
+    /**
+     * construct special element
+     * @param e element
+     * @return state
+     */
     private State consSpecial(Element e) {
         State s = new State();
         Matcher m = SPECIAL_STATE_PATTERN.matcher(e.getContent());
@@ -99,6 +108,11 @@ public class AutomatonParser implements Parser {
         return s;
     }
 
+    /**
+     * construct relation according to the XML element
+     * @param e element
+     * @return relation
+     */
     private Relation consRelation(RelationElement e) {
         Relation r = new Relation();
         Matcher m = RELATION_PATTERN.matcher(e.getContent());
@@ -127,6 +141,11 @@ public class AutomatonParser implements Parser {
         return r;
     }
 
+    /**
+     * construct state according to the XML element
+     * @param e element
+     * @return state
+     */
     private State consState(Element e) {
         State s = new State();
         if (e.getType() == UMLType.UMLState) {
@@ -147,6 +166,11 @@ public class AutomatonParser implements Parser {
         return s;
     }
 
+    /**
+     * search state by the given coordinate
+     * @param coord coordinate
+     * @return maybe state
+     */
     private Optional<State> searchState(Pair<Integer, Integer> coord) {
         for (Pair<List<Integer>, State> p: locationList) {
             List<Integer> loc = p.getLeft();
@@ -160,6 +184,11 @@ public class AutomatonParser implements Parser {
         return Optional.empty();
     }
 
+    /**
+     * add state to the location list
+     * @param e XML element
+     * @param s state
+     */
     private void addToLocList(Element e, State s) {
         List<Integer> loc = new ArrayList<>();
         loc.add(e.getX());

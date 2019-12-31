@@ -45,7 +45,6 @@ public class SequenceParser implements Parser {
         SequenceDiagram sd = new SequenceDiagram();
         // parse constraints in the note element
         sd.setConstraints(parseConstraints());
-
         List<String> text = Arrays.asList(diagram.getContent().split("\\n"));
         if (text.size() < 2) {
             throw new ParseException("missing instance claim");
@@ -70,12 +69,22 @@ public class SequenceParser implements Parser {
         return sd;
     }
 
+    /**
+     * parse fragments
+     * @param text text
+     * @return structure fragment
+     */
     private Fragment parseFragment(List<String> text) {
         Fragment fragment = new Fragment(new ArrayList<>());
         parseHelper(fragment, text);
         return fragment;
     }
 
+    /**
+     * parse recursively
+     * @param parent parent context
+     * @param text text
+     */
     private void parseHelper(Fragment parent, List<String> text) {
         if (text.size() == 0) {
             return;
@@ -120,6 +129,11 @@ public class SequenceParser implements Parser {
         }
     }
 
+    /**
+     * construct interrupt fragment
+     * @param info interrupt fragment information
+     * @return structure fragment
+     */
     private IntFragment consIntFragment(String info) {
         int bracketCount = 0;
         int parenthesisCount = 0;
@@ -172,6 +186,10 @@ public class SequenceParser implements Parser {
         }
     }
 
+    /**
+     * check if the interrupt fragment is right
+     * @param m match status
+     */
     private void checkIntFragMat(Matcher m) {
         if (!m.find()) {
             throw new ParseException("wrong int fragment modeling language");
@@ -201,6 +219,12 @@ public class SequenceParser implements Parser {
         }
     }
 
+    /**
+     * construct event
+     * @param var event variable
+     * @param eventStr event string
+     * @return structure event
+     */
     private Event consEvent(String var, String eventStr) {
         Instance ins = new Instance();
         ins.setName(instanceMap.get(var));
