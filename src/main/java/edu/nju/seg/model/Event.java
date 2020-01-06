@@ -11,7 +11,7 @@ public class Event {
 
     private String name;
 
-    /** the interruption  **/
+    /** the interruption mask update command **/
     private String instruction;
 
     /** which the event belongs to **/
