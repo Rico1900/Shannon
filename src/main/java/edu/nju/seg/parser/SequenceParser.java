@@ -28,6 +28,8 @@ public class SequenceParser implements Parser {
 
     private static Pattern ALT_PATTERN = Pattern.compile("^alt\\s*\\(\\s*(.*)\\s*,\\s*(.*)\\s*\\)$");
 
+    private static Pattern OPT_PATTERN = Pattern.compile("^opt\\s*\\((.*)\\)");
+
     private static Pattern MESSAGE_INFO_PATTERN = Pattern.compile("^\\((.*),(.*),(.*)\\)$");
 
     private static Pattern MESSAGE_INSTRUCTION_PATTERN = Pattern.compile("^(.*)\\{(.*)\\}$");
@@ -136,6 +138,8 @@ public class SequenceParser implements Parser {
             return consLoopFragment(info);
         } else if (info.startsWith("alt")) {
             return consAltFragment(info);
+        } else if (info.startsWith("opt")) {
+            return consOptFragment(info);
         } else {
             throw new ParseException("no corresponding combined fragment");
         }
@@ -228,6 +232,20 @@ public class SequenceParser implements Parser {
                     new ArrayList<>());
         } else {
             throw new ParseException("error alt fragment: " + info);
+        }
+    }
+
+    /**
+     * construct opt fragment
+     * @param info opt fragment information
+     * @return opt fragment
+     */
+    private OptFragment consOptFragment(String info) {
+        Matcher m = OPT_PATTERN.matcher(info);
+        if (m.matches()) {
+            return new OptFragment(new ArrayList<>(), m.group(1));
+        } else {
+            throw new ParseException("error opt fragment: " + info);
         }
     }
 
