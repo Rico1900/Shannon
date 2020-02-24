@@ -117,8 +117,20 @@ public class AutomatonParser implements Parser {
         Relation r = new Relation();
         Matcher m = RELATION_PATTERN.matcher(e.getContent());
         if (m.matches()) {
-            String cond = m.group(1);
-            r.setCondition(cond.trim());
+            String expr = m.group(1).trim();
+            if (expr.contains(":")) {
+                String[] nameSplits = expr.split(":");
+                r.setName(nameSplits[0]);
+                expr = nameSplits[1];
+            }
+            if (expr.contains(";")) {
+                String[] splits = expr.split(";");
+                r.setCondition(splits[0]);
+                r.setAssignment(splits[1]);
+            } else {
+                r.setCondition(expr);
+            }
+
             Pair<Integer, Integer> sourceCoord = e.getSource();
             Pair<Integer, Integer> targetCoord = e.getTarget();
             Optional<State> maybeSource = searchState(sourceCoord);
@@ -127,13 +139,13 @@ public class AutomatonParser implements Parser {
                 source.addEdge(r);
                 r.setSource(source);
             } else {
-                throw new ParseException("wrong relation source, condition: " + cond);
+                throw new ParseException("wrong relation source, condition: " + expr);
             }
             Optional<State> maybeTarget = searchState(targetCoord);
             if (maybeTarget.isPresent()) {
                 r.setTarget(maybeTarget.get());
             } else {
-                throw new ParseException("wrong relation target, condition: " + cond);
+                throw new ParseException("wrong relation target, condition: " + expr);
             }
         } else {
             throw new ParseException("wrong relation format");

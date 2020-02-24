@@ -4,8 +4,10 @@ package edu.nju.seg;
 import edu.nju.seg.data.ConfigReader;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.Parser;
-import edu.nju.seg.parser.ParserDispather;
+import edu.nju.seg.parser.ParserDispatcher;
 import edu.nju.seg.parser.UMLetParser;
+import edu.nju.seg.solver.AutomatonEncoder;
+import edu.nju.seg.solver.SolverManager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,14 +25,18 @@ public class Lab {
         }
         ConfigReader reader = new ConfigReader(configPath);
         Optional<ExperimentConfig> maybe = reader.getConfig();
-        maybe.ifPresent(Lab::runExperiment);
+        maybe.ifPresent(Lab::run);
+    }
+
+    private static void run(ExperimentConfig config) {
+        prepareExperiment(config);
     }
 
     /**
-     * parse uxf files and run the experiments
+     * parse uxf files
      * @param config experiment configuration
      */
-    private static void runExperiment(ExperimentConfig config) {
+    private static void prepareExperiment(ExperimentConfig config) {
         String inputPath = config.getInputFolder();
         File inputFolder = new File(inputPath);
         if (inputFolder.isDirectory()) {
@@ -40,10 +46,28 @@ public class Lab {
                         .map(contents -> Lab.parseDiagram(f.getName(), contents))
                         .ifPresent(diagrams::add);
             }
-            System.out.println(diagrams);
+            runExperiment(diagrams, config);
         } else {
             System.err.println("the input path is not a directory");
         }
+    }
+
+    /**
+     * run the experiment
+     * @param diagrams parsed diagrams
+     */
+    private static void runExperiment(List<Diagram> diagrams, ExperimentConfig config) {
+        SolverManager manager = new SolverManager();
+        for (Diagram d: diagrams) {
+            if (d instanceof AutomatonDiagram && d.getTitle().equals("Task1")) {
+                AutomatonEncoder encoder = new AutomatonEncoder((AutomatonDiagram) d,
+                        manager, config.getBound());
+                encoder.encode();
+            }
+        }
+        System.out.println(manager.check());
+        System.out.println(manager.getModel());
+        System.out.println();
     }
 
     /**
@@ -53,7 +77,7 @@ public class Lab {
      * @return the structure diagram
      */
     private static Diagram parseDiagram(String fileName, List<Element> content) {
-        Parser p = ParserDispather.dispatch(fileName, content);
+        Parser p = ParserDispatcher.dispatch(fileName, content);
         return p.parse();
     }
 

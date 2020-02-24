@@ -13,6 +13,10 @@ public class Relation {
 
     private State target;
 
+    private String name;
+
+    private String assignment;
+
     @Override
     public String toString() {
         return source.getStateName() + " --> " + target.getStateName();

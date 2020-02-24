@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,6 +40,16 @@ public class $ {
     }
 
     /**
+     * judge if a list is a blank list
+     * @param list the list
+     * @param <T> the type of the list
+     * @return if the list is blank
+     */
+    public static <T> boolean isBlankList(List<T> list) {
+        return list == null || list.size() == 0;
+    }
+
+    /**
      * filter blank string
      * @param list the string list
      * @return the list without blank string
@@ -46,6 +58,18 @@ public class $ {
         return list.stream()
                 .filter(s -> !isBlank(s))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * split expressions
+     * @param s the expression string
+     * @return expression list
+     */
+    public static List<String> splitExpr(String s) {
+        if (isBlank(s)) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(s.trim().split(","));
     }
 
 }

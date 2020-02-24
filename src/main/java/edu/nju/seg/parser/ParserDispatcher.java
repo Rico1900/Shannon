@@ -6,7 +6,7 @@ import edu.nju.seg.model.UMLType;
 
 import java.util.List;
 
-public class ParserDispather {
+public class ParserDispatcher {
 
     /**
      * dispatch the contents to the appropriate parser

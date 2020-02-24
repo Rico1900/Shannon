@@ -44,6 +44,12 @@
             <systemPath>${project.basedir}/bin/com.microsoft.z3.jar</systemPath>
         </dependency>
 
+        <dependency>
+            <groupId>org.scijava</groupId>
+            <artifactId>parsington</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+
     </dependencies>
 
 
