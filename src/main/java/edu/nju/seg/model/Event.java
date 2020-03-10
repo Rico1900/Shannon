@@ -17,4 +17,15 @@ public class Event {
     /** which the event belongs to **/
     private Instance belongTo;
 
+    private boolean virtual = false;
+
+    public Pair<String, Integer> parseInstruction() {
+        if (instruction != null) {
+            String[] splits = instruction.split("=");
+            return new Pair<>(splits[0].trim(), Integer.parseInt(splits[1].trim()));
+        } else {
+            return new Pair<>();
+        }
+    }
+
 }

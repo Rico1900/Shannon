@@ -6,6 +6,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static edu.nju.seg.util.Constants.CONSTRAINTS;
+import static edu.nju.seg.util.Constants.PROPERTIES;
+
 public class SequenceParser implements Parser {
 
     private static Pattern TITLE_PATTERN = Pattern.compile("^title=(.*)$");
@@ -34,23 +37,39 @@ public class SequenceParser implements Parser {
 
     private static Pattern MESSAGE_INSTRUCTION_PATTERN = Pattern.compile("^(.*)\\{(.*)\\}$");
 
-    private Element note;
+    private List<String> constraints;
+
+    private List<String> properties;
 
     private Element diagram;
 
     private Map<String, String> instanceMap;
 
-    public SequenceParser(Element note, Element diagram) {
-        this.note = note;
+    public SequenceParser(List<Element> notes, Element diagram) {
+        init(notes);
         this.diagram = diagram;
         this.instanceMap = new HashMap<>();
+    }
+
+    private void init(List<Element> notes) {
+        for (Element e: notes) {
+            String content = e.getContent();
+            String[] splits = content.split("\n");
+            if (splits[0].equals(CONSTRAINTS)) {
+                this.constraints = Arrays.asList(Arrays.copyOfRange(splits, 1, splits.length));
+            }
+            if (splits[0].equals(PROPERTIES)) {
+                this.properties = Arrays.asList(Arrays.copyOfRange(splits, 1, splits.length));
+            }
+        }
     }
 
     @Override
     public Diagram parse() {
         SequenceDiagram sd = new SequenceDiagram();
-        // parse constraints in the note element
-        sd.setConstraints(parseConstraints());
+        // parse constraints in the constraints element
+        sd.setConstraints(constraints);
+        sd.setProperties(properties);
         List<String> text = Arrays.asList(diagram.getContent().split("\\n"));
         if (text.size() < 2) {
             throw new ParseException("missing instance claim");
@@ -59,11 +78,13 @@ public class SequenceParser implements Parser {
         sd.setTitle(parseTitle(text.get(0)));
         // parse instance claim
         int claimIndex = 1;
+        List<Instance> instances = new ArrayList<>();
         while (true) {
             String current = text.get(claimIndex);
             Matcher m = CLAIM_PATTERN.matcher(current);
             if (m.find()) {
                 instanceMap.put(m.group(2), m.group(1));
+                instances.add(new Instance(m.group(1)));
                 claimIndex++;
             } else {
                 break;
@@ -71,17 +92,19 @@ public class SequenceParser implements Parser {
         }
         // parse fragment
         List<String> fragments = trimBlankLine(text.subList(claimIndex, text.size()));
-        sd.setContainer(parseFragment(fragments));
+        sd.setContainer(parseFragment(fragments, instances));
         return sd;
     }
 
     /**
      * parse fragments
      * @param text text
+     * @param instances the instances in the diagram
      * @return structure fragment
      */
-    private Fragment parseFragment(List<String> text) {
-        Fragment fragment = new Fragment(new ArrayList<>());
+    private Fragment parseFragment(List<String> text, List<Instance> instances) {
+        Fragment fragment = new Fragment(new ArrayList<>(), new ArrayList<>(), "container");
+        fragment.setCovered(instances);
         parseHelper(fragment, text, false);
         return fragment;
     }
@@ -101,6 +124,7 @@ public class SequenceParser implements Parser {
         if (fragMat.find()) {
             int end = searchEndIndex(text);
             Fragment f = consFragment(fragMat.group(1));
+            f.setCovered(parent.getCovered());
             parent.addChild(f);
             parseHelper(f, trimBlankLine(text.subList(1, end)), false);
             parseHelper(parent, trimBlankLine(text.subList(end + 1, text.size())), false);
@@ -169,7 +193,8 @@ public class SequenceParser implements Parser {
                     Integer.parseInt(m.group(2)),
                     Integer.parseInt(m.group(3)),
                     m.group(4),
-                    m.group(5));
+                    m.group(5),
+                    info);
         } else if (bracketCount == 0 && parenthesisCount == 2) {
             Matcher m = LIMIT_INT_PATTERN.matcher(info);
             checkIntFragMat(m);
@@ -178,7 +203,8 @@ public class SequenceParser implements Parser {
                     Integer.parseInt(m.group(2)),
                     Integer.parseInt(m.group(3)),
                     "",
-                    m.group(4));
+                    m.group(4),
+                    info);
         } else if (bracketCount == 1 && parenthesisCount == 1) {
             Matcher m = INSTRUCTION_INT_PATTERN.matcher(info);
             checkIntFragMat(m);
@@ -187,7 +213,8 @@ public class SequenceParser implements Parser {
                     1,
                     1,
                     m.group(2),
-                    m.group(3));
+                    m.group(3),
+                    info);
         } else if (bracketCount == 0 && parenthesisCount == 1) {
             Matcher m = SIMPLE_INT_PATTERN.matcher(info);
             checkIntFragMat(m);
@@ -196,7 +223,8 @@ public class SequenceParser implements Parser {
                     1,
                     1,
                     "",
-                    m.group(2));
+                    m.group(2),
+                    info);
         } else {
             throw new ParseException("wrong int fragment modeling language: " + info);
         }
@@ -212,7 +240,8 @@ public class SequenceParser implements Parser {
         if (m.matches()) {
             return new LoopFragment(Integer.parseInt(m.group(1)),
                     Integer.parseInt(m.group(2)),
-                    new ArrayList<>());
+                    new ArrayList<>(),
+                    info);
         } else {
             throw new ParseException("error loop fragment: " + info);
         }
@@ -229,7 +258,8 @@ public class SequenceParser implements Parser {
             return new AltFragment(m.group(1),
                     m.group(2),
                     new ArrayList<>(),
-                    new ArrayList<>());
+                    new ArrayList<>(),
+                    info);
         } else {
             throw new ParseException("error alt fragment: " + info);
         }
@@ -243,7 +273,7 @@ public class SequenceParser implements Parser {
     private OptFragment consOptFragment(String info) {
         Matcher m = OPT_PATTERN.matcher(info);
         if (m.matches()) {
-            return new OptFragment(new ArrayList<>(), m.group(1));
+            return new OptFragment(new ArrayList<>(), m.group(1), info);
         } else {
             throw new ParseException("error opt fragment: " + info);
         }
@@ -345,14 +375,6 @@ public class SequenceParser implements Parser {
             }
         }
         throw new ParseException("missing fragment ending symbols --");
-    }
-
-    /**
-     * split constraints from text
-     * @return the constraints list
-     */
-    private List<String> parseConstraints() {
-        return Arrays.asList(note.getContent().split("\\n"));
     }
 
     /**

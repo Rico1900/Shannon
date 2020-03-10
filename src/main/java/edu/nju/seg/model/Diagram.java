@@ -11,6 +11,9 @@ public class Diagram {
 
     protected String title;
 
+    /**
+     * the constraints that describe the diagram
+     */
     protected List<String> constraints;
 
 }

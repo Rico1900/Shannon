@@ -18,8 +18,72 @@ public class Fragment extends SDComponent {
      */
     protected List<SDComponent> children;
 
+    /**
+     * the instances covered by the
+     */
+    protected List<Instance> covered;
+
+    protected Event virtualHead;
+
+    protected Event virtualTail;
+
+    protected String raw;
+
+    public Fragment(List<SDComponent> children, List<Instance> covered, String raw) {
+        this.children = children;
+        this.covered = covered;
+        this.raw = raw;
+        this.virtualHead = new Event("virtual_head_" + yieldMark(),
+                null, null, true);
+        this.virtualTail = new Event("virtual_tail_" + yieldMark(),
+                null, null, true);
+    }
+
+    private String yieldMark() {
+        return "<" + this.raw + ">";
+    }
+
     public void addChild(SDComponent component) {
         children.add(component);
+    }
+
+    public void addInstance(Instance i) {
+        covered.add(i);
+    }
+
+
+    /**
+     * get head message of the fragment
+     * @return the head message
+     */
+    public Message getHead() {
+        if (children == null) {
+            throw new EncodeException("empty fragment");
+        } else {
+            SDComponent first = children.get(0);
+            if (first instanceof Message) {
+                return (Message) first;
+            } else {
+                return ((Fragment) first).getHead();
+            }
+        }
+    }
+
+    /**
+     * get tail message of the fragment
+     * @return the tail message
+     */
+    public Message getTail() {
+        if (children == null) {
+            throw new EncodeException("empty fragment");
+        } else {
+            SDComponent last = children.get(children.size() - 1);
+            if (last instanceof Message) {
+                return (Message) last;
+            } else {
+                return ((Fragment) last).getTail();
+            }
+        }
     }
 
 }

@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -21,18 +22,29 @@ public class IntFragment extends Fragment {
 
     private String name;
 
+    private String maskVar;
+
     public IntFragment(List<SDComponent> children,
                        int priority,
                        int min,
                        int max,
                        String instruction,
-                       String name) {
-        super(children);
+                       String name,
+                       String raw) {
+        super(children, new ArrayList<>(), raw);
         this.priority = priority;
         this.min = min;
         this.max = max;
         this.instruction = instruction;
         this.name = name;
+        init();
+    }
+
+    private void init() {
+        if (instruction != null) {
+            String[] split = instruction.split("=");
+            maskVar = split[0].trim();
+        }
     }
 
 }

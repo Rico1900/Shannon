@@ -2,10 +2,12 @@ package edu.nju.seg.parser;
 
 import com.microsoft.z3.*;
 import edu.nju.seg.model.EncodeException;
+import edu.nju.seg.model.Pair;
 import org.scijava.parse.ExpressionParser;
 import org.scijava.parse.Operator;
 import org.scijava.parse.SyntaxTree;
 import org.scijava.parse.Variable;
+
 
 public class ExprParser {
 
@@ -21,20 +23,16 @@ public class ExprParser {
      * @return z3 bool expression
      */
     public BoolExpr convert(String expr) {
-        try {
-            SyntaxTree tree = new ExpressionParser().parseTree(expr);
-            int depth = treeDepth(tree);
-            if (depth == 2) {
-                return handleSimpleExpr(tree);
-            } else if (depth == 3) {
-                return handleExpr(tree);
-            } else if (depth == 4) {
-                return handleComplexExpr(tree);
-            } else {
-                throw new EncodeException("wrong expression: " + expr);
-            }
-        } catch (Exception e) {
-            throw new EncodeException("wrong expression: " + expr + ", message: " + e.getMessage());
+        SyntaxTree tree = new ExpressionParser().parseTree(expr);
+        int depth = treeDepth(tree);
+        if (depth == 2) {
+            return handleSimpleExpr(tree);
+        } else if (depth == 3) {
+            return handleExpr(tree);
+        } else if (depth == 4) {
+            return handleComplexExpr(tree);
+        } else {
+            throw new EncodeException("wrong expression: " + expr);
         }
     }
 
@@ -66,6 +64,72 @@ public class ExprParser {
         }
     }
 
+    public Pair<String, String> getVarFromConstraint(String cons) {
+        SyntaxTree tree = new ExpressionParser().parseTree(cons);
+        int depth = treeDepth(tree);
+        if (depth == 4) {
+            String leftVar;
+            String rightVar;
+            SyntaxTree left = tree.child(0);
+            SyntaxTree right = tree.child(1);
+            if (isBlankOperator(left.token()) || isNumber(left.token())) {
+                leftVar = getToken(right.child(0).child(0));
+                rightVar = getToken(right.child(0).child(1));
+            } else {
+                leftVar = getToken(left.child(1).child(0));
+                rightVar = getToken(left.child(1).child(1));
+            }
+            return new Pair<>(leftVar, rightVar);
+        } else if (depth == 3) {
+            String leftVar;
+            String rightVar;
+            SyntaxTree left = tree.child(0);
+            SyntaxTree right = tree.child(1);
+            if (isBlankOperator(left.token()) || isNumber(left.token())) {
+                leftVar = getToken(right.child(0));
+                rightVar = getToken(right.child(1));
+            } else {
+                leftVar = getToken(left.child(0));
+                rightVar = getToken(left.child(1));
+            }
+            return new Pair<>(leftVar, rightVar);
+        } else {
+            throw new EncodeException("wrong constraints: " + cons);
+        }
+    }
+
+    public Pair<ArithExpr, ArithExpr> getInterval(String cons) {
+        SyntaxTree tree = new ExpressionParser().parseTree(cons);
+        int depth = treeDepth(tree);
+        if (depth == 4) {
+            String leftVar;
+            String rightVar;
+            SyntaxTree left = tree.child(0);
+            SyntaxTree right = tree.child(1);
+            if (isBlankOperator(left.token()) || isNumber(left.token())) {
+                leftVar = getToken(left);
+                rightVar = getToken(right.child(1));
+            } else {
+                leftVar = getToken(left.child(0));
+                rightVar = getToken(right);
+            }
+            return new Pair<>(mkExprDouble(leftVar), mkExprDouble(rightVar));
+        } else if (depth == 3) {
+            String leftVar = null;
+            String rightVar = null;
+            SyntaxTree left = tree.child(0);
+            SyntaxTree right = tree.child(1);
+            if (isBlankOperator(left.token()) || isNumber(left.token())) {
+                leftVar = getToken(left);
+            } else {
+                rightVar = getToken(right);
+            }
+            return new Pair<>(mkExprDouble(leftVar), mkExprDouble(rightVar));
+        } else {
+            throw new EncodeException("wrong constraints: " + cons);
+        }
+    }
+
     private BoolExpr handleSimpleExpr(SyntaxTree tree) {
         String op = getToken(tree);
         SyntaxTree left = tree.child(0);
@@ -77,7 +141,7 @@ public class ExprParser {
         String op = getToken(tree);
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
-        if (((Operator) left.token()).getToken().equals("-")) {
+        if (getToken(left).equals("-")) {
             return mkBoolExpr(op, mkSubExpr(left), mkExpr(right));
         } else {
             return mkBoolExpr(op, mkExpr(left), mkSubExpr(right));
@@ -93,7 +157,7 @@ public class ExprParser {
         String op = getToken(tree);
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
-        if (isBlankOperator(left.token())) {
+        if (isBlankOperator(left.token()) || isNumber(left.token())) {
             leftOp = op;
             rightOp = getToken(right);
             leftNum = mkExpr(left);
@@ -134,6 +198,9 @@ public class ExprParser {
     }
 
     private ArithExpr mkExprDouble(String s) {
+        if (s == null) {
+            return null;
+        }
         return ctx.mkReal(s);
     }
 
@@ -187,8 +254,21 @@ public class ExprParser {
         return false;
     }
 
+    private boolean isNumber(Object o) {
+        return o instanceof Number;
+    }
+
     private String getToken(SyntaxTree tree) {
-        return ((Operator) tree.token()).getToken();
+        Object t = tree.token();
+        if (t instanceof Operator) {
+            return ((Operator) t).getToken();
+        } else if (t instanceof Variable){
+            return ((Variable) t).getToken();
+        } else if (t instanceof Number) {
+            return t.toString();
+        } else {
+            return t.toString();
+        }
     }
 
     private String getNum(SyntaxTree tree) {

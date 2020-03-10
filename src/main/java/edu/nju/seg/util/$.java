@@ -72,4 +72,30 @@ public class $ {
         return Arrays.asList(s.trim().split(","));
     }
 
+    /**
+     * create new list according to the given list and the element t
+     * @param list the given list
+     * @param t the new element
+     * @param <T> the element type
+     * @return new list
+     */
+    public static <T> List<T> addToList(List<T> list, T t) {
+        List<T> result = new ArrayList<>(list);
+        result.add(t);
+        return result;
+    }
+
+    /**
+     * create a new list according to the original list without the given element
+     * @param list the original list
+     * @param e the element which will not exist in the new list
+     * @param <T> the generic type
+     * @return the new list without the given element
+     */
+    public static <T> List<T> listSubEle(List<T> list, T e) {
+        return list.stream()
+                .filter(c -> !c.equals(e))
+                .collect(Collectors.toList());
+    }
+
 }

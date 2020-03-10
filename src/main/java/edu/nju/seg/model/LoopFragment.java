@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -15,8 +16,8 @@ public class LoopFragment extends Fragment {
 
     private int max;
 
-    public LoopFragment(int min, int max, List<SDComponent> children) {
-        super(children);
+    public LoopFragment(int min, int max, List<SDComponent> children, String raw) {
+        super(children, new ArrayList<>(), raw);
         this.min = min;
         this.max = max;
     }

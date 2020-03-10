@@ -7,6 +7,7 @@ import edu.nju.seg.parser.Parser;
 import edu.nju.seg.parser.ParserDispatcher;
 import edu.nju.seg.parser.UMLetParser;
 import edu.nju.seg.solver.AutomatonEncoder;
+import edu.nju.seg.solver.SequenceEncoder;
 import edu.nju.seg.solver.SolverManager;
 
 import java.io.File;
@@ -59,14 +60,21 @@ public class Lab {
     private static void runExperiment(List<Diagram> diagrams, ExperimentConfig config) {
         SolverManager manager = new SolverManager();
         for (Diagram d: diagrams) {
-            if (d instanceof AutomatonDiagram && d.getTitle().equals("Task1")) {
-                AutomatonEncoder encoder = new AutomatonEncoder((AutomatonDiagram) d,
+//            if (d instanceof AutomatonDiagram && d.getTitle().equals("Task1")) {
+//                AutomatonEncoder encoder = new AutomatonEncoder((AutomatonDiagram) d,
+//                        manager, config.getBound());
+//                encoder.encode();
+//            }
+            if (d instanceof SequenceDiagram) {
+                SequenceEncoder encoder = new SequenceEncoder((SequenceDiagram) d,
                         manager, config.getBound());
                 encoder.encode();
             }
         }
         System.out.println(manager.check());
-        System.out.println(manager.getModel());
+        System.out.println();
+//        System.out.println(manager.getModel());
+        System.out.println(manager.getEventTrace(true));
         System.out.println();
     }
 

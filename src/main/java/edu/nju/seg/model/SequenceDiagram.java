@@ -16,4 +16,9 @@ public class SequenceDiagram extends Diagram {
 
     private Fragment container;
 
+    /**
+     * the properties that need to be checked
+     */
+    private List<String> properties;
+
 }
