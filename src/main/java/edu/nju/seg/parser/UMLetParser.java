@@ -18,7 +18,8 @@ public class UMLetParser {
      * @param f the UMLet .uxf file
      * @return maybe the elements
      */
-    public static Optional<List<Element>> parseElement(File f) {
+    public static Optional<List<Element>> parseElement(File f)
+    {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {
             SAXParser parser = factory.newSAXParser();

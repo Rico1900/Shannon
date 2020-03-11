@@ -14,7 +14,8 @@ public class OptFragment extends Fragment {
 
     private String condition;
 
-    public OptFragment(List<SDComponent> children, String condition, String raw) {
+    public OptFragment(List<SDComponent> children, String condition, String raw)
+    {
         super(children, new ArrayList<>(), raw);
         this.condition = condition;
     }

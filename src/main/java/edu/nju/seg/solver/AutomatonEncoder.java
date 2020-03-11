@@ -4,8 +4,9 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.RealExpr;
+import edu.nju.seg.exception.Z3Exception;
 import edu.nju.seg.model.AutomatonDiagram;
-import edu.nju.seg.model.EncodeException;
+import edu.nju.seg.exception.EncodeException;
 import edu.nju.seg.model.Relation;
 import edu.nju.seg.model.State;
 import edu.nju.seg.parser.EquationParser;
@@ -31,7 +32,8 @@ public class AutomatonEncoder {
 
     public AutomatonEncoder(AutomatonDiagram diagram,
                             SolverManager manager,
-                            int bound) {
+                            int bound)
+    {
         this.diagram = diagram;
         this.manager = manager;
         this.ctx = manager.getContext();
@@ -39,7 +41,8 @@ public class AutomatonEncoder {
         this.bound = bound;
     }
 
-    public void encode() {
+    public void encode() throws Z3Exception
+    {
         encodeInit();
         encodeTarget();
         encodeTransAndInvar();
@@ -48,7 +51,7 @@ public class AutomatonEncoder {
     /**
      * encode initial state
      */
-    private void encodeInit() {
+    private void encodeInit() throws Z3Exception {
         State initial = diagram.getInitial();
         List<Relation> outers = initial.getOuters();
         if (outers != null) {
@@ -73,7 +76,8 @@ public class AutomatonEncoder {
     /**
      * encode target nodes
      */
-    private void encodeTarget() {
+    private void encodeTarget()
+    {
         List<BoolExpr> bools = new ArrayList<>();
         for (State s: diagram.getAllStates()) {
             bools.add(encodeCurrentLocExpr(bound, s));
@@ -85,7 +89,8 @@ public class AutomatonEncoder {
     /**
      * encode transition and invariant condition according to the bound and states
      */
-    private void encodeTransAndInvar() {
+    private void encodeTransAndInvar() throws Z3Exception
+    {
         Set<String> vars = diagram.getAllVar();
         for (int i = 0; i < bound; i++) {
             for (State s: diagram.getAllStates()) {
@@ -104,7 +109,8 @@ public class AutomatonEncoder {
      * @param vars the full variable set
      * @return the bool expression that represent the current location information
      */
-    private BoolExpr encodeStutter(int k, State current, Set<String> vars) {
+    private BoolExpr encodeStutter(int k, State current, Set<String> vars) throws Z3Exception
+    {
         String prefix = current.getStateName() + "_" + k + "_";
         BoolExpr time = p.convert(prefix + "delta = 0");
         BoolExpr loc = ctx.mkEq(mkLoc(k + 1), mkLoc(k));
@@ -123,7 +129,8 @@ public class AutomatonEncoder {
      * @param vars the full variable set
      * @return the bool expression that represent the current location information
      */
-    private BoolExpr encodeTimed(int k, State current, Set<String> vars) {
+    private BoolExpr encodeTimed(int k, State current, Set<String> vars)
+    {
         String prefix = current.getStateName() + "_" + k + "_";
         RealExpr delta = (RealExpr) ctx.mkConst(ctx.mkSymbol(prefix + "delta"), ctx.mkRealSort());
         BoolExpr time = ctx.mkGt(delta, ctx.mkReal(0));
@@ -149,7 +156,8 @@ public class AutomatonEncoder {
      * @param vars the full variable set
      * @return the bool expression that represent the jump transition
      */
-    private BoolExpr encodeJump(int k, State current, Set<String> vars) {
+    private BoolExpr encodeJump(int k, State current, Set<String> vars) throws Z3Exception
+    {
         BoolExpr[] nexts = new BoolExpr[current.getOuters().size()];
         for (int i = 0; i < nexts.length; i++) {
             Relation r = current.getOuters().get(i);
@@ -176,7 +184,8 @@ public class AutomatonEncoder {
      * @param current the current state
      * @return the bool expression that represent the invariant conditions
      */
-    private BoolExpr encodeInvariant(int k, State current) {
+    private BoolExpr encodeInvariant(int k, State current) throws Z3Exception
+    {
         // TODO: double check what to do if there is no invariant conditions
         if ($.isBlankList(current.getConstraints())) {
             return ctx.mkBoolConst(current.getStateName() + "_" + k + "_dummy");
@@ -196,11 +205,13 @@ public class AutomatonEncoder {
      * @param current the current state
      * @return current location bool expression
      */
-    private BoolExpr encodeCurrentLocExpr(int k, State current) {
+    private BoolExpr encodeCurrentLocExpr(int k, State current)
+    {
         return ctx.mkEq(mkLoc(k), ctx.mkString(current.getStateName()));
     }
 
-    private BoolExpr encodeLabel(int k, String label) {
+    private BoolExpr encodeLabel(int k, String label)
+    {
         return ctx.mkEq(mkLabel(k), ctx.mkString(label));
     }
 
@@ -209,7 +220,8 @@ public class AutomatonEncoder {
      * @param k bound
      * @return the location symbol
      */
-    private Expr mkLoc(int k) {
+    private Expr mkLoc(int k)
+    {
         return ctx.mkConst(ctx.mkSymbol("loc_" + k), ctx.mkStringSort());
     }
 
@@ -219,11 +231,13 @@ public class AutomatonEncoder {
      * @param k bound
      * @return the variable symbol
      */
-    private RealExpr mkVar(String var, int k) {
+    private RealExpr mkVar(String var, int k)
+    {
         return (RealExpr) ctx.mkConst(ctx.mkSymbol(var + "_" + k), ctx.mkRealSort());
     }
 
-    private Expr mkLabel(int k) {
+    private Expr mkLabel(int k)
+    {
         return ctx.mkConst(ctx.mkSymbol("label_" + k), ctx.mkStringSort());
     }
 

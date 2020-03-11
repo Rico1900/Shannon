@@ -16,7 +16,8 @@ public class LoopFragment extends Fragment {
 
     private int max;
 
-    public LoopFragment(int min, int max, List<SDComponent> children, String raw) {
+    public LoopFragment(int min, int max, List<SDComponent> children, String raw)
+    {
         super(children, new ArrayList<>(), raw);
         this.min = min;
         this.max = max;

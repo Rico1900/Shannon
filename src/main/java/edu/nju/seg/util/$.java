@@ -20,7 +20,8 @@ public class $ {
      * @param f the target file
      * @return maybe the content
      */
-    public static Optional<String> readContent(File f) {
+    public static Optional<String> readContent(File f)
+    {
         try {
             String content = Files.readString(f.toPath(), StandardCharsets.UTF_8);
             return Optional.of(content);
@@ -35,7 +36,8 @@ public class $ {
      * @param str the string
      * @return if the string is blank
      */
-    public static boolean isBlank(String str) {
+    public static boolean isBlank(String str)
+    {
         return str == null || str.equals("");
     }
 
@@ -45,7 +47,8 @@ public class $ {
      * @param <T> the type of the list
      * @return if the list is blank
      */
-    public static <T> boolean isBlankList(List<T> list) {
+    public static <T> boolean isBlankList(List<T> list)
+    {
         return list == null || list.size() == 0;
     }
 
@@ -54,7 +57,8 @@ public class $ {
      * @param list the string list
      * @return the list without blank string
      */
-    public static List<String> filterStrList(List<String> list) {
+    public static List<String> filterStrList(List<String> list)
+    {
         return list.stream()
                 .filter(s -> !isBlank(s))
                 .collect(Collectors.toList());
@@ -65,7 +69,8 @@ public class $ {
      * @param s the expression string
      * @return expression list
      */
-    public static List<String> splitExpr(String s) {
+    public static List<String> splitExpr(String s)
+    {
         if (isBlank(s)) {
             return new ArrayList<>();
         }
@@ -79,7 +84,8 @@ public class $ {
      * @param <T> the element type
      * @return new list
      */
-    public static <T> List<T> addToList(List<T> list, T t) {
+    public static <T> List<T> addToList(List<T> list, T t)
+    {
         List<T> result = new ArrayList<>(list);
         result.add(t);
         return result;
@@ -92,10 +98,21 @@ public class $ {
      * @param <T> the generic type
      * @return the new list without the given element
      */
-    public static <T> List<T> listSubEle(List<T> list, T e) {
+    public static <T> List<T> listSubEle(List<T> list, T e)
+    {
         return list.stream()
                 .filter(c -> !c.equals(e))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * judge if the object is Number type
+     * @param o the object
+     * @return if the object is Number type
+     */
+    public static boolean isNumber(Object o)
+    {
+        return o instanceof Number;
     }
 
 }

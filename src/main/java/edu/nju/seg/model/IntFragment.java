@@ -30,7 +30,8 @@ public class IntFragment extends Fragment {
                        int max,
                        String instruction,
                        String name,
-                       String raw) {
+                       String raw)
+    {
         super(children, new ArrayList<>(), raw);
         this.priority = priority;
         this.min = min;
@@ -40,7 +41,8 @@ public class IntFragment extends Fragment {
         init();
     }
 
-    private void init() {
+    private void init()
+    {
         if (instruction != null) {
             String[] split = instruction.split("=");
             maskVar = split[0].trim();

@@ -1,9 +1,11 @@
 package edu.nju.seg.solver;
 
 import com.microsoft.z3.*;
+import edu.nju.seg.exception.Z3Exception;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.ExprParser;
 import edu.nju.seg.util.$;
+import edu.nju.seg.util.Pair;
 import edu.nju.seg.util.Z3Util;
 
 import java.util.*;
@@ -45,7 +47,8 @@ public class SequenceEncoder {
 
     public SequenceEncoder(SequenceDiagram diagram,
                            SolverManager manager,
-                           int bound) {
+                           int bound)
+    {
         this.diagram = diagram;
         this.manager = manager;
         this.ctx = manager.getContext();
@@ -54,7 +57,8 @@ public class SequenceEncoder {
         this.p = new ExprParser(ctx);
     }
 
-    public void encode() {
+    public void encode() throws Z3Exception
+    {
         this.clean = extractIntFrag(diagram.getContainer());
         calConsAndProp();
         calPriorityMap();
@@ -74,7 +78,8 @@ public class SequenceEncoder {
      * extract interrupt fragment from the original diagram
      * @param container the container fragment
      */
-    private Fragment extractIntFrag(Fragment container) {
+    private Fragment extractIntFrag(Fragment container)
+    {
         if (container instanceof IntFragment) {
             flow.add((IntFragment) container);
             return null;
@@ -109,7 +114,8 @@ public class SequenceEncoder {
      * @param origin the original list
      * @return the list without int fragments
      */
-    private List<SDComponent> filterChildren(List<SDComponent> origin) {
+    private List<SDComponent> filterChildren(List<SDComponent> origin)
+    {
         List<SDComponent> children = new ArrayList<>();
         for (SDComponent child: origin) {
             if (child instanceof Message) {
@@ -127,7 +133,8 @@ public class SequenceEncoder {
     /**
      * construct constraint map
      */
-    private void calConsAndProp() {
+    private void calConsAndProp()
+    {
         if (consMap == null) {
             consMap = new HashMap<>();
         }
@@ -160,7 +167,8 @@ public class SequenceEncoder {
         }
     }
 
-    private void calPriorityMap() {
+    private void calPriorityMap()
+    {
         if (priorityMap == null) {
             priorityMap = new TreeMap<>();
         }
@@ -175,11 +183,13 @@ public class SequenceEncoder {
         }
     }
 
-    private void calCleanEvents() {
+    private void calCleanEvents()
+    {
         this.cleanEvents = getAllEventsInFrag(clean, new ArrayList<>());
     }
 
-    private void calMaskMap() {
+    private void calMaskMap()
+    {
         if (maskMap == null) {
             maskMap = new HashMap<>();
         }
@@ -190,7 +200,8 @@ public class SequenceEncoder {
         }
     }
 
-    private void unfoldIntFrag() {
+    private void unfoldIntFrag()
+    {
         if (unfoldInts == null) {
             unfoldInts = new ArrayList<>();
         }
@@ -201,7 +212,8 @@ public class SequenceEncoder {
         }
     }
 
-    private List<Pair<Event, Event>> getIntFragHeadTail(IntFragment f) {
+    private List<Pair<Event, Event>> getIntFragHeadTail(IntFragment f)
+    {
         List<Pair<Event, Event>> result = new ArrayList<>();
         for (int i = 0; i < f.getMax(); i++) {
             List<Integer> loopQueue = new ArrayList<>();
@@ -212,7 +224,8 @@ public class SequenceEncoder {
         return result;
     }
 
-    private Set<Event> getAllEventsInFrag(Fragment f, List<Integer> loopQueue) {
+    private Set<Event> getAllEventsInFrag(Fragment f, List<Integer> loopQueue)
+    {
         Set<Event> result = new HashSet<>();
         result.add(copyEvent(f.getVirtualHead(), loopQueue));
         result.add(copyEvent(f.getVirtualTail(), loopQueue));
@@ -243,7 +256,8 @@ public class SequenceEncoder {
         return result;
     }
 
-    private Set<IntFragment> getLowerIntFrag(IntFragment inf) {
+    private Set<IntFragment> getLowerIntFrag(IntFragment inf)
+    {
         Set<IntFragment> result = new HashSet<>();
         for (List<IntFragment> list: priorityMap.headMap(inf.getPriority()).values()) {
             result.addAll(list);
@@ -256,7 +270,8 @@ public class SequenceEncoder {
         return result;
     }
 
-    private Set<Event> getLowerIntEvents(IntFragment inf) {
+    private Set<Event> getLowerIntEvents(IntFragment inf)
+    {
         Set<Event> result = new HashSet<>();
         Set<IntFragment> frags = getLowerIntFrag(inf);
         for (IntFragment frag: frags) {
@@ -275,7 +290,8 @@ public class SequenceEncoder {
      */
     private Map<Instance, List<Event>> consLifeSpanMapWithLoop(List<Instance> covered,
                                                                List<SDComponent> children,
-                                                               List<Integer> loopQueue) {
+                                                               List<Integer> loopQueue)
+    {
         Map<Instance, List<Event>> result = new HashMap<>();
         for (Instance i: covered) {
             result.put(i, new ArrayList<>());
@@ -300,7 +316,8 @@ public class SequenceEncoder {
     }
 
     private Map<Instance, List<Event>> consLifeSpanMap(List<Instance> covered,
-                                                       List<SDComponent> children) {
+                                                       List<SDComponent> children)
+    {
         Map<Instance, List<Event>> result = new HashMap<>();
         for (Instance i: covered) {
             result.put(i, new ArrayList<>());
@@ -324,7 +341,8 @@ public class SequenceEncoder {
         return result;
     }
 
-    private Map<Instance, List<Event>> sumUpLifeSpanMap(List<Map<Instance, List<Event>>> list) {
+    private Map<Instance, List<Event>> sumUpLifeSpanMap(List<Map<Instance, List<Event>>> list)
+    {
         Map<Instance, List<Event>> result = new HashMap<>();
         for (Map<Instance, List<Event>> map: list) {
             for (Map.Entry<Instance, List<Event>> entry: map.entrySet()) {
@@ -342,7 +360,8 @@ public class SequenceEncoder {
     private Map<Instance, List<Event>> consLoopBlockMap(List<Instance> covered,
                                                         List<SDComponent> children,
                                                         List<Integer> loopQueue,
-                                                        int loop) {
+                                                        int loop)
+    {
         List<Map<Instance, List<Event>>> list = new ArrayList<>();
         for (int i = 0; i < loop; i++) {
             list.add(consLifeSpanMapWithLoop(covered, children, $.addToList(loopQueue, i)));
@@ -354,7 +373,8 @@ public class SequenceEncoder {
      * construct the order relation according to the life span
      * @return the set of order relationship
      */
-    private Set<Pair<Event, Event>> consRelation(Map<Instance, List<Event>> map) {
+    private Set<Pair<Event, Event>> consRelation(Map<Instance, List<Event>> map)
+    {
         Set<Pair<Event, Event>> result = new HashSet<>();
         for (List<Event> order: map.values()) {
             for (int i = 0; i < order.size() - 1; i++) {
@@ -364,7 +384,8 @@ public class SequenceEncoder {
         return result;
     }
 
-    private Set<Event> getHeadsOf(Map<Instance, List<Event>> map) {
+    private Set<Event> getHeadsOf(Map<Instance, List<Event>> map)
+    {
         Set<Event> heads = new HashSet<>();
         for (List<Event> order: map.values()) {
             heads.add(order.get(0));
@@ -372,7 +393,8 @@ public class SequenceEncoder {
         return heads;
     }
 
-    private Set<Event> getTailsOf(Map<Instance, List<Event>> map) {
+    private Set<Event> getTailsOf(Map<Instance, List<Event>> map)
+    {
         Set<Event> tails = new HashSet<>();
         for (List<Event> order: map.values()) {
             tails.add(order.get(order.size() - 1));
@@ -381,7 +403,8 @@ public class SequenceEncoder {
     }
 
     private Set<Pair<String, String>> getCPCandidate(List<SDComponent> list,
-                                                     List<Instance> covered) {
+                                                     List<Instance> covered)
+    {
         Set<Pair<String, String>> result = new HashSet<>();
         for (SDComponent c: list) {
             if (c instanceof Message) {
@@ -402,7 +425,8 @@ public class SequenceEncoder {
         return result;
     }
 
-    private BoolExpr encodeRelation(Set<Pair<Event, Event>> set) {
+    private BoolExpr encodeRelation(Set<Pair<Event, Event>> set)
+    {
         BoolExpr[] subs = new BoolExpr[set.size()];
         int i = 0;
         for (Pair<Event, Event> p: set) {
@@ -414,7 +438,8 @@ public class SequenceEncoder {
 
     private BoolExpr encodeWholeRelation(Event virtualHead,
                                          Event virtualTail,
-                                         Map<Instance, List<Event>> orders) {
+                                         Map<Instance, List<Event>> orders)
+    {
         Set<Pair<Event, Event>> relation = consRelation(orders);
         BoolExpr relationExpr = encodeRelation(relation);
         Set<Event> heads = getHeadsOf(orders);
@@ -432,7 +457,9 @@ public class SequenceEncoder {
         return ctx.mkAnd(relationExpr, ctx.mkAnd(ht));
     }
 
-    private BoolExpr encodeCleanFrag(Fragment f, List<Integer> loopQueue) {
+    private BoolExpr encodeCleanFrag(Fragment f,
+                                     List<Integer> loopQueue) throws Z3Exception
+    {
         if (f instanceof LoopFragment) {
             LoopFragment lf = (LoopFragment) f;
             return encodeLoopFragment(lf, loopQueue);
@@ -447,7 +474,8 @@ public class SequenceEncoder {
         }
     }
 
-    private Optional<BoolExpr> encodeIntFrag() {
+    private Optional<BoolExpr> encodeIntFrag() throws Z3Exception
+    {
         if ($.isBlankList(flow)) {
             return Optional.empty();
         }
@@ -458,7 +486,8 @@ public class SequenceEncoder {
         return Optional.of(ctx.mkAnd(subs));
     }
 
-    private BoolExpr encodeSingleIntFrag(IntFragment f) {
+    private BoolExpr encodeSingleIntFrag(IntFragment f) throws Z3Exception
+    {
         BoolExpr[] maxExpr = new BoolExpr[f.getMax()];
         for (int i = 0; i < f.getMax(); i++) {
             List<Integer> loopQueue = new ArrayList<>();
@@ -476,7 +505,8 @@ public class SequenceEncoder {
         return ctx.mkOr(timesExpr);
     }
 
-    private BoolExpr encodeUninterrupted(Event head, Event tail, IntFragment inf) {
+    private BoolExpr encodeUninterrupted(Event head, Event tail, IntFragment inf)
+    {
         Set<Event> events = getLowerIntEvents(inf);
         events.addAll(cleanEvents);
         BoolExpr[] subs = new BoolExpr[events.size()];
@@ -489,7 +519,8 @@ public class SequenceEncoder {
         return ctx.mkAnd(subs);
     }
 
-    private BoolExpr scanMask(List<SDComponent> children, List<Integer> loopQueue) {
+    private BoolExpr scanMask(List<SDComponent> children, List<Integer> loopQueue)
+    {
         Map<String, List<Pair<Event, Event>>> map = new HashMap<>();
         for (SDComponent c: children) {
             if (c instanceof Message) {
@@ -515,7 +546,8 @@ public class SequenceEncoder {
     }
 
     private void appendInstruction(Map<String, List<Pair<Event, Event>>> map,
-                                   Event e) {
+                                   Event e)
+    {
         if (e.getInstruction() != null) {
             Pair<String, Integer> ins = e.parseInstruction();
             if (ins.getRight() == 0) {
@@ -532,7 +564,8 @@ public class SequenceEncoder {
         }
     }
 
-    private void encodeProperties(Fragment f, List<Integer> loopQueue) {
+    private void encodeProperties(Fragment f, List<Integer> loopQueue) throws Z3Exception
+    {
         Set<Pair<String, String>> candidates = new HashSet<>();
         if (f instanceof AltFragment) {
             AltFragment af = (AltFragment) f;
@@ -551,7 +584,8 @@ public class SequenceEncoder {
 
     private BoolExpr encodeConstraints(List<SDComponent> children,
                                        List<Instance> covered,
-                                       List<Integer> loopQueue) {
+                                       List<Integer> loopQueue) throws Z3Exception
+    {
         Set<Pair<String, String>> candidates = new HashSet<>(getCPCandidate(children, covered));
         return encodeCP(consMap, actualConsMap, candidates, loopQueue);
     }
@@ -559,7 +593,8 @@ public class SequenceEncoder {
     private BoolExpr encodeCP(Map<Pair<String, String>, String> map,
                               Map<Pair<String, String>, String> actualMap,
                               Set<Pair<String, String>> candidates,
-                              List<Integer> loopQueue) {
+                              List<Integer> loopQueue) throws Z3Exception
+    {
         String prefix = loopPrefix(loopQueue);
         List<BoolExpr> exprs = new ArrayList<>();
         for (Pair<String, String> can: candidates) {
@@ -616,7 +651,8 @@ public class SequenceEncoder {
 
     private BoolExpr yieldIntIdentity(Set<Pair<IntFragment, Integer>> per,
                                       Pair<String, String> interval,
-                                      List<Integer> loopQueue) {
+                                      List<Integer> loopQueue)
+    {
         List<BoolExpr> exprs = new ArrayList<>();
         String flag = getCPFlag(interval, loopQueue);
         SeqExpr flagExpr = ctx.mkString(flag);
@@ -627,7 +663,8 @@ public class SequenceEncoder {
         return Z3Util.mkAndNotEmpty(exprs, ctx);
     }
 
-    private BoolExpr encodeContainer(Fragment f, List<Integer> loopQueue) {
+    private BoolExpr encodeContainer(Fragment f, List<Integer> loopQueue) throws Z3Exception
+    {
         encodeProperties(f, loopQueue);
         Map<Instance, List<Event>> orders = consLifeSpanMapWithLoop(f.getCovered(),
                 f.getChildren(), loopQueue);
@@ -640,7 +677,8 @@ public class SequenceEncoder {
                 encodeChildren(f.getChildren(), loopQueue), constraints, maskExpr);
     }
 
-    private BoolExpr encodeOptFragment(OptFragment of, List<Integer> loopQueue) {
+    private BoolExpr encodeOptFragment(OptFragment of, List<Integer> loopQueue) throws Z3Exception
+    {
         encodeProperties(of, loopQueue);
         Map<Instance, List<Event>> orders = consLifeSpanMapWithLoop(of.getCovered(),
                 of.getChildren(), loopQueue);
@@ -652,7 +690,8 @@ public class SequenceEncoder {
                 encodeChildren(of.getChildren(), loopQueue), constraints, maskExpr);
     }
 
-    private BoolExpr encodeAltFragment(AltFragment af, List<Integer> loopQueue) {
+    private BoolExpr encodeAltFragment(AltFragment af, List<Integer> loopQueue) throws Z3Exception
+    {
         encodeProperties(af, loopQueue);
         BoolExpr[] altExpr = new BoolExpr[2];
         Map<Instance, List<Event>> orders = consLifeSpanMapWithLoop(af.getCovered(),
@@ -674,7 +713,9 @@ public class SequenceEncoder {
         return ctx.mkOr(altExpr);
     }
 
-    private BoolExpr encodeLoopFragment(LoopFragment lf, List<Integer> loopQueue) {
+    private BoolExpr encodeLoopFragment(LoopFragment lf,
+                                        List<Integer> loopQueue) throws Z3Exception
+    {
         BoolExpr[] maxExpr = new BoolExpr[lf.getMax()];
         for (int i = 0; i < lf.getMax(); i++) {
             List<Integer> nextLoopQueue = $.addToList(loopQueue, i);
@@ -697,7 +738,9 @@ public class SequenceEncoder {
         return ctx.mkOr(loopExpr);
     }
 
-    private BoolExpr encodeChildren(List<SDComponent> children, List<Integer> loopQueue) {
+    private BoolExpr encodeChildren(List<SDComponent> children,
+                                    List<Integer> loopQueue) throws Z3Exception
+    {
         BoolExpr[] subs = new BoolExpr[children.size()];
         for (int i = 0; i < children.size(); i++) {
             SDComponent child = children.get(i);
@@ -715,7 +758,9 @@ public class SequenceEncoder {
      * @param m message
      * @return bool expression
      */
-    private BoolExpr encodeLoopMessage(Message m, List<Integer> loopQueue) {
+    private BoolExpr encodeLoopMessage(Message m,
+                                       List<Integer> loopQueue)
+    {
         return encodeTwoEvents(copyEvent(m.getFrom(), loopQueue), copyEvent(m.getTo(), loopQueue));
     }
 
@@ -725,7 +770,9 @@ public class SequenceEncoder {
      * @param loopQueue the loop queue
      * @return the copy event
      */
-    private Event copyEvent(Event e, List<Integer> loopQueue) {
+    private Event copyEvent(Event e,
+                            List<Integer> loopQueue)
+    {
         Event result = new Event();
         result.setName(loopPrefix(loopQueue) + e.getName());
         result.setInstruction(e.getInstruction());
@@ -738,7 +785,8 @@ public class SequenceEncoder {
      * @param loopQueue the loop queue
      * @return the loop prefix
      */
-    private String loopPrefix(List<Integer> loopQueue) {
+    private String loopPrefix(List<Integer> loopQueue)
+    {
         if ($.isBlankList(loopQueue)) {
             return "";
         }
@@ -756,14 +804,16 @@ public class SequenceEncoder {
      * @param succ the succinct event
      * @return the bool expression
      */
-    private BoolExpr encodeTwoEvents(Event pre, Event succ) {
+    private BoolExpr encodeTwoEvents(Event pre, Event succ)
+    {
         RealSort rs = ctx.mkRealSort();
         RealExpr start = (RealExpr) ctx.mkConst(pre.getName(), rs);
         RealExpr end = (RealExpr) ctx.mkConst(succ.getName(), rs);
         return ctx.mkGt(end, start);
     }
 
-    private BoolExpr encodeGeZero(Event head) {
+    private BoolExpr encodeGeZero(Event head)
+    {
         RealExpr start = (RealExpr) ctx.mkConst(head.getName(), ctx.mkRealSort());
         return ctx.mkGe(start, ctx.mkReal(0));
     }
@@ -773,7 +823,8 @@ public class SequenceEncoder {
      * @param expr the actual time expression
      * @return the simple time expression
      */
-    private String getSimpleExpr(String expr) {
+    private String getSimpleExpr(String expr)
+    {
         return expr.replaceAll("\\^", "")
                 .replaceAll("\\(", "")
                 .replaceAll("\\)", "");
@@ -782,7 +833,8 @@ public class SequenceEncoder {
     private void permutation(List<Pair<IntFragment, Integer>> list,
                              int n,
                              Set<Pair<IntFragment, Integer>> current,
-                             List<Set<Pair<IntFragment, Integer>>> result) {
+                             List<Set<Pair<IntFragment, Integer>>> result)
+    {
         if (n == 0) {
             result.add(current);
             return;
@@ -794,28 +846,33 @@ public class SequenceEncoder {
         }
     }
 
-    private String getIntFragVar(Pair<IntFragment, Integer> p) {
+    private String getIntFragVar(Pair<IntFragment, Integer> p)
+    {
         return p.getLeft().getName() + "-" + p.getRight();
     }
 
-    private String getCPFlag(Pair<String, String> p, List<Integer> loopQueue) {
+    private String getCPFlag(Pair<String, String> p, List<Integer> loopQueue)
+    {
         String prefix = loopPrefix(loopQueue);
         return prefix + p.getLeft() + "-" + prefix + p.getRight();
     }
 
-    private ArithExpr getIntFragTime(Pair<IntFragment, Integer> p) {
+    private ArithExpr getIntFragTime(Pair<IntFragment, Integer> p)
+    {
         String prefix = "loop_" + p.getRight() + "_";
         return Z3Util.mkSub(prefix + p.getLeft().getVirtualTail().getName(),
                 prefix + p.getLeft().getVirtualHead().getName(), ctx);
     }
 
-    private RealExpr getIntFragHead(Pair<IntFragment, Integer> p) {
+    private RealExpr getIntFragHead(Pair<IntFragment, Integer> p)
+    {
         String prefix = "loop_" + p.getRight() + "_";
         return (RealExpr) ctx.mkConst(ctx.mkSymbol(prefix + p.getLeft().getVirtualHead().getName()),
                 ctx.mkRealSort());
     }
 
-    private RealExpr getIntFragTail(Pair<IntFragment, Integer> p) {
+    private RealExpr getIntFragTail(Pair<IntFragment, Integer> p)
+    {
         String prefix = "loop_" + p.getRight() + "_";
         return (RealExpr) ctx.mkConst(ctx.mkSymbol(prefix + p.getLeft().getVirtualTail().getName()),
                 ctx.mkRealSort());

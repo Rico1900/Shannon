@@ -1,15 +1,17 @@
-package edu.nju.seg.model;
+package edu.nju.seg.exception;
 
 public class ParseException extends RuntimeException {
 
     private String message;
 
-    public ParseException(String message) {
+    public ParseException(String message)
+    {
         this.message = message;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return message;
     }
 

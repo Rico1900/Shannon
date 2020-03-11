@@ -17,11 +17,13 @@ public class Message extends SDComponent {
 
     private Event to;
 
-    public Event getHead() {
+    public Event getHead()
+    {
         return from;
     }
 
-    public Event getTail() {
+    public Event getTail()
+    {
         return to;
     }
 

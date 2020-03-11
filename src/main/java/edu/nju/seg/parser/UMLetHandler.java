@@ -50,7 +50,8 @@ public class UMLetHandler extends DefaultHandler {
 
     private String additional = "";
 
-    public UMLetHandler() {
+    public UMLetHandler()
+    {
         this.result = new ArrayList<>();
     }
 
@@ -58,7 +59,8 @@ public class UMLetHandler extends DefaultHandler {
     public void startElement(String uri,
                              String localName,
                              String qName,
-                             Attributes attributes) {
+                             Attributes attributes)
+    {
         if (qName.equalsIgnoreCase("diagram")) {
             betweenDiagram = true;
         }
@@ -89,7 +91,8 @@ public class UMLetHandler extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int len) {
+    public void characters(char[] ch, int start, int len)
+    {
         if (betweenDiagram && betweenElement && betweenId) {
             elementId += new String(ch, start, len);
         }
@@ -114,7 +117,8 @@ public class UMLetHandler extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) {
+    public void endElement(String uri, String localName, String qName)
+    {
         if (qName.equalsIgnoreCase("diagram")) {
             betweenDiagram = false;
         }
@@ -169,7 +173,8 @@ public class UMLetHandler extends DefaultHandler {
         }
     }
 
-    private String[] parseAdditional() {
+    private String[] parseAdditional()
+    {
         return additional.split(";");
     }
 

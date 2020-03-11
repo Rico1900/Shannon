@@ -1,6 +1,6 @@
 package edu.nju.seg.data;
 
-import edu.nju.seg.model.ExperimentConfig;
+import edu.nju.seg.config.ExperimentConfig;
 import edu.nju.seg.util.$;
 import edu.nju.seg.util.JsonUtil;
 
@@ -11,7 +11,8 @@ public class ConfigReader {
 
     private String filePath;
 
-    public ConfigReader(String filePath) {
+    public ConfigReader(String filePath)
+    {
         this.filePath = filePath;
     }
 
@@ -19,7 +20,8 @@ public class ConfigReader {
      * parser experiment config from the file
      * @return maybe the config class
      */
-    public Optional<ExperimentConfig> getConfig() {
+    public Optional<ExperimentConfig> getConfig()
+    {
         File f = new File(filePath);
         return $.readContent(f)
                 .map(str -> JsonUtil.fromJson(str, ExperimentConfig.class));

@@ -23,14 +23,16 @@ public class AltFragment extends Fragment {
                        String altCondition,
                        List<SDComponent> children,
                        List<SDComponent> elseChildren,
-                       String raw) {
+                       String raw)
+    {
         super(children, new ArrayList<>(), raw);
         this.condition = condition;
         this.altCondition = altCondition;
         this.elseChildren = elseChildren;
     }
 
-    public void addToElse(SDComponent c) {
+    public void addToElse(SDComponent c)
+    {
         elseChildren.add(c);
     }
 

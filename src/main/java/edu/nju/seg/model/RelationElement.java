@@ -1,5 +1,6 @@
 package edu.nju.seg.model;
 
+import edu.nju.seg.util.Pair;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,8 @@ public class RelationElement extends Element {
 
     private int targetY;
 
-    public Pair<Integer, Integer> getSource() {
+    public Pair<Integer, Integer> getSource()
+    {
         Pair<Integer, Integer> pair = new Pair<>();
         if(sourceX > targetX) {
             pair.setLeft(x + sourceX + targetX);
@@ -37,7 +39,8 @@ public class RelationElement extends Element {
         return pair;
     }
 
-    public Pair<Integer, Integer> getTarget() {
+    public Pair<Integer, Integer> getTarget()
+    {
         Pair<Integer, Integer> pair = new Pair<>();
         if (targetX > sourceX) {
             pair.setLeft(x + sourceX + targetX);

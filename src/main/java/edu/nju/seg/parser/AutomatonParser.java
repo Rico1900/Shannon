@@ -1,7 +1,9 @@
 package edu.nju.seg.parser;
 
+import edu.nju.seg.exception.ParseException;
 import edu.nju.seg.model.*;
 import edu.nju.seg.util.$;
+import edu.nju.seg.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +30,8 @@ public class AutomatonParser implements Parser {
     private List<Pair<List<Integer>, State>> locationList;
 
     public AutomatonParser(String fileName,
-                           List<Element> elements) {
+                           List<Element> elements)
+    {
         Matcher m = FILENAME_PATTERN.matcher(fileName);
         if (m.matches()) {
             this.name = m.group(1);
@@ -40,7 +43,8 @@ public class AutomatonParser implements Parser {
     }
 
     @Override
-    public Diagram parse() {
+    public Diagram parse()
+    {
         AutomatonDiagram ad = new AutomatonDiagram();
         ad.setTitle(name);
         parseAutomaton(ad);
@@ -52,7 +56,8 @@ public class AutomatonParser implements Parser {
      * parse automaton
      * @param ad the structure automaton
      */
-    private void parseAutomaton(AutomatonDiagram ad) {
+    private void parseAutomaton(AutomatonDiagram ad)
+    {
         List<Element> relationEles = partitionRelation();
         List<Element> stateEles = partitionState();
         List<Element> specialEles = partitionSpecial();
@@ -86,7 +91,8 @@ public class AutomatonParser implements Parser {
      * @param e element
      * @return state
      */
-    private State consSpecial(Element e) {
+    private State consSpecial(Element e)
+    {
         State s = new State();
         Matcher m = SPECIAL_STATE_PATTERN.matcher(e.getContent());
         if (m.matches()) {
@@ -113,7 +119,8 @@ public class AutomatonParser implements Parser {
      * @param e element
      * @return relation
      */
-    private Relation consRelation(RelationElement e) {
+    private Relation consRelation(RelationElement e)
+    {
         Relation r = new Relation();
         Matcher m = RELATION_PATTERN.matcher(e.getContent());
         if (m.matches()) {
@@ -158,7 +165,8 @@ public class AutomatonParser implements Parser {
      * @param e element
      * @return state
      */
-    private State consState(Element e) {
+    private State consState(Element e)
+    {
         State s = new State();
         if (e.getType() == UMLType.UMLState) {
             s.setType(StateType.NORMAL);
@@ -183,7 +191,8 @@ public class AutomatonParser implements Parser {
      * @param coord coordinate
      * @return maybe state
      */
-    private Optional<State> searchState(Pair<Integer, Integer> coord) {
+    private Optional<State> searchState(Pair<Integer, Integer> coord)
+    {
         for (Pair<List<Integer>, State> p: locationList) {
             List<Integer> loc = p.getLeft();
             if (coord.getLeft() >= loc.get(0)
@@ -201,7 +210,8 @@ public class AutomatonParser implements Parser {
      * @param e XML element
      * @param s state
      */
-    private void addToLocList(Element e, State s) {
+    private void addToLocList(Element e, State s)
+    {
         List<Integer> loc = new ArrayList<>();
         loc.add(e.getX());
         loc.add(e.getX() + e.getW());
@@ -217,7 +227,8 @@ public class AutomatonParser implements Parser {
      * pick up relation elements
      * @return relation elements
      */
-    private List<Element> partitionRelation() {
+    private List<Element> partitionRelation()
+    {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.Relation)
                 .collect(Collectors.toList());
@@ -227,7 +238,8 @@ public class AutomatonParser implements Parser {
      * pick up state elements
      * @return state elements
      */
-    private List<Element> partitionState() {
+    private List<Element> partitionState()
+    {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.UMLState)
                 .collect(Collectors.toList());
@@ -237,7 +249,8 @@ public class AutomatonParser implements Parser {
      * pick up special elements
      * @return special elements
      */
-    private List<Element> partitionSpecial() {
+    private List<Element> partitionSpecial()
+    {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.UMLSpecialState)
                 .collect(Collectors.toList());
@@ -248,7 +261,8 @@ public class AutomatonParser implements Parser {
      * @param ad automaton
      * @return merged constraints
      */
-    private List<String> mergeConstraints(AutomatonDiagram ad) {
+    private List<String> mergeConstraints(AutomatonDiagram ad)
+    {
         List<String> constraints = new ArrayList<>();
         for (State s: ad.getAllStates()) {
             constraints.addAll(s.getConstraints());

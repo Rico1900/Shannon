@@ -1,5 +1,6 @@
 package edu.nju.seg.model;
 
+import edu.nju.seg.exception.EncodeException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,7 +30,8 @@ public class Fragment extends SDComponent {
 
     protected String raw;
 
-    public Fragment(List<SDComponent> children, List<Instance> covered, String raw) {
+    public Fragment(List<SDComponent> children, List<Instance> covered, String raw)
+    {
         this.children = children;
         this.covered = covered;
         this.raw = raw;
@@ -39,15 +41,18 @@ public class Fragment extends SDComponent {
                 null, null, true);
     }
 
-    private String yieldMark() {
+    private String yieldMark()
+    {
         return "<" + this.raw + ">";
     }
 
-    public void addChild(SDComponent component) {
+    public void addChild(SDComponent component)
+    {
         children.add(component);
     }
 
-    public void addInstance(Instance i) {
+    public void addInstance(Instance i)
+    {
         covered.add(i);
     }
 
@@ -56,7 +61,8 @@ public class Fragment extends SDComponent {
      * get head message of the fragment
      * @return the head message
      */
-    public Message getHead() {
+    public Message getHead()
+    {
         if (children == null) {
             throw new EncodeException("empty fragment");
         } else {
@@ -73,7 +79,8 @@ public class Fragment extends SDComponent {
      * get tail message of the fragment
      * @return the tail message
      */
-    public Message getTail() {
+    public Message getTail()
+    {
         if (children == null) {
             throw new EncodeException("empty fragment");
         } else {

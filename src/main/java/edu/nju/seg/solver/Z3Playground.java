@@ -4,7 +4,8 @@ import com.microsoft.z3.*;
 
 public class Z3Playground {
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         Z3Playground p = new Z3Playground();
         com.microsoft.z3.Global.ToggleWarningMessages(true);
         Context ctx = new Context();
@@ -15,7 +16,8 @@ public class Z3Playground {
         ctx.close();
     }
 
-    private void testBool(Context ctx) {
+    private void testBool(Context ctx)
+    {
         Solver s = ctx.mkSolver();
         BoolExpr tie = ctx.mkBoolConst("Tie");
         BoolExpr shirt = ctx.mkBoolConst("Shirt");
@@ -26,7 +28,8 @@ public class Z3Playground {
         System.out.println(s.getModel());
     }
 
-    private void testReal(Context ctx) {
+    private void testReal(Context ctx)
+    {
         Solver s = ctx.mkSolver();
         RealSort rs = ctx.mkRealSort();
         RealExpr e1 = (RealExpr) ctx.mkConst(ctx.mkSymbol("e1"), rs);
@@ -40,7 +43,8 @@ public class Z3Playground {
         System.out.println(s.getModel());
     }
 
-    private void testComplex(Context ctx) {
+    private void testComplex(Context ctx)
+    {
         Solver s = ctx.mkSolver();
         RealSort rs = ctx.mkRealSort();
         RealExpr e1 = (RealExpr) ctx.mkConst(ctx.mkSymbol("e1"), rs);
@@ -53,7 +57,8 @@ public class Z3Playground {
         System.out.println(s.getModel());
     }
 
-    private void testString(Context ctx) {
+    private void testString(Context ctx)
+    {
         Solver s = ctx.mkSolver();
         Expr s1 = ctx.mkConst(ctx.mkSymbol("a"), ctx.mkStringSort());
         Expr s2 = ctx.mkConst(ctx.mkSymbol("a"), ctx.mkStringSort());

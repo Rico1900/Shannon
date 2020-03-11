@@ -1,13 +1,14 @@
 package edu.nju.seg.parser;
 
+import edu.nju.seg.exception.ParseException;
 import edu.nju.seg.model.*;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static edu.nju.seg.util.Constants.CONSTRAINTS;
-import static edu.nju.seg.util.Constants.PROPERTIES;
+import static edu.nju.seg.config.Constants.CONSTRAINTS;
+import static edu.nju.seg.config.Constants.PROPERTIES;
 
 public class SequenceParser implements Parser {
 
@@ -45,13 +46,15 @@ public class SequenceParser implements Parser {
 
     private Map<String, String> instanceMap;
 
-    public SequenceParser(List<Element> notes, Element diagram) {
+    public SequenceParser(List<Element> notes, Element diagram)
+    {
         init(notes);
         this.diagram = diagram;
         this.instanceMap = new HashMap<>();
     }
 
-    private void init(List<Element> notes) {
+    private void init(List<Element> notes)
+    {
         for (Element e: notes) {
             String content = e.getContent();
             String[] splits = content.split("\n");
@@ -65,7 +68,8 @@ public class SequenceParser implements Parser {
     }
 
     @Override
-    public Diagram parse() {
+    public Diagram parse()
+    {
         SequenceDiagram sd = new SequenceDiagram();
         // parse constraints in the constraints element
         sd.setConstraints(constraints);
@@ -102,7 +106,8 @@ public class SequenceParser implements Parser {
      * @param instances the instances in the diagram
      * @return structure fragment
      */
-    private Fragment parseFragment(List<String> text, List<Instance> instances) {
+    private Fragment parseFragment(List<String> text, List<Instance> instances)
+    {
         Fragment fragment = new Fragment(new ArrayList<>(), new ArrayList<>(), "container");
         fragment.setCovered(instances);
         parseHelper(fragment, text, false);
@@ -115,7 +120,8 @@ public class SequenceParser implements Parser {
      * @param text text
      * @param elseMode alt fragment else mode
      */
-    private void parseHelper(Fragment parent, List<String> text, boolean elseMode) {
+    private void parseHelper(Fragment parent, List<String> text, boolean elseMode)
+    {
         if (text.size() == 0) {
             return;
         }
@@ -154,7 +160,8 @@ public class SequenceParser implements Parser {
      * @param info the fragment information
      * @return fragment
      */
-    private Fragment consFragment(String info) {
+    private Fragment consFragment(String info)
+    {
         info = info.trim();
         if (info.startsWith("int")) {
             return consIntFragment(info);
@@ -174,7 +181,8 @@ public class SequenceParser implements Parser {
      * @param info interrupt fragment information
      * @return interrupt fragment
      */
-    private IntFragment consIntFragment(String info) {
+    private IntFragment consIntFragment(String info)
+    {
         int bracketCount = 0;
         int parenthesisCount = 0;
         for (char c: info.toCharArray()) {
@@ -235,7 +243,8 @@ public class SequenceParser implements Parser {
      * @param info loop fragment information
      * @return loop fragment
      */
-    private LoopFragment consLoopFragment(String info) {
+    private LoopFragment consLoopFragment(String info)
+    {
         Matcher m = LOOP_PATTERN.matcher(info);
         if (m.matches()) {
             return new LoopFragment(Integer.parseInt(m.group(1)),
@@ -252,7 +261,8 @@ public class SequenceParser implements Parser {
      * @param info alt fragment information
      * @return alt fragment
      */
-    private AltFragment consAltFragment(String info) {
+    private AltFragment consAltFragment(String info)
+    {
         Matcher m = ALT_PATTERN.matcher(info);
         if (m.matches()) {
             return new AltFragment(m.group(1),
@@ -270,7 +280,8 @@ public class SequenceParser implements Parser {
      * @param info opt fragment information
      * @return opt fragment
      */
-    private OptFragment consOptFragment(String info) {
+    private OptFragment consOptFragment(String info)
+    {
         Matcher m = OPT_PATTERN.matcher(info);
         if (m.matches()) {
             return new OptFragment(new ArrayList<>(), m.group(1), info);
@@ -283,7 +294,8 @@ public class SequenceParser implements Parser {
      * check if the interrupt fragment is right
      * @param m match status
      */
-    private void checkIntFragMat(Matcher m) {
+    private void checkIntFragMat(Matcher m)
+    {
         if (!m.find()) {
             throw new ParseException("wrong int fragment modeling language");
         }
@@ -296,7 +308,8 @@ public class SequenceParser implements Parser {
      * @param info message information
      * @return the message
      */
-    private Message consMessage(String fromVar, String toVar, String info) {
+    private Message consMessage(String fromVar, String toVar, String info)
+    {
         Message m = new Message();
         Matcher infoMat = MESSAGE_INFO_PATTERN.matcher(info);
         if (infoMat.find()) {
@@ -318,7 +331,8 @@ public class SequenceParser implements Parser {
      * @param eventStr event string
      * @return structure event
      */
-    private Event consEvent(String var, String eventStr) {
+    private Event consEvent(String var, String eventStr)
+    {
         Instance ins = new Instance();
         ins.setName(instanceMap.get(var));
         Event event = new Event();
@@ -342,7 +356,8 @@ public class SequenceParser implements Parser {
      * @param text the text list
      * @return the text list without blank lines in the front
      */
-    private List<String> trimBlankLine(List<String> text) {
+    private List<String> trimBlankLine(List<String> text)
+    {
         if (text.size() == 0) {
             return text;
         } else {
@@ -359,7 +374,8 @@ public class SequenceParser implements Parser {
      * @param text the text list
      * @return the index of ending symbols or throw exception
      */
-    private int searchEndIndex(List<String> text) {
+    private int searchEndIndex(List<String> text)
+    {
         int fragCount = 0;
         int endCount = 0;
         for (int i = 0; i < text.size(); i++) {
@@ -382,7 +398,8 @@ public class SequenceParser implements Parser {
      * @param text text
      * @return title
      */
-    private String parseTitle(String text) {
+    private String parseTitle(String text)
+    {
         Matcher m = TITLE_PATTERN.matcher(text);
         if (m.find()) {
             return m.group(1);

@@ -1,8 +1,11 @@
 package edu.nju.seg.parser;
 
 import com.microsoft.z3.*;
-import edu.nju.seg.model.EncodeException;
-import edu.nju.seg.model.Pair;
+import edu.nju.seg.exception.EncodeException;
+import edu.nju.seg.exception.Z3Exception;
+import edu.nju.seg.util.Pair;
+import edu.nju.seg.util.$;
+import edu.nju.seg.util.Z3Util;
 import org.scijava.parse.ExpressionParser;
 import org.scijava.parse.Operator;
 import org.scijava.parse.SyntaxTree;
@@ -13,7 +16,8 @@ public class ExprParser {
 
     private Context ctx;
 
-    public ExprParser(Context ctx) {
+    public ExprParser(Context ctx)
+    {
         this.ctx = ctx;
     }
 
@@ -22,7 +26,8 @@ public class ExprParser {
      * @param expr arithmetic expression string
      * @return z3 bool expression
      */
-    public BoolExpr convert(String expr) {
+    public BoolExpr convert(String expr) throws Z3Exception
+    {
         SyntaxTree tree = new ExpressionParser().parseTree(expr);
         int depth = treeDepth(tree);
         if (depth == 2) {
@@ -37,34 +42,30 @@ public class ExprParser {
     }
 
     /**
-     * get variable from expression
-     * @param expr arithmetic expression string
-     * @return variable string
+     * convert string to expression according to the bound,
+     * used by the automation encoder
+     * @param expr the expression
+     * @param bound the bound k
+     * @return the bool expression
+     * @throws Z3Exception
      */
-    public String getVar(String expr) {
-        SyntaxTree tree = new ExpressionParser().parseTree(expr);
-        int depth = treeDepth(tree);
-        if (depth == 2) {
-            return ((Variable) tree.child(0).token()).getToken();
-        } else {
-            throw new EncodeException("can not extract variable from " + expr);
-        }
-    }
-
-    public BoolExpr convertK(String expr, int bound) {
+    public BoolExpr convertK(String expr,
+                             int bound) throws Z3Exception
+    {
         SyntaxTree tree = new ExpressionParser().parseTree(expr);
         int depth = treeDepth(tree);
         if (depth == 2) {
             String boundExpr = ((Variable) tree.child(0).token()).getToken() + "_" + bound +
                     ((Operator) tree.token()).getToken() +
-                    getNum(tree.child(1));
+                    getTokenStr(tree.child(1));
             return convert(boundExpr);
         } else {
             throw new EncodeException("can not extract variable from " + expr);
         }
     }
 
-    public Pair<String, String> getVarFromConstraint(String cons) {
+    public Pair<String, String> getVarFromConstraint(String cons)
+    {
         SyntaxTree tree = new ExpressionParser().parseTree(cons);
         int depth = treeDepth(tree);
         if (depth == 4) {
@@ -72,12 +73,12 @@ public class ExprParser {
             String rightVar;
             SyntaxTree left = tree.child(0);
             SyntaxTree right = tree.child(1);
-            if (isBlankOperator(left.token()) || isNumber(left.token())) {
-                leftVar = getToken(right.child(0).child(0));
-                rightVar = getToken(right.child(0).child(1));
+            if (isBlankOperator(left.token()) || $.isNumber(left.token())) {
+                leftVar = getTokenStr(right.child(0).child(0));
+                rightVar = getTokenStr(right.child(0).child(1));
             } else {
-                leftVar = getToken(left.child(1).child(0));
-                rightVar = getToken(left.child(1).child(1));
+                leftVar = getTokenStr(left.child(1).child(0));
+                rightVar = getTokenStr(left.child(1).child(1));
             }
             return new Pair<>(leftVar, rightVar);
         } else if (depth == 3) {
@@ -85,12 +86,12 @@ public class ExprParser {
             String rightVar;
             SyntaxTree left = tree.child(0);
             SyntaxTree right = tree.child(1);
-            if (isBlankOperator(left.token()) || isNumber(left.token())) {
-                leftVar = getToken(right.child(0));
-                rightVar = getToken(right.child(1));
+            if (isBlankOperator(left.token()) || $.isNumber(left.token())) {
+                leftVar = getTokenStr(right.child(0));
+                rightVar = getTokenStr(right.child(1));
             } else {
-                leftVar = getToken(left.child(0));
-                rightVar = getToken(left.child(1));
+                leftVar = getTokenStr(left.child(0));
+                rightVar = getTokenStr(left.child(1));
             }
             return new Pair<>(leftVar, rightVar);
         } else {
@@ -98,7 +99,8 @@ public class ExprParser {
         }
     }
 
-    public Pair<ArithExpr, ArithExpr> getInterval(String cons) {
+    public Pair<ArithExpr, ArithExpr> getInterval(String cons) throws Z3Exception
+    {
         SyntaxTree tree = new ExpressionParser().parseTree(cons);
         int depth = treeDepth(tree);
         if (depth == 4) {
@@ -106,122 +108,99 @@ public class ExprParser {
             String rightVar;
             SyntaxTree left = tree.child(0);
             SyntaxTree right = tree.child(1);
-            if (isBlankOperator(left.token()) || isNumber(left.token())) {
-                leftVar = getToken(left);
-                rightVar = getToken(right.child(1));
+            if (isBlankOperator(left.token()) || $.isNumber(left.token())) {
+                leftVar = getTokenStr(left);
+                rightVar = getTokenStr(right.child(1));
             } else {
-                leftVar = getToken(left.child(0));
-                rightVar = getToken(right);
+                leftVar = getTokenStr(left.child(0));
+                rightVar = getTokenStr(right);
             }
-            return new Pair<>(mkExprDouble(leftVar), mkExprDouble(rightVar));
+            return new Pair<>(Z3Util.mkRealExpr(leftVar, ctx),
+                    Z3Util.mkRealExpr(rightVar, ctx));
         } else if (depth == 3) {
             String leftVar = null;
             String rightVar = null;
             SyntaxTree left = tree.child(0);
             SyntaxTree right = tree.child(1);
-            if (isBlankOperator(left.token()) || isNumber(left.token())) {
-                leftVar = getToken(left);
+            if (isBlankOperator(left.token()) || $.isNumber(left.token())) {
+                leftVar = getTokenStr(left);
             } else {
-                rightVar = getToken(right);
+                rightVar = getTokenStr(right);
             }
-            return new Pair<>(mkExprDouble(leftVar), mkExprDouble(rightVar));
+            return new Pair<>(Z3Util.mkRealExpr(leftVar, ctx),
+                    Z3Util.mkRealExpr(rightVar, ctx));
         } else {
             throw new EncodeException("wrong constraints: " + cons);
         }
     }
 
-    private BoolExpr handleSimpleExpr(SyntaxTree tree) {
-        String op = getToken(tree);
+    private BoolExpr handleSimpleExpr(SyntaxTree tree) throws Z3Exception
+    {
+        String op = getTokenStr(tree);
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
-        return mkBoolExpr(op, mkExpr(left), mkExpr(right));
+        return Z3Util.mkOperatorExpr(op, mkExpr(left), mkExpr(right), ctx);
     }
 
-    private BoolExpr handleExpr(SyntaxTree tree) {
-        String op = getToken(tree);
+    private BoolExpr handleExpr(SyntaxTree tree) throws Z3Exception
+    {
+        String op = getTokenStr(tree);
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
-        if (getToken(left).equals("-")) {
-            return mkBoolExpr(op, mkSubExpr(left), mkExpr(right));
+        if (getTokenStr(left).equals("-")) {
+            return Z3Util.mkOperatorExpr(op, mkSubExpr(left), mkExpr(right), ctx);
         } else {
-            return mkBoolExpr(op, mkExpr(left), mkSubExpr(right));
+            return Z3Util.mkOperatorExpr(op, mkExpr(left), mkSubExpr(right), ctx);
         }
     }
 
-    private BoolExpr handleComplexExpr(SyntaxTree tree) {
+    private BoolExpr handleComplexExpr(SyntaxTree tree) throws Z3Exception
+    {
         String leftOp;
         String rightOp;
         ArithExpr leftNum;
         ArithExpr rightNum;
         ArithExpr middle;
-        String op = getToken(tree);
+        String op = getTokenStr(tree);
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
-        if (isBlankOperator(left.token()) || isNumber(left.token())) {
+        if (isBlankOperator(left.token()) || $.isNumber(left.token())) {
             leftOp = op;
-            rightOp = getToken(right);
+            rightOp = getTokenStr(right);
             leftNum = mkExpr(left);
             rightNum = mkExpr(right.child(1));
             middle = mkSubExpr(right.child(0));
         } else {
-            leftOp = getToken(left);
+            leftOp = getTokenStr(left);
             rightOp = op;
             leftNum = mkExpr(left.child(0));
             rightNum = mkExpr(right);
             middle = mkSubExpr(left.child(1));
         }
-        return ctx.mkAnd(mkBoolExpr(leftOp, leftNum, middle), mkBoolExpr(rightOp, middle, rightNum));
+        return ctx.mkAnd(Z3Util.mkOperatorExpr(leftOp, leftNum, middle, ctx),
+                Z3Util.mkOperatorExpr(rightOp, middle, rightNum, ctx));
     }
 
-    private ArithExpr mkSubExpr(SyntaxTree tree) {
-        Variable left = (Variable) tree.child(0).token();
-        Variable right = (Variable) tree.child(1).token();
-        RealSort rs = ctx.mkRealSort();
-        RealExpr v1 = (RealExpr) ctx.mkConst(ctx.mkSymbol(left.getToken()), rs);
-        RealExpr v2 = (RealExpr) ctx.mkConst(ctx.mkSymbol(right.getToken()), rs);
-        return ctx.mkSub(v1, v2);
+    private ArithExpr mkSubExpr(SyntaxTree tree)
+    {
+        String left = getTokenStr(tree.child(0));
+        String right = getTokenStr(tree.child(1));
+        return Z3Util.mkSub(left, right, ctx);
     }
 
-    private ArithExpr mkExpr(SyntaxTree tree) {
+    private ArithExpr mkExpr(SyntaxTree tree) throws Z3Exception
+    {
         Object token = tree.token();
         if (token instanceof Variable) {
             String tokenStr = ((Variable) token).getToken();
             RealSort rs = ctx.mkRealSort();
             return (RealExpr) ctx.mkConst(ctx.mkSymbol(tokenStr), rs);
         } else if (token instanceof Number) {
-            return mkExprDouble(token.toString());
+            return Z3Util.mkRealExpr(token.toString(), ctx);
         } else if (token instanceof Operator) {
-            return mkExprDouble(getNum(tree.child(0)));
+            return Z3Util.mkRealExpr(getTokenStr(tree.child(0)), ctx);
         } else {
             throw new EncodeException("wrong syntax tree: " + tree);
-        }
-    }
-
-    private ArithExpr mkExprDouble(String s) {
-        if (s == null) {
-            return null;
-        }
-        return ctx.mkReal(s);
-    }
-
-    private BoolExpr mkBoolExpr(String operator,
-                                ArithExpr left,
-                                ArithExpr right) {
-        switch (operator) {
-            case "<":
-                return ctx.mkLt(left, right);
-            case "<=":
-                return ctx.mkLe(left, right);
-            case ">":
-                return ctx.mkGt(left, right);
-            case ">=":
-                return ctx.mkGe(left, right);
-            case "=":
-                return ctx.mkEq(left, right);
-            case "!=":
-                return ctx.mkNot(ctx.mkEq(left, right));
-            default:
-                throw new EncodeException("wrong expression operator: " + operator);
         }
     }
 
@@ -230,7 +209,8 @@ public class ExprParser {
      * @param tree  the tree
      * @return the depth of the tree
      */
-    private int treeDepth(SyntaxTree tree) {
+    private int treeDepth(SyntaxTree tree)
+    {
         if (tree.count() == 0 || isBlankOperator(tree.token())) {
             return 1;
         }
@@ -247,22 +227,25 @@ public class ExprParser {
      * @param o blank operator candidate
      * @return if it is blank operator
      */
-    private boolean isBlankOperator(Object o) {
+    private boolean isBlankOperator(Object o)
+    {
         if (o instanceof Operator) {
             return ((Operator) o).getToken().equals("");
         }
         return false;
     }
 
-    private boolean isNumber(Object o) {
-        return o instanceof Number;
-    }
-
-    private String getToken(SyntaxTree tree) {
+    /**
+     * get token according to the syntax tree
+     * @param tree the syntax tree
+     * @return string
+     */
+    private String getTokenStr(SyntaxTree tree)
+    {
         Object t = tree.token();
         if (t instanceof Operator) {
             return ((Operator) t).getToken();
-        } else if (t instanceof Variable){
+        } else if (t instanceof Variable) {
             return ((Variable) t).getToken();
         } else if (t instanceof Number) {
             return t.toString();
@@ -270,10 +253,5 @@ public class ExprParser {
             return t.toString();
         }
     }
-
-    private String getNum(SyntaxTree tree) {
-        return tree.token().toString();
-    }
-
 
 }

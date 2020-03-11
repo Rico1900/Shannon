@@ -22,7 +22,8 @@ public class AutomatonDiagram extends Diagram {
 
     private List<Relation> allRelations;
 
-    public void setAllStates(List<State> allStates) {
+    public void setAllStates(List<State> allStates)
+    {
         this.allStates = allStates;
         if (allVar == null) {
             this.allVar = new HashSet<>();

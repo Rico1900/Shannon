@@ -1,8 +1,8 @@
 package edu.nju.seg.parser;
 
 import edu.nju.seg.model.Element;
-import edu.nju.seg.model.Pair;
-import edu.nju.seg.model.ParseException;
+import edu.nju.seg.util.Pair;
+import edu.nju.seg.exception.ParseException;
 import edu.nju.seg.model.UMLType;
 import edu.nju.seg.util.$;
 
@@ -17,7 +17,8 @@ public class ParserDispatcher {
      * @param contents the UMLet model language
      */
     public static Parser dispatch(String fileName,
-                                  List<Element> contents) {
+                                  List<Element> contents)
+    {
         if (isSequenceDiagram(contents)) {
             Pair<Element, List<Element>> p = partition(contents);
             return new SequenceParser(p.getRight(), p.getLeft());
@@ -33,7 +34,8 @@ public class ParserDispatcher {
      * @param contents the element list from the XML file
      * @return if contents belong to a sequence diagram
      */
-    private static boolean isSequenceDiagram(List<Element> contents) {
+    private static boolean isSequenceDiagram(List<Element> contents)
+    {
         if (contents.size() == 3) {
             boolean hasNote = false;
             boolean hasSequence = false;
@@ -51,7 +53,8 @@ public class ParserDispatcher {
         }
     }
 
-    private static Pair<Element, List<Element>> partition(List<Element> contents) {
+    private static Pair<Element, List<Element>> partition(List<Element> contents)
+    {
         Pair<Element, List<Element>> result = new Pair<>();
         for (Element e: contents) {
             if (e.getType() == UMLType.UMLNote) {
@@ -72,7 +75,8 @@ public class ParserDispatcher {
      * @param contents the element list from the XML file
      * @return if the contents belong to a automaton diagram
      */
-    private static boolean isHybridAutomaton(List<Element> contents) {
+    private static boolean isHybridAutomaton(List<Element> contents)
+    {
         if ($.isBlankList(contents)) {
             return false;
         }

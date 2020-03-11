@@ -18,7 +18,8 @@ public class Relation {
     private String assignment;
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return source.getStateName() + " --> " + target.getStateName();
     }
 

@@ -1,4 +1,4 @@
-package edu.nju.seg.model;
+package edu.nju.seg.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -14,7 +14,8 @@ public class JsonUtil {
      * @param <T> generic type variable
      * @return the structural object
      */
-    public static <T> T fromJson(String json, Class<T> type) {
+    public static <T> T fromJson(String json, Class<T> type)
+    {
         return g.fromJson(json, type);
     }
 
@@ -23,7 +24,8 @@ public class JsonUtil {
      * @param o object
      * @return json string
      */
-    public static String toJson(Object o) {
+    public static String toJson(Object o)
+    {
         return g.toJson(o);
     }
 

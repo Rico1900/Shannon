@@ -1,4 +1,4 @@
-package edu.nju.seg.model;
+package edu.nju.seg.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,23 +13,28 @@ public class Pair<L, R> {
 
     private R r;
 
-    public L getLeft() {
+    public L getLeft()
+    {
         return l;
     }
 
-    public R getRight() {
+    public R getRight()
+    {
         return r;
     }
 
-    public void setLeft(L l) {
+    public void setLeft(L l)
+    {
         this.l = l;
     }
 
-    public void setRight(R r) {
+    public void setRight(R r)
+    {
         this.r = r;
     }
 
-    public String unpackToStr() {
+    public String unpackToStr()
+    {
         return l.toString() + "-" + r.toString();
     }
 }

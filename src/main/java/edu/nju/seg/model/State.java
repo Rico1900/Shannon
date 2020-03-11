@@ -1,5 +1,6 @@
 package edu.nju.seg.model;
 
+import edu.nju.seg.exception.ParseException;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +28,8 @@ public class State {
 
     private List<Relation> outers;
 
-    public void setEquations(List<String> equations) {
+    public void setEquations(List<String> equations)
+    {
         this.equations = equations;
         calVariables();
     }
@@ -35,7 +37,8 @@ public class State {
     /**
      * summary variables from equations
      */
-    private void calVariables() {
+    private void calVariables()
+    {
         if (variables == null) {
             variables = new HashSet<>();
         }
@@ -49,13 +52,15 @@ public class State {
         }
     }
 
-    public List<State> getNext() {
+    public List<State> getNext()
+    {
         return outers.stream()
                 .map(Relation::getTarget)
                 .collect(Collectors.toList());
     }
 
-    public void addEdge(Relation r) {
+    public void addEdge(Relation r)
+    {
         if (outers == null) {
             outers = new ArrayList<>();
         }
@@ -63,7 +68,8 @@ public class State {
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return type.name() + ": " + stateName;
     }
 

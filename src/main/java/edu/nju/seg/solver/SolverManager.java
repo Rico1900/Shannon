@@ -15,7 +15,8 @@ public class SolverManager {
 
     private Solver solver;
 
-    public SolverManager() {
+    public SolverManager()
+    {
         Global.ToggleWarningMessages(true);
 //        Global.setParameter(":unsat_core", "true");
 //        Global.setParameter(":proof", "true");
@@ -23,15 +24,18 @@ public class SolverManager {
         solver = context.mkSolver();
     }
 
-    public Status check() {
+    public Status check()
+    {
         return solver.check();
     }
 
-    public Model getModel() {
+    public Model getModel()
+    {
         return solver.getModel();
     }
 
-    public String getEventTrace(boolean removeVirtual) {
+    public String getEventTrace(boolean removeVirtual)
+    {
         Model m = solver.getModel();
         FuncDecl[] func = m.getDecls();
         SortedMap<Double, List<String>> map = new TreeMap<>();
@@ -69,19 +73,23 @@ public class SolverManager {
         return builder.toString();
     }
 
-    public BoolExpr[] getUnsatCore() {
+    public BoolExpr[] getUnsatCore()
+    {
         return solver.getUnsatCore();
     }
 
-    public Expr getProof() {
+    public Expr getProof()
+    {
         return solver.getProof();
     }
 
-    public Context getContext() {
+    public Context getContext()
+    {
         return context;
     }
 
-    public void addClause(BoolExpr... boolExprs) {
+    public void addClause(BoolExpr... boolExprs)
+    {
         solver.add(boolExprs);
     }
 
