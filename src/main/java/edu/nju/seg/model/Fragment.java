@@ -56,41 +56,4 @@ public class Fragment extends SDComponent {
         covered.add(i);
     }
 
-
-    /**
-     * get head message of the fragment
-     * @return the head message
-     */
-    public Message getHead()
-    {
-        if (children == null) {
-            throw new EncodeException("empty fragment");
-        } else {
-            SDComponent first = children.get(0);
-            if (first instanceof Message) {
-                return (Message) first;
-            } else {
-                return ((Fragment) first).getHead();
-            }
-        }
-    }
-
-    /**
-     * get tail message of the fragment
-     * @return the tail message
-     */
-    public Message getTail()
-    {
-        if (children == null) {
-            throw new EncodeException("empty fragment");
-        } else {
-            SDComponent last = children.get(children.size() - 1);
-            if (last instanceof Message) {
-                return (Message) last;
-            } else {
-                return ((Fragment) last).getTail();
-            }
-        }
-    }
-
 }

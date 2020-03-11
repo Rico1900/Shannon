@@ -95,6 +95,16 @@ public class Z3Util {
         return ctx.mkReal(s);
     }
 
+    public static RealExpr mkRealVar(String s, Context ctx)
+    {
+        return (RealExpr) ctx.mkConst(ctx.mkSymbol(s), ctx.mkRealSort());
+    }
+
+    public static Expr mkStringVar(String s, Context ctx)
+    {
+        return ctx.mkConst(ctx.mkSymbol(s), ctx.mkStringSort());
+    }
+
     /**
      * make bool expression according to the operator
      * @param operator the operator string

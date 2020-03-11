@@ -49,8 +49,8 @@ public class ExprParser {
      * @return the bool expression
      * @throws Z3Exception
      */
-    public BoolExpr convertK(String expr,
-                             int bound) throws Z3Exception
+    public BoolExpr convertWithBound(String expr,
+                                     int bound) throws Z3Exception
     {
         SyntaxTree tree = new ExpressionParser().parseTree(expr);
         int depth = treeDepth(tree);
@@ -64,7 +64,7 @@ public class ExprParser {
         }
     }
 
-    public Pair<String, String> getVarFromConstraint(String cons)
+    public Pair<String, String> getVarFromCP(String cons)
     {
         SyntaxTree tree = new ExpressionParser().parseTree(cons);
         int depth = treeDepth(tree);
@@ -139,7 +139,7 @@ public class ExprParser {
         String op = getTokenStr(tree);
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
-        return Z3Util.mkOperatorExpr(op, mkExpr(left), mkExpr(right), ctx);
+        return Z3Util.mkOperatorExpr(op, mkExprByToken(left), mkExprByToken(right), ctx);
     }
 
     private BoolExpr handleExpr(SyntaxTree tree) throws Z3Exception
@@ -148,9 +148,9 @@ public class ExprParser {
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
         if (getTokenStr(left).equals("-")) {
-            return Z3Util.mkOperatorExpr(op, mkSubExpr(left), mkExpr(right), ctx);
+            return Z3Util.mkOperatorExpr(op, mkSubtractExpr(left), mkExprByToken(right), ctx);
         } else {
-            return Z3Util.mkOperatorExpr(op, mkExpr(left), mkSubExpr(right), ctx);
+            return Z3Util.mkOperatorExpr(op, mkExprByToken(left), mkSubtractExpr(right), ctx);
         }
     }
 
@@ -167,41 +167,30 @@ public class ExprParser {
         if (isBlankOperator(left.token()) || $.isNumber(left.token())) {
             leftOp = op;
             rightOp = getTokenStr(right);
-            leftNum = mkExpr(left);
-            rightNum = mkExpr(right.child(1));
-            middle = mkSubExpr(right.child(0));
+            leftNum = mkExprByToken(left);
+            rightNum = mkExprByToken(right.child(1));
+            middle = mkSubtractExpr(right.child(0));
         } else {
             leftOp = getTokenStr(left);
             rightOp = op;
-            leftNum = mkExpr(left.child(0));
-            rightNum = mkExpr(right);
-            middle = mkSubExpr(left.child(1));
+            leftNum = mkExprByToken(left.child(0));
+            rightNum = mkExprByToken(right);
+            middle = mkSubtractExpr(left.child(1));
         }
         return ctx.mkAnd(Z3Util.mkOperatorExpr(leftOp, leftNum, middle, ctx),
                 Z3Util.mkOperatorExpr(rightOp, middle, rightNum, ctx));
     }
 
-    private ArithExpr mkSubExpr(SyntaxTree tree)
+    private ArithExpr mkSubtractExpr(SyntaxTree tree)
     {
         String left = getTokenStr(tree.child(0));
         String right = getTokenStr(tree.child(1));
         return Z3Util.mkSub(left, right, ctx);
     }
 
-    private ArithExpr mkExpr(SyntaxTree tree) throws Z3Exception
+    private ArithExpr mkExprByToken(SyntaxTree tree) throws Z3Exception
     {
-        Object token = tree.token();
-        if (token instanceof Variable) {
-            String tokenStr = ((Variable) token).getToken();
-            RealSort rs = ctx.mkRealSort();
-            return (RealExpr) ctx.mkConst(ctx.mkSymbol(tokenStr), rs);
-        } else if (token instanceof Number) {
-            return Z3Util.mkRealExpr(token.toString(), ctx);
-        } else if (token instanceof Operator) {
-            return Z3Util.mkRealExpr(getTokenStr(tree.child(0)), ctx);
-        } else {
-            throw new EncodeException("wrong syntax tree: " + tree);
-        }
+        return Z3Util.mkRealExpr(getTokenStr(tree), ctx);
     }
 
     /**
@@ -249,6 +238,8 @@ public class ExprParser {
             return ((Variable) t).getToken();
         } else if (t instanceof Number) {
             return t.toString();
+        } else if (t.toString().equals("")) {
+            return getTokenStr(tree.child(0));
         } else {
             return t.toString();
         }
