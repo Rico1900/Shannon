@@ -81,7 +81,7 @@ public class Lab {
             System.out.println(manager.check());
             System.out.println();
 //        System.out.println(manager.getModel());
-            System.out.println(manager.getEventTrace(true));
+            System.out.println(manager.getEventTrace(false));
             System.out.println();
         } catch (Z3Exception e) {
             System.out.println(e.toString());

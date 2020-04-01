@@ -605,9 +605,8 @@ public class SequenceEncoder {
                                 .replaceAll(can.getRight(), prefix + can.getRight());
                         num.add(p.convert(conStr));
                     } else {
-                        List<Pair<IntFragment, Integer>> list = unfoldInts.subList(0, i);
                         List<Set<Pair<IntFragment, Integer>>> collector = new ArrayList<>();
-                        permutation(list, i, new HashSet<>(), collector);
+                        permutation(unfoldInts, i, new HashSet<>(), collector);
                         for (Set<Pair<IntFragment, Integer>> per: collector) {
                             BoolExpr identity = yieldIntIdentity(per, can, loopQueue);
                             Pair<ArithExpr, ArithExpr> interval = p.getInterval(actualMap.get(can));
