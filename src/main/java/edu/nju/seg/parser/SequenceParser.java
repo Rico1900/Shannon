@@ -7,8 +7,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static edu.nju.seg.config.Constants.CONSTRAINTS;
-import static edu.nju.seg.config.Constants.PROPERTIES;
+import static edu.nju.seg.config.Constants.*;
 
 public class SequenceParser implements Parser {
 
@@ -18,7 +17,7 @@ public class SequenceParser implements Parser {
 
     private static Pattern FRAGMENT_PATTERN = Pattern.compile("^combinedFragment=(.*?)~(.*?)$");
 
-    private static Pattern MESSAGE_PATTERN = Pattern.compile("^(.*?)->>>(.*?)[\\s*]:[\\s.*](.*?)[\\s*;]$");
+    private static Pattern MESSAGE_PATTERN = Pattern.compile("^(.*?)->>>(.*?)\\s*:\\s*(.*?)[\\s;]*$");
 
     private static Pattern FULL_INT_PATTERN = Pattern.compile("^int\\s*\\(p=(.*)\\)\\s*\\((.*),(.*)\\)\\s*\\[(.*)\\]\\s*(.*)$");
 
@@ -34,7 +33,7 @@ public class SequenceParser implements Parser {
 
     private static Pattern OPT_PATTERN = Pattern.compile("^opt\\s*\\((.*)\\)");
 
-    private static Pattern MESSAGE_INFO_PATTERN = Pattern.compile("^\\((.*),(.*),(.*)\\)$");
+    private static Pattern MESSAGE_INFO_PATTERN = Pattern.compile("^\\((.*),\\s*(.*),\\s*(.*)\\)$");
 
     private static Pattern MESSAGE_INSTRUCTION_PATTERN = Pattern.compile("^(.*)\\{(.*)\\}$");
 
@@ -42,18 +41,22 @@ public class SequenceParser implements Parser {
 
     private List<String> properties;
 
+    private String start;
+
+    private String end;
+
     private Element diagram;
 
     private Map<String, String> instanceMap;
 
     public SequenceParser(List<Element> notes, Element diagram)
     {
-        init(notes);
         this.diagram = diagram;
         this.instanceMap = new HashMap<>();
+        parseNotes(notes);
     }
 
-    private void init(List<Element> notes)
+    private void parseNotes(List<Element> notes)
     {
         for (Element e: notes) {
             String content = e.getContent();
@@ -63,6 +66,11 @@ public class SequenceParser implements Parser {
             }
             if (splits[0].equals(PROPERTIES)) {
                 this.properties = Arrays.asList(Arrays.copyOfRange(splits, 1, splits.length));
+            }
+            if (splits[0].equals(SUPPLEMENTS)) {
+                String[] subs = splits[1].split(",");
+                this.start = subs[0].trim();
+                this.end = subs[1].trim();
             }
         }
     }
@@ -74,6 +82,9 @@ public class SequenceParser implements Parser {
         // parse constraints in the constraints element
         sd.setConstraints(constraints);
         sd.setProperties(properties);
+        sd.setStart(start);
+        sd.setEnd(end);
+        sd.initSymbol();
         List<String> text = Arrays.asList(diagram.getContent().split("\\n"));
         if (text.size() < 2) {
             throw new ParseException("missing instance claim");
@@ -82,13 +93,14 @@ public class SequenceParser implements Parser {
         sd.setTitle(parseTitle(text.get(0)));
         // parse instance claim
         int claimIndex = 1;
+        int len = text.size();
         List<Instance> instances = new ArrayList<>();
-        while (true) {
+        while (claimIndex < len) {
             String current = text.get(claimIndex);
             Matcher m = CLAIM_PATTERN.matcher(current);
             if (m.find()) {
                 instanceMap.put(m.group(2), m.group(1));
-                instances.add(new Instance(m.group(1)));
+                instances.add(new Instance(m.group(1), m.group(2)));
                 claimIndex++;
             } else {
                 break;
@@ -149,7 +161,7 @@ public class SequenceParser implements Parser {
                     // alt fragment else part
                     parseHelper(parent, trimBlankLine(text.subList(1, text.size())), true);
                 } else {
-                    throw new ParseException("wrong modeling language");
+                    throw new ParseException("wrong modeling language, current: " + current);
                 }
             }
         }
@@ -321,7 +333,7 @@ public class SequenceParser implements Parser {
             m.setTo(consEvent(toVar, toEventStr));
             return m;
         } else {
-            throw new ParseException("wrong message information");
+            throw new ParseException("wrong message information: " + info);
         }
     }
 
@@ -335,6 +347,7 @@ public class SequenceParser implements Parser {
     {
         Instance ins = new Instance();
         ins.setName(instanceMap.get(var));
+        ins.setVariable(var);
         Event event = new Event();
         event.setBelongTo(ins);
         if (eventStr.contains("[") || eventStr.contains("]")) {

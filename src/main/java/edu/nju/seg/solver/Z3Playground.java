@@ -9,10 +9,10 @@ public class Z3Playground {
         Z3Playground p = new Z3Playground();
         com.microsoft.z3.Global.ToggleWarningMessages(true);
         Context ctx = new Context();
-//        p.testBool(ctx);
+        p.testBool(ctx);
 //        p.testReal(ctx);
 //        p.testComplex(ctx);
-        p.testString(ctx);
+//        p.testString(ctx);
         ctx.close();
     }
 

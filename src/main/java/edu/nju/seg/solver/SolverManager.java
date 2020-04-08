@@ -18,8 +18,8 @@ public class SolverManager {
     public SolverManager()
     {
         Global.ToggleWarningMessages(true);
-//        Global.setParameter(":unsat_core", "true");
-//        Global.setParameter(":proof", "true");
+        Global.setParameter(":unsat_core", "true");
+        Global.setParameter(":proof", "true");
         this.context = new Context();
         solver = context.mkSolver();
     }

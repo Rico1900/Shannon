@@ -130,10 +130,18 @@ public class UMLetHandler extends DefaultHandler {
             } else {
                 e = new RelationElement();
                 String[] splits = parseAdditional();
-                ((RelationElement) e).setSourceX((int) Float.parseFloat(splits[0]));
-                ((RelationElement) e).setSourceY((int) Float.parseFloat(splits[1]));
-                ((RelationElement) e).setTargetX((int) Float.parseFloat(splits[2]));
-                ((RelationElement) e).setTargetY((int) Float.parseFloat(splits[3]));
+                int len = splits.length;
+                if (elementContent.equals("lt=->")) {
+                    ((RelationElement) e).setSourceX((int) Float.parseFloat(splits[0]));
+                    ((RelationElement) e).setSourceY((int) Float.parseFloat(splits[1]));
+                    ((RelationElement) e).setTargetX((int) Float.parseFloat(splits[len - 2]));
+                    ((RelationElement) e).setTargetY((int) Float.parseFloat(splits[len - 1]));
+                } else {
+                    ((RelationElement) e).setSourceX((int) Float.parseFloat(splits[len - 2]));
+                    ((RelationElement) e).setSourceY((int) Float.parseFloat(splits[len - 1]));
+                    ((RelationElement) e).setTargetX((int) Float.parseFloat(splits[0]));
+                    ((RelationElement) e).setTargetY((int) Float.parseFloat(splits[1]));
+                }
             }
             e.setType(UMLType.valueOf(elementId));
             e.setContent(elementContent);

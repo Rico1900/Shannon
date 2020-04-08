@@ -21,4 +21,21 @@ public class SequenceDiagram extends Diagram {
      */
     private List<String> properties;
 
+    private String start;
+
+    private String end;
+
+    private String symbol;
+
+    public void initSymbol()
+    {
+        if (end != null
+                && start != null
+                && start.startsWith("s")
+                && end.startsWith("w")) {
+            if (start.substring(1).equals(end.substring(1))) {
+                symbol = start.substring(1);
+            }
+        }
+    }
 }

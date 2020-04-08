@@ -11,6 +11,8 @@ import org.scijava.parse.Operator;
 import org.scijava.parse.SyntaxTree;
 import org.scijava.parse.Variable;
 
+import java.util.regex.Pattern;
+
 
 public class ExprParser {
 
@@ -55,7 +57,7 @@ public class ExprParser {
         SyntaxTree tree = new ExpressionParser().parseTree(expr);
         int depth = treeDepth(tree);
         if (depth == 2) {
-            String boundExpr = ((Variable) tree.child(0).token()).getToken() + "_" + bound +
+            String boundExpr = getTokenStr(tree.child(0)) + "_" + bound +
                     ((Operator) tree.token()).getToken() +
                     getTokenStr(tree.child(1));
             return convert(boundExpr);

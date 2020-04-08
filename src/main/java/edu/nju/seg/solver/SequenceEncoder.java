@@ -449,7 +449,7 @@ public class SequenceEncoder {
      * @param f the given fragment
      * @param loopQueue the loop queue
      * @return bool expression
-     * @throws Z3Exception
+     * @throws Z3Exception exception
      */
     private BoolExpr encodeCleanFrag(Fragment f,
                                      List<Integer> loopQueue) throws Z3Exception

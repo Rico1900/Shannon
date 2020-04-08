@@ -4,6 +4,7 @@ import edu.nju.seg.exception.ParseException;
 import edu.nju.seg.model.*;
 import edu.nju.seg.util.$;
 import edu.nju.seg.util.Pair;
+import edu.nju.seg.util.UmlUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,9 +59,9 @@ public class AutomatonParser implements Parser {
      */
     private void parseAutomaton(AutomatonDiagram ad)
     {
-        List<Element> relationEles = partitionRelation();
-        List<Element> stateEles = partitionState();
-        List<Element> specialEles = partitionSpecial();
+        List<Element> relationEles = UmlUtil.partitionRelation(elements);
+        List<Element> stateEles = UmlUtil.partitionState(elements);
+        List<Element> specialEles = UmlUtil.partitionSpecial(elements);
         List<State> states = new ArrayList<>();
         State initial = null;
         List<Relation> relations = new ArrayList<>();
@@ -154,6 +155,9 @@ public class AutomatonParser implements Parser {
             } else {
                 throw new ParseException("wrong relation target, condition: " + expr);
             }
+            if (r.getSource() == r.getTarget()) {
+                r.getSource().setLoop(true);
+            }
         } else {
             throw new ParseException("wrong relation format");
         }
@@ -195,10 +199,7 @@ public class AutomatonParser implements Parser {
     {
         for (Pair<List<Integer>, State> p: locationList) {
             List<Integer> loc = p.getLeft();
-            if (coord.getLeft() >= loc.get(0)
-                    && coord.getLeft() <= loc.get(1)
-                    && coord.getRight() >= loc.get(2)
-                    && coord.getRight() <= loc.get(3)) {
+            if (UmlUtil.inSquare(coord, loc)) {
                 return Optional.of(p.getRight());
             }
         }
@@ -212,48 +213,11 @@ public class AutomatonParser implements Parser {
      */
     private void addToLocList(Element e, State s)
     {
-        List<Integer> loc = new ArrayList<>();
-        loc.add(e.getX());
-        loc.add(e.getX() + e.getW());
-        loc.add(e.getY());
-        loc.add(e.getY() + e.getH());
+        List<Integer> loc = UmlUtil.consLocation(e);
         Pair<List<Integer>, State> p = new Pair<>();
         p.setLeft(loc);
         p.setRight(s);
         locationList.add(p);
-    }
-
-    /**
-     * pick up relation elements
-     * @return relation elements
-     */
-    private List<Element> partitionRelation()
-    {
-        return elements.stream()
-                .filter(e -> e.getType() == UMLType.Relation)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * pick up state elements
-     * @return state elements
-     */
-    private List<Element> partitionState()
-    {
-        return elements.stream()
-                .filter(e -> e.getType() == UMLType.UMLState)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * pick up special elements
-     * @return special elements
-     */
-    private List<Element> partitionSpecial()
-    {
-        return elements.stream()
-                .filter(e -> e.getType() == UMLType.UMLSpecialState)
-                .collect(Collectors.toList());
     }
 
     /**

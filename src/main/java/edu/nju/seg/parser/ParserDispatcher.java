@@ -22,8 +22,10 @@ public class ParserDispatcher {
         if (isSequenceDiagram(contents)) {
             Pair<Element, List<Element>> p = partition(contents);
             return new SequenceParser(p.getRight(), p.getLeft());
-        } else if(isHybridAutomaton(contents)) {
+        } else if (isHybridAutomaton(contents)) {
             return new AutomatonParser(fileName, contents);
+        } else if (isMsg(contents)) {
+            return new MsgParser(fileName, contents);
         } else  {
             throw new ParseException("wrong uxf file: " + fileName);
         }
@@ -76,6 +78,28 @@ public class ParserDispatcher {
      * @return if the contents belong to a automaton diagram
      */
     private static boolean isHybridAutomaton(List<Element> contents)
+    {
+        if ($.isBlankList(contents)) {
+            return false;
+        }
+        if (contents.size() > 2) {
+            boolean hasInit = false;
+            boolean hasState = false;
+            for (Element e: contents) {
+                if (e.getType() == UMLType.UMLSpecialState) {
+                    hasInit = true;
+                }
+                if (e.getType() == UMLType.UMLState && e.getContent().contains("valign")) {
+                    hasState = true;
+                }
+            }
+            return hasInit && hasState;
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean isMsg(List<Element> contents)
     {
         if ($.isBlankList(contents)) {
             return false;

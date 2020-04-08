@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RelationElement extends Element {
 
+    private static int padding = 10;
+
     private int sourceX;
 
     private int sourceY;
@@ -22,40 +24,16 @@ public class RelationElement extends Element {
     public Pair<Integer, Integer> getSource()
     {
         Pair<Integer, Integer> pair = new Pair<>();
-        if(sourceX > targetX) {
-            pair.setLeft(x + sourceX + targetX);
-        } else {
-            pair.setLeft(x + sourceX);
-        }
-        if (sourceY + targetY < h) {
-            if (sourceY > targetY) {
-                pair.setRight(y + sourceY + targetY);
-            } else {
-                pair.setRight(y + sourceY);
-            }
-        } else {
-            pair.setRight(y + sourceY);
-        }
+        pair.setLeft(x + sourceX);
+        pair.setRight(y + sourceY);
         return pair;
     }
 
     public Pair<Integer, Integer> getTarget()
     {
         Pair<Integer, Integer> pair = new Pair<>();
-        if (targetX > sourceX) {
-            pair.setLeft(x + sourceX + targetX);
-        } else {
-            pair.setLeft(x + targetX);
-        }
-        if (sourceY + targetY < h) {
-            if (targetY > sourceY) {
-                pair.setRight(y + sourceY + targetY);
-            } else {
-                pair.setRight(y + targetY);
-            }
-        } else {
-            pair.setRight(y + targetY);
-        }
+        pair.setLeft(x + targetX);
+        pair.setRight(y + targetY);
         return pair;
     }
 

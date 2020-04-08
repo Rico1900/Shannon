@@ -19,8 +19,17 @@ public class Constants {
     public static final String PROPERTIES = "Properties";
 
     /**
+     * the "Supplements" label in the SD
+     */
+    public static final String SUPPLEMENTS = "Supplements";
+
+    /**
      * actual runtime marker
      */
     public static final String ACTUAL_MARKER = "^";
+
+    public static final String START_MARK = "s";
+
+    public static final String END_MARK = "w";
 
 }

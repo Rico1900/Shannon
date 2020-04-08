@@ -32,6 +32,9 @@ public class Z3Util {
     public static BoolExpr mkAndNotEmpty(List<BoolExpr> list,
                                          Context ctx)
     {
+        if (list.size() == 1) {
+            return list.get(0);
+        }
         return ctx.mkAnd(list.toArray(new BoolExpr[0]));
     }
 
@@ -59,6 +62,9 @@ public class Z3Util {
     public static BoolExpr mkOrNotEmpty(List<BoolExpr> list,
                                         Context ctx)
     {
+        if (list.size() == 1) {
+            return list.get(0);
+        }
         return ctx.mkOr(list.toArray(new BoolExpr[0]));
     }
 
@@ -135,6 +141,16 @@ public class Z3Util {
             default:
                 throw new Z3Exception();
         }
+    }
+
+    /**
+     * construct index prefix
+     * @param index the bound index
+     * @return index prefix
+     */
+    public static String indexPrefix(int index)
+    {
+        return "index_" + index + "_";
     }
 
 }

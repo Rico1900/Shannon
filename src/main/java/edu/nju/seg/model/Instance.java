@@ -11,4 +11,6 @@ public class Instance {
 
     private String name;
 
+    private String variable;
+
 }
