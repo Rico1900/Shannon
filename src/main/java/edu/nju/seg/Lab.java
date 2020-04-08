@@ -15,6 +15,9 @@ import edu.nju.seg.solver.SolverManager;
 import edu.nju.seg.solver.TASSATEncoder;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.util.*;
 
 public class Lab {
@@ -131,7 +134,7 @@ public class Lab {
             SimpleTimer t = new SimpleTimer();
             System.out.println(manager.check());
             System.out.println("verification costs: " + t.pastSeconds() + " s");
-            System.out.println(manager.getProof());
+//            System.out.println(manager.getProof());
 //            System.out.println(manager.getModel());
             System.out.println("============================");
         } catch (Z3Exception e) {

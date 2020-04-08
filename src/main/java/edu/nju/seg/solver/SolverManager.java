@@ -18,10 +18,13 @@ public class SolverManager {
     public SolverManager()
     {
         Global.ToggleWarningMessages(true);
-        Global.setParameter(":unsat_core", "true");
-        Global.setParameter(":proof", "true");
+//        Global.setParameter(":unsat_core", "true");
+//        Global.setParameter(":proof", "true");
         this.context = new Context();
+        Params p = context.mkParams();
+        p.add("timeout", 3600 * 1000);
         solver = context.mkSolver();
+        solver.setParameters(p);
     }
 
     public Status check()
