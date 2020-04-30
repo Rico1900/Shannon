@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>670</x>
+      <y>180</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>670</x>
+      <y>20</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Supplements
+sh,wh</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>610</w>
+      <h>290</h>
+    </coordinates>
+    <panel_attributes>title=Withdraw
+obj=User~a
+obj=ATM~b
+obj=Bank~c
+
+
+a-&gt;&gt;&gt;b: (h1,h2,Withdraw);
+b-&gt;&gt;&gt;a: (h3,h4,REQ_amout);
+a-&gt;&gt;&gt;b: (h5,h6,Enter_amount);
+b-&gt;&gt;&gt;c: (h7,h8,Approve_AＭＴ);
+
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1930</x>
+      <y>170</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+0&lt;=mb-m1&lt;=5
+0&lt;=mu-m7&lt;=6</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1930</x>
+      <y>20</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Supplements
+sm,wm</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>0</x>
+      <y>20</y>
+      <w>1860</w>
+      <h>710</h>
+    </coordinates>
+    <panel_attributes>title=Handover
+obj=User~a
+obj=Mobile~b
+obj=BBS~c
+obj=MSC~d
+obj=PSTN~e
+obj=GSM CE~f
+obj=BSS2~g
+obj=MSC2~h
+
+
+d-&gt;&gt;&gt;f: (m1,m2,handover_required);
+f-&gt;&gt;&gt;h: (m3,m4,handover_request);
+h-&gt;&gt;&gt;f: (m6,m5,handover_request_ack);
+f-&gt;&gt;&gt;e: (m7,m8,handover_command);
+d-&gt;&gt;&gt;b: (m9,ma,handover_command);
+b-&gt;&gt;&gt;g: (mb,mc,handover_accept);
+g-&gt;&gt;&gt;h: (md,me,handover_accept);
+h-&gt;&gt;&gt;f: (mf,mg,handover_detected);
+h-&gt;&gt;&gt;g: (mh,mi,phyical_info);
+g-&gt;&gt;&gt;b: (mj,mk,phyical_info);
+b-&gt;&gt;&gt;h: (ml,mm,SABM);
+h-&gt;&gt;&gt;b: (mn,mo,UA);
+b-&gt;&gt;&gt;h: (mq,mz,handover_complete);
+f-&gt;&gt;&gt;d: (mr,ms,clear_command);
+d-&gt;&gt;&gt;f: (mt,mu,clear_complete);
+
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

@@ -2,10 +2,12 @@ package edu.nju.seg.parser;
 
 import edu.nju.seg.exception.ParseException;
 import edu.nju.seg.model.*;
+import edu.nju.seg.util.$;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static edu.nju.seg.config.Constants.*;
 
@@ -37,9 +39,13 @@ public class SequenceParser implements Parser {
 
     private static Pattern MESSAGE_INSTRUCTION_PATTERN = Pattern.compile("^(.*)\\{(.*)\\}$");
 
+    private static Pattern GOAL_PATTERN = Pattern.compile("^(max|min|MAX|MIN)\\((.*)\\)$");
+
     private List<String> constraints;
 
     private List<String> properties;
+
+    private List<String> goals;
 
     private String start;
 
@@ -72,6 +78,9 @@ public class SequenceParser implements Parser {
                 this.start = subs[0].trim();
                 this.end = subs[1].trim();
             }
+            if (splits[0].equals(GOAL)) {
+                this.goals = Arrays.asList(Arrays.copyOfRange(splits, 1, splits.length));
+            }
         }
     }
 
@@ -82,6 +91,7 @@ public class SequenceParser implements Parser {
         // parse constraints in the constraints element
         sd.setConstraints(constraints);
         sd.setProperties(properties);
+        sd.setGoals(parseGoals(goals));
         sd.setStart(start);
         sd.setEnd(end);
         sd.initSymbol();
@@ -110,6 +120,30 @@ public class SequenceParser implements Parser {
         List<String> fragments = trimBlankLine(text.subList(claimIndex, text.size()));
         sd.setContainer(parseFragment(fragments, instances));
         return sd;
+    }
+
+    private List<Goal> parseGoals(List<String> strings)
+    {
+        if ($.isBlankList(strings)) {
+            return new ArrayList<>();
+        }
+        return strings.stream()
+                .map(this::convert2Goal)
+                .collect(Collectors.toList());
+    }
+
+    private Goal convert2Goal(String str)
+    {
+        Matcher m = GOAL_PATTERN.matcher(str);
+        if (m.matches()) {
+            if (m.group(1).toUpperCase().equals(OptimizationType.MAX.name())) {
+                return new Goal(OptimizationType.MAX, m.group(2));
+            } else {
+                return new Goal(OptimizationType.MIN, m.group(2));
+            }
+        } else {
+            throw new ParseException("wrong goal expression: " + str);
+        }
     }
 
     /**

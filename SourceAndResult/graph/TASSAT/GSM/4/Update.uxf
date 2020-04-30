@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1550</x>
+      <y>180</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1550</x>
+      <y>20</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Supplements
+sW,wW</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>1190</w>
+      <h>440</h>
+    </coordinates>
+    <panel_attributes>title=Update
+obj=User~a
+obj=Mobile~b
+obj=BBS~c
+obj=MSC~d
+obj=PSTN~e
+obj=GSM CE~f
+obj=BSS2~g
+obj=MSC2~h
+
+
+d-&gt;&gt;&gt;h: (W1,W2,send_parameters);
+h-&gt;&gt;&gt;d: (W3,W4,send_parameters_result);
+d-&gt;&gt;&gt;f: (W5,W6,update_location);
+f-&gt;&gt;&gt;d: (W7,W8,insert_subscriber_data);
+d-&gt;&gt;&gt;f: (W9,Wa,insert_subscriber_data_result);
+f-&gt;&gt;&gt;h: (Wb,Wc,cancel_location);
+h-&gt;&gt;&gt;f: (Wd,We,cancel_location_result);
+f-&gt;&gt;&gt;d: (Wf,Wg,update_location_result);
+
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

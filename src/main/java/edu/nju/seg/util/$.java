@@ -52,6 +52,11 @@ public class $ {
         return list == null || list.size() == 0;
     }
 
+    public static <T> boolean isNotBlankList(List<T> list)
+    {
+        return !isBlankList(list);
+    }
+
     /**
      * filter blank string
      * @param list the string list

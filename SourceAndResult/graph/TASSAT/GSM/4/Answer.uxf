@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1530</x>
+      <y>220</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+0&lt;=S3-S1&lt;=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1530</x>
+      <y>60</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Supplements
+sS,wS</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>0</x>
+      <y>60</y>
+      <w>1340</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>title=Answer
+obj=User~a
+obj=Mobile~b
+obj=BBS~c
+obj=MSC~d
+obj=PSTN~e
+obj=GSM CE~f
+obj=BSS2~g
+obj=MSC2~h
+
+
+a-&gt;&gt;&gt;b: (S1,S2,OK_button);
+b-&gt;&gt;&gt;d: (S3,S4,connect);
+d-&gt;&gt;&gt;e: (S5,S6,answer);
+
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

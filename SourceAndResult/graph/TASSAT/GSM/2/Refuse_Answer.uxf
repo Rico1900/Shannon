@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1530</x>
+      <y>180</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+2&lt;=wj-j1&lt;=3</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1530</x>
+      <y>20</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Supplements
+sj,wj</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>0</x>
+      <y>20</y>
+      <w>1370</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>title=Refuse_Answer
+obj=User~a
+obj=Mobile~b
+obj=BBS~c
+obj=MSC~d
+obj=PSTN~e
+obj=GSM CE~f
+obj=BSS2~g
+obj=MSC2~h
+
+
+e-&gt;&gt;&gt;d: (j1,j2,no_ans);
+d-&gt;&gt;&gt;b: (j3,j4,disconnect);
+b-&gt;&gt;&gt;a: (j5,j6,disconnected);
+
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

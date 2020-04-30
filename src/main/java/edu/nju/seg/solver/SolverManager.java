@@ -22,6 +22,7 @@ public class SolverManager {
 //        Global.setParameter(":proof", "true");
         this.context = new Context();
         Params p = context.mkParams();
+        // time limitation: one hour
         p.add("timeout", 3600 * 1000);
         solver = context.mkSolver();
         solver.setParameters(p);

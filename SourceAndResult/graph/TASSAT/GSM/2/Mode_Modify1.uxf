@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1860</x>
+      <y>170</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+0&lt;=Ie-I9&lt;=5
+0&lt;=Ig-Ie&lt;=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1860</x>
+      <y>20</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Supplements
+sI,wI</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>0</x>
+      <y>20</y>
+      <w>1830</w>
+      <h>440</h>
+    </coordinates>
+    <panel_attributes>title=Mode_Modify1
+obj=User~a
+obj=Mobile~b
+obj=BBS~c
+obj=MSC~d
+obj=PSTN~e
+obj=GSM CE~f
+obj=BSS2~g
+obj=MSC2~h
+
+
+d-&gt;&gt;&gt;c: (I1,I2,assignment_request);
+c-&gt;&gt;&gt;b: (I3,I4,channel_mode_modify);
+c-&gt;&gt;&gt;b: (I5,I6,ack);
+c-&gt;&gt;&gt;d: (I7,I8,assignment_complete);
+d-&gt;&gt;&gt;e: (I9,Ia,init_address_msg);
+e-&gt;&gt;&gt;d: (Ib,Ic,address_complete);
+d-&gt;&gt;&gt;b: (Id,Ie,alerting);
+b-&gt;&gt;&gt;a: (If,Ig,alerting_tone);
+
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

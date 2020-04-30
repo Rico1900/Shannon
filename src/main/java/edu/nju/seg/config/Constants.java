@@ -24,6 +24,12 @@ public class Constants {
     public static final String SUPPLEMENTS = "Supplements";
 
     /**
+     * the "Goal" label in the SD,
+     * this label is used to perform SD optimization
+     */
+    public static final String GOAL = "Goal";
+
+    /**
      * actual runtime marker
      */
     public static final String ACTUAL_MARKER = "^";

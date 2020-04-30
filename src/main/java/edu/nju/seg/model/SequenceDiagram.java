@@ -21,6 +21,8 @@ public class SequenceDiagram extends Diagram {
      */
     private List<String> properties;
 
+    private List<Goal> goals;
+
     private String start;
 
     private String end;

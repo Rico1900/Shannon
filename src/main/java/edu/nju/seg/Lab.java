@@ -12,12 +12,11 @@ import edu.nju.seg.parser.UMLetParser;
 import edu.nju.seg.solver.AutomatonEncoder;
 import edu.nju.seg.solver.SequenceEncoder;
 import edu.nju.seg.solver.SolverManager;
-import edu.nju.seg.solver.TASSATEncoder;
+import edu.nju.seg.solver.tassat.TASSATEncoder;
+import edu.nju.seg.util.Pair;
+import edu.nju.seg.util.SimpleLog;
 
 import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
 import java.util.*;
 
 public class Lab {
@@ -26,7 +25,7 @@ public class Lab {
     {
         String configPath = System.getProperty("EXPERIMENTAL_CONFIG");
         if (configPath == null) {
-            System.err.println("no experimental protocol");
+            SimpleLog.error("no experimental protocol");
             return;
         }
         ConfigReader reader = new ConfigReader(configPath);
@@ -61,12 +60,15 @@ public class Lab {
                 case TASSAT_SMT:
                     runTASSAT(diagrams, config);
                     break;
-                case SD_AUTOMATA:
-                    runSD_Automata(diagrams, config);
+                case AUTOMATON_SMT:
+                    runAutomatonSMT(diagrams, config);
+                    break;
+                case ISD_AUTOMATA_OPT:
+                    runScenarioOptimization(diagrams, config);
                     break;
             }
         } else {
-            System.err.println("the input path is not a directory");
+            SimpleLog.error("the input path is not a directory");
         }
     }
 
@@ -79,39 +81,45 @@ public class Lab {
     {
         try {
             SolverManager manager = new SolverManager();
-            for (Diagram d: diagrams) {
+            if (diagrams.size() == 1) {
+                Diagram d = diagrams.get(0);
                 if (d instanceof SequenceDiagram) {
-                    SequenceEncoder encoder = new SequenceEncoder((SequenceDiagram) d,
-                            manager, config.getBound());
+                    SequenceEncoder encoder = new SequenceEncoder((SequenceDiagram) d, manager);
                     encoder.encode();
+                } else {
+                    SimpleLog.error("wrong diagram type for ISD SMT verification");
                 }
+            } else {
+                SimpleLog.error("ISD SMT verification only supports single diagram");
             }
             System.out.println(manager.check());
             System.out.println();
             System.out.println(manager.getEventTrace(false));
             System.out.println();
         } catch (Z3Exception e) {
-            System.out.println(e.toString());
+            logZ3Exception(e);
         }
     }
 
-    private static void runSD_Automata(List<Diagram> diagrams,
-                                       ExperimentConfig config)
+    private static void runAutomatonSMT(List<Diagram> diagrams,
+                                        ExperimentConfig config)
     {
         try {
             SolverManager manager = new SolverManager();
-            // TODO:
-            for (Diagram d: diagrams) {
-                if (d instanceof AutomatonDiagram && d.getTitle().equals("Task1")) {
+            if (diagrams.size() == 1) {
+                Diagram d = diagrams.get(0);
+                if (d instanceof AutomatonDiagram) {
                     AutomatonEncoder encoder = new AutomatonEncoder((AutomatonDiagram) d,
                             manager, config.getBound());
                     encoder.encode();
                 }
+            } else {
+                SimpleLog.error("Automaton SMT verification only support single diagram");
             }
             System.out.println(manager.check());
             System.out.println();
         } catch (Z3Exception e) {
-            System.out.println(e.toString());
+            logZ3Exception(e);
         }
     }
 
@@ -138,7 +146,29 @@ public class Lab {
 //            System.out.println(manager.getModel());
             System.out.println("============================");
         } catch (Z3Exception e) {
-            System.out.println(e.toString());
+            logZ3Exception(e);
+        }
+    }
+
+    /**
+     * scenario-based optimization,
+     * a canonical scenario including an ISD and several automaton
+     * @param diagrams diagrams
+     * @param config the experimental config
+     */
+    private static void runScenarioOptimization(List<Diagram> diagrams,
+                                                ExperimentConfig config)
+    {
+        try {
+            SolverManager manager = new SolverManager();
+            Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(diagrams);
+            SequenceEncoder encoder = new SequenceEncoder(p.getLeft(), manager);
+            encoder.encode();
+            encoder.encodeAutomata(p.getRight());
+            System.out.println(manager.check());
+            System.out.println(manager.getEventTrace(true));
+        } catch (Z3Exception e) {
+           logZ3Exception(e);
         }
     }
 
@@ -152,6 +182,28 @@ public class Lab {
     {
         Parser p = ParserDispatcher.dispatch(fileName, content);
         return p.parse();
+    }
+
+    private static Pair<SequenceDiagram, List<AutomatonDiagram>> partition(List<Diagram> diagrams)
+    {
+        Pair<SequenceDiagram, List<AutomatonDiagram>> p = new Pair<>();
+        List<AutomatonDiagram> list = new ArrayList<>();
+        for (Diagram d: diagrams) {
+            if (d instanceof SequenceDiagram) {
+                p.setLeft((SequenceDiagram) d);
+            } else if (d instanceof AutomatonDiagram) {
+                list.add((AutomatonDiagram) d);
+            } else {
+                SimpleLog.error("wrong diagram type for partition");
+            }
+        }
+        p.setRight(list);
+        return p;
+    }
+
+    private static void logZ3Exception(Z3Exception e)
+    {
+        SimpleLog.error(e.toString());
     }
 
 }

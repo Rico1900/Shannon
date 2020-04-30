@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>680</x>
+      <y>210</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+0&lt;=i6-i3&lt;=10
+3&lt;=i9-i6&lt;=5</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>680</x>
+      <y>50</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Supplements
+si,wi</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>550</w>
+      <h>330</h>
+    </coordinates>
+    <panel_attributes>title=GetBalance
+obj=User~a
+obj=ATM~b
+obj=Bank~c
+
+
+a-&gt;&gt;&gt;b: (i1,i2,Statement);
+b-&gt;&gt;&gt;c: (i3,i4,REQ_balance); 
+c-&gt;&gt;&gt;b: (i5,i6,Balance);
+b-&gt;&gt;&gt;a: (i7,i8,Print_STMT);
+b-&gt;&gt;&gt;a: (i9,i10,Option);
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

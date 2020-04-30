@@ -1,6 +1,5 @@
 package edu.nju.seg.model;
 
-import edu.nju.seg.exception.EncodeException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

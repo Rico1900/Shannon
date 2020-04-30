@@ -1,4 +1,4 @@
-package edu.nju.seg.solver;
+package edu.nju.seg.solver.tassat;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -7,6 +7,7 @@ import edu.nju.seg.exception.EncodeException;
 import edu.nju.seg.exception.Z3Exception;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.ExprParser;
+import edu.nju.seg.solver.SolverManager;
 import edu.nju.seg.util.Pair;
 import edu.nju.seg.util.Z3Util;
 

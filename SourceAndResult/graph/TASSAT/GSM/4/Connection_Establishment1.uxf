@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1980</x>
+      <y>180</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1980</x>
+      <y>20</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Supplements
+sF,wF</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>0</x>
+      <y>20</y>
+      <w>1960</w>
+      <h>290</h>
+    </coordinates>
+    <panel_attributes>title=Connection_Establishment1
+obj=User~a
+obj=Mobile~b
+obj=BBS~c
+obj=MSC~d
+obj=PSTN~e
+obj=GSM CE~f
+obj=BSS2~g
+obj=MSC2~h
+
+
+c-&gt;&gt;&gt;b: (F1,F2,channel_assign);
+b-&gt;&gt;&gt;c: (F3,F4,SABM_service_request);
+c-&gt;&gt;&gt;b: (F5,F6,UA);
+c-&gt;&gt;&gt;d: (F7,F8,complete_layer_3_msg);
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
