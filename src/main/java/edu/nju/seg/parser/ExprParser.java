@@ -16,9 +16,12 @@ public class ExprParser {
 
     private Context ctx;
 
+    private Z3Wrapper w;
+
     public ExprParser(Context ctx)
     {
         this.ctx = ctx;
+        this.w = new Z3Wrapper(ctx);
     }
 
     /**
@@ -115,8 +118,8 @@ public class ExprParser {
                 leftVar = getTokenStr(left.child(0));
                 rightVar = getTokenStr(right);
             }
-            return new Pair<>(Z3Wrapper.mkRealExpr(leftVar, ctx),
-                    Z3Wrapper.mkRealExpr(rightVar, ctx));
+            return new Pair<>(w.mkRealExpr(leftVar),
+                    w.mkRealExpr(rightVar));
         } else if (depth == 3) {
             String leftVar = null;
             String rightVar = null;
@@ -127,8 +130,8 @@ public class ExprParser {
             } else {
                 rightVar = getTokenStr(right);
             }
-            return new Pair<>(Z3Wrapper.mkRealExpr(leftVar, ctx),
-                    Z3Wrapper.mkRealExpr(rightVar, ctx));
+            return new Pair<>(w.mkRealExpr(leftVar),
+                    w.mkRealExpr(rightVar));
         } else {
             throw new EncodeException("wrong constraints: " + cons);
         }
@@ -139,7 +142,7 @@ public class ExprParser {
         String op = getTokenStr(tree);
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
-        return Z3Wrapper.mkOperatorExpr(op, mkExprByToken(left), mkExprByToken(right), ctx);
+        return w.mkOperatorExpr(op, mkExprByToken(left), mkExprByToken(right));
     }
 
     private BoolExpr handleExpr(SyntaxTree tree) throws Z3Exception
@@ -148,9 +151,9 @@ public class ExprParser {
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
         if (getTokenStr(left).equals("-")) {
-            return Z3Wrapper.mkOperatorExpr(op, mkSubtractExpr(left), mkExprByToken(right), ctx);
+            return w.mkOperatorExpr(op, mkSubtractExpr(left), mkExprByToken(right));
         } else {
-            return Z3Wrapper.mkOperatorExpr(op, mkExprByToken(left), mkSubtractExpr(right), ctx);
+            return w.mkOperatorExpr(op, mkExprByToken(left), mkSubtractExpr(right));
         }
     }
 
@@ -177,20 +180,20 @@ public class ExprParser {
             rightNum = mkExprByToken(right);
             middle = mkSubtractExpr(left.child(1));
         }
-        return ctx.mkAnd(Z3Wrapper.mkOperatorExpr(leftOp, leftNum, middle, ctx),
-                Z3Wrapper.mkOperatorExpr(rightOp, middle, rightNum, ctx));
+        return ctx.mkAnd(w.mkOperatorExpr(leftOp, leftNum, middle),
+                w.mkOperatorExpr(rightOp, middle, rightNum));
     }
 
     private ArithExpr mkSubtractExpr(SyntaxTree tree)
     {
         String left = getTokenStr(tree.child(0));
         String right = getTokenStr(tree.child(1));
-        return Z3Wrapper.mkSub(left, right, ctx);
+        return w.mkSub(left, right);
     }
 
     private ArithExpr mkExprByToken(SyntaxTree tree) throws Z3Exception
     {
-        return Z3Wrapper.mkRealExpr(getTokenStr(tree), ctx);
+        return w.mkRealExpr(getTokenStr(tree));
     }
 
     /**
