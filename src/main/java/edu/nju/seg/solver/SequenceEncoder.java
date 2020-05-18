@@ -1,12 +1,14 @@
 package edu.nju.seg.solver;
 
 import com.microsoft.z3.*;
+import edu.nju.seg.config.ExperimentalType;
 import edu.nju.seg.exception.Z3Exception;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.ExprParser;
+import edu.nju.seg.solver.model.Node;
 import edu.nju.seg.util.$;
 import edu.nju.seg.util.Pair;
-import edu.nju.seg.util.Z3Util;
+import edu.nju.seg.util.Z3Wrapper;
 
 import java.util.*;
 
@@ -21,6 +23,10 @@ public class SequenceEncoder {
     private Context ctx;
 
     private ExprParser p;
+
+    private Z3Wrapper w;
+
+    private ExperimentalType type;
 
     private List<IntFragment> flow = new ArrayList<>();
 
@@ -45,19 +51,31 @@ public class SequenceEncoder {
 
     private List<Pair<IntFragment, Integer>> unfoldInts = new ArrayList<>();
 
+    private Set<Map<Instance, List<Node>>> sequelSet;
+
+    private int bound;
+
     public SequenceEncoder(SequenceDiagram diagram,
-                           SolverManager manager)
+                           SolverManager manager,
+                           ExperimentalType type,
+                           int bound)
     {
         this.diagram = diagram;
         this.manager = manager;
+        this.type = type;
         this.ctx = manager.getContext();
         this.p = new ExprParser(ctx);
+        this.w = new Z3Wrapper(ctx);
         this.clean = extractIntFrag(diagram.getContainer());
         calConsAndProp();
         calPriorityMap();
         calCleanEvents();
         calMaskMap();
         unfoldIntFrag();
+        if (type == ExperimentalType.ISD_AUTOMATA_OPT) {
+            this.sequelSet = new HashSet<>();
+            this.bound = bound;
+        }
     }
 
     public void encode() throws Z3Exception
@@ -66,8 +84,8 @@ public class SequenceEncoder {
         List<BoolExpr> finalExpr = new ArrayList<>();
         finalExpr.add(cleanExpr);
         encodeIntFrag().ifPresent(finalExpr::add);
-        Z3Util.mkAnd(propertyExpr, ctx).ifPresent(e -> finalExpr.add(ctx.mkNot(e)));
-        manager.addClause(Z3Util.mkAndNotEmpty(finalExpr, ctx));
+        w.mkAnd(propertyExpr).ifPresent(e -> finalExpr.add(ctx.mkNot(e)));
+        manager.addClause(w.mkAndNotEmpty(finalExpr));
     }
 
     public void encodeAutomata(List<AutomatonDiagram> diagrams)
@@ -158,6 +176,9 @@ public class SequenceEncoder {
         }
     }
 
+    /**
+     * calculate priority map for the interruption fragments
+     */
     private void calPriorityMap()
     {
         for (IntFragment inf: flow) {
@@ -171,11 +192,18 @@ public class SequenceEncoder {
         }
     }
 
+    /**
+     * calculate all the events which are not belong to interruption fragments
+     */
     private void calCleanEvents()
     {
         this.cleanEvents = getAllEventsInFrag(clean, new ArrayList<>());
     }
 
+    /**
+     * construct mask instruction map
+     * mask variable -> int fragment
+     */
     private void calMaskMap()
     {
         for (IntFragment f: flow) {
@@ -185,6 +213,9 @@ public class SequenceEncoder {
         }
     }
 
+    /**
+     * unfold int fragment according to the maximal occurrence time
+     */
     private void unfoldIntFrag()
     {
         for (IntFragment f: flow) {
@@ -271,7 +302,7 @@ public class SequenceEncoder {
     }
 
     /**
-     * construct the order of each instance inside a fragment
+     * construct the event order of each instance inside a fragment
      * @param covered the instances covered by the fragment
      * @param children the elements in the fragment
      * @return the map of the order of the instances: {instance: order list}
@@ -345,6 +376,14 @@ public class SequenceEncoder {
         return result;
     }
 
+    /**
+     * unfold loop fragment
+     * @param covered the covered instance
+     * @param children
+     * @param loopQueue the loop queue which comes from outer fragment
+     * @param loop the loop times of the loop fragment
+     * @return the unfolded loop block
+     */
     private Map<Instance, List<Event>> consLoopBlockMap(List<Instance> covered,
                                                         List<SDComponent> children,
                                                         List<Integer> loopQueue,
@@ -428,9 +467,16 @@ public class SequenceEncoder {
         for (Pair<Event, Event> p: set) {
             subs.add(encodeTwoEvents(p.getLeft(), p.getRight()));
         }
-        return Z3Util.mkAnd(subs, ctx);
+        return w.mkAnd(subs);
     }
 
+    /**
+     * encode sequential relation between events inside a fragment
+     * @param virtualHead the virtual head of the fragment
+     * @param virtualTail the virtual tail of the fragment
+     * @param orders the event order of each instance
+     * @return the bool expression which represents the relation inside the fragment
+     */
     private BoolExpr encodeWholeRelation(Event virtualHead,
                                          Event virtualTail,
                                          Map<Instance, List<Event>> orders)
@@ -450,7 +496,7 @@ public class SequenceEncoder {
             ht.add(encodeTwoEvents(virtualHead, virtualTail));
         }
         relationExpr.ifPresent(ht::add);
-        return Z3Util.mkAndNotEmpty(ht, ctx);
+        return w.mkAndNotEmpty(ht);
     }
 
     /**
@@ -487,7 +533,7 @@ public class SequenceEncoder {
         for (IntFragment fragment : flow) {
             subs.add(encodeSingleIntFrag(fragment));
         }
-        return Z3Util.mkAnd(subs, ctx);
+        return w.mkAnd(subs);
     }
 
     private BoolExpr encodeSingleIntFrag(IntFragment f) throws Z3Exception
@@ -518,7 +564,7 @@ public class SequenceEncoder {
             subs.add(ctx.mkNot(ctx.mkAnd(encodeTwoEvents(head, ev),
                     encodeTwoEvents(ev, tail))));
         }
-        return Z3Util.mkAndNotEmpty(subs, ctx);
+        return w.mkAndNotEmpty(subs);
     }
 
     private Optional<BoolExpr> scanMask(List<SDComponent> children, List<Integer> loopQueue)
@@ -544,7 +590,7 @@ public class SequenceEncoder {
                 }
             }
         }
-        return Z3Util.mkAnd(subs, ctx);
+        return w.mkAnd(subs);
     }
 
     private void appendInstruction(Map<String, List<Pair<Event, Event>>> map,
@@ -615,8 +661,8 @@ public class SequenceEncoder {
                         for (Set<Pair<IntFragment, Integer>> per: collector) {
                             BoolExpr identity = yieldIntIdentity(per, can, loopQueue);
                             Pair<ArithExpr, ArithExpr> interval = p.getInterval(actualMap.get(can));
-                            ArithExpr base = Z3Util.mkSub(prefix + can.getLeft(),
-                                    prefix + can.getRight(), ctx);
+                            ArithExpr base = w.mkSub(prefix + can.getLeft(),
+                                    prefix + can.getRight());
                             List<BoolExpr> seq = new ArrayList<>();
                             RealSort rs = ctx.mkRealSort();
                             for (Pair<IntFragment, Integer> p: per) {
@@ -635,14 +681,14 @@ public class SequenceEncoder {
                                 cleanCP = ctx.mkAnd(ctx.mkLe(interval.getLeft(), base),
                                         ctx.mkLe(base, interval.getRight()));
                             }
-                            num.add(ctx.mkAnd(identity, cleanCP, Z3Util.mkAndNotEmpty(seq, ctx)));
+                            num.add(ctx.mkAnd(identity, cleanCP, w.mkAndNotEmpty(seq)));
                         }
                     }
                 }
-                Z3Util.mkOr(num, ctx).ifPresent(exprs::add);
+                w.mkOr(num).ifPresent(exprs::add);
             }
         }
-        return Z3Util.mkAnd(exprs, ctx);
+        return w.mkAnd(exprs);
     }
 
     private BoolExpr yieldIntIdentity(Set<Pair<IntFragment, Integer>> per,
@@ -656,7 +702,7 @@ public class SequenceEncoder {
         for (Pair<IntFragment, Integer> p: per) {
             exprs.add(ctx.mkEq(ctx.mkConst(ctx.mkSymbol(getIntFragVar(p)), ss), flagExpr));
         }
-        return Z3Util.mkAndNotEmpty(exprs, ctx);
+        return w.mkAndNotEmpty(exprs);
     }
 
     private BoolExpr encodeContainer(Fragment f, List<Integer> loopQueue) throws Z3Exception
@@ -673,7 +719,7 @@ public class SequenceEncoder {
         exprs.add(encodeGeZero(copyEvent(f.getVirtualHead(), loopQueue)));
         exprs.add(relationExpr);
         encodeChildren(f.getChildren(), loopQueue).ifPresent(exprs::add);
-        return Z3Util.mkAndNotEmpty(exprs, ctx);
+        return w.mkAndNotEmpty(exprs);
     }
 
     private BoolExpr encodeOptFragment(OptFragment of, List<Integer> loopQueue) throws Z3Exception
@@ -688,7 +734,7 @@ public class SequenceEncoder {
         exprs.add(encodeWholeRelation(copyEvent(of.getVirtualHead(), loopQueue),
                 copyEvent(of.getVirtualTail(), loopQueue), orders));
         encodeChildren(of.getChildren(), loopQueue).ifPresent(exprs::add);
-        return Z3Util.mkAndNotEmpty(exprs, ctx);
+        return w.mkAndNotEmpty(exprs);
     }
 
     private BoolExpr encodeAltFragment(AltFragment af, List<Integer> loopQueue) throws Z3Exception
@@ -713,8 +759,8 @@ public class SequenceEncoder {
         encodeChildren(af.getElseChildren(), loopQueue).ifPresent(elseExprs::add);
         encodeConstraints(af.getElseChildren(), af.getCovered(), loopQueue).ifPresent(elseExprs::add);
         scanMask(af.getElseChildren(), loopQueue).ifPresent(elseExprs::add);
-        altExpr[0] = Z3Util.mkAndNotEmpty(ifExpers, ctx);
-        altExpr[1] = Z3Util.mkAndNotEmpty(elseExprs, ctx);
+        altExpr[0] = w.mkAndNotEmpty(ifExpers);
+        altExpr[1] = w.mkAndNotEmpty(elseExprs);
         return ctx.mkOr(altExpr);
     }
 
@@ -728,7 +774,7 @@ public class SequenceEncoder {
             encodeConstraints(lf.getChildren(), lf.getCovered(), nextLoopQueue).ifPresent(exprs::add);
             encodeChildren(lf.getChildren(), nextLoopQueue).ifPresent(exprs::add);
             scanMask(lf.getChildren(), nextLoopQueue).ifPresent(exprs::add);
-            maxExpr[i] = Z3Util.mkAndNotEmpty(exprs, ctx);
+            maxExpr[i] = w.mkAndNotEmpty(exprs);
             encodeProperties(lf, nextLoopQueue);
         }
         BoolExpr[] loopExpr = new BoolExpr[lf.getMax() - lf.getMin() + 1];
@@ -756,7 +802,7 @@ public class SequenceEncoder {
                 subs.add(encodeCleanFrag((Fragment) child, loopQueue));
             }
         }
-        return Z3Util.mkAnd(subs, ctx);
+        return w.mkAnd(subs);
     }
 
     /**
@@ -866,8 +912,8 @@ public class SequenceEncoder {
     private ArithExpr getIntFragTime(Pair<IntFragment, Integer> p)
     {
         String prefix = "loop_" + p.getRight() + "_";
-        return Z3Util.mkSub(prefix + p.getLeft().getVirtualTail().getName(),
-                prefix + p.getLeft().getVirtualHead().getName(), ctx);
+        return w.mkSub(prefix + p.getLeft().getVirtualTail().getName(),
+                prefix + p.getLeft().getVirtualHead().getName());
     }
 
     private RealExpr getIntFragHead(Pair<IntFragment, Integer> p)

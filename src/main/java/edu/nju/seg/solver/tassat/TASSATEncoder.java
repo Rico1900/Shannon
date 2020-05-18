@@ -9,7 +9,7 @@ import edu.nju.seg.model.*;
 import edu.nju.seg.parser.ExprParser;
 import edu.nju.seg.solver.SolverManager;
 import edu.nju.seg.util.Pair;
-import edu.nju.seg.util.Z3Util;
+import edu.nju.seg.util.Z3Wrapper;
 
 import java.util.*;
 
@@ -29,6 +29,8 @@ public class TASSATEncoder {
 
     private ExprParser p;
 
+    private Z3Wrapper w;
+
     private Map<String, SequenceDiagram> mscMap;
 
     private Set<String> symbolSet;
@@ -46,6 +48,7 @@ public class TASSATEncoder {
         this.targets = targets;
         this.ctx = manager.getContext();
         this.p = new ExprParser(ctx);
+        this.w = new Z3Wrapper(ctx);
         consMscMap();
         collectSymbol();
         constructConstraintMap();
@@ -66,7 +69,7 @@ public class TASSATEncoder {
         List<BoolExpr> exprs = new ArrayList<>();
         BoolExpr startExper = ctx.mkEq(mkLocVar(0), ctx.mkString(start.getType().name()));
         exprs.add(startExper);
-        exprs.add(ctx.mkGe(Z3Util.mkRealVar(Z3Util.indexPrefix(0) + start.getType().name(), ctx),
+        exprs.add(ctx.mkGe(w.mkRealVar(w.indexPrefix(0) + start.getType().name()),
                 ctx.mkReal(0)));
         exprs.add(ctx.mkEq(mkLocVar(bound), ctx.mkString(end.getType().name())));
         List<BoolExpr> next = new ArrayList<>();
@@ -75,10 +78,10 @@ public class TASSATEncoder {
             subs.add(encodeLocExpr(1, r.getTarget()));
             encodeMsc(1, r.getTarget().getStateName()).ifPresent(subs::add);
             encodeMscOrder(0, start, 1, r.getTarget()).ifPresent(subs::add);
-            next.add(ctx.mkImplies(startExper, Z3Util.mkAndNotEmpty(subs, ctx)));
+            next.add(ctx.mkImplies(startExper, w.mkAndNotEmpty(subs)));
         }
-        exprs.add(Z3Util.mkOrNotEmpty(next, ctx));
-        return Z3Util.mkAndNotEmpty(exprs, ctx);
+        exprs.add(w.mkOrNotEmpty(next));
+        return w.mkAndNotEmpty(exprs);
     }
 
     private BoolExpr encodeConnection() throws Z3Exception
@@ -96,12 +99,12 @@ public class TASSATEncoder {
                             .ifPresent(subs::add);
                     encodeGlobalConstraints(i, s.getStateName(), i + 1, r.getTarget().getStateName())
                             .ifPresent(subs::add);
-                    next.add(Z3Util.mkAndNotEmpty(subs, ctx));
+                    next.add(w.mkAndNotEmpty(subs));
                 }
-                exprs.add(ctx.mkImplies(current, Z3Util.mkOrNotEmpty(next, ctx)));
+                exprs.add(ctx.mkImplies(current, w.mkOrNotEmpty(next)));
             }
         }
-        return Z3Util.mkAndNotEmpty(exprs, ctx);
+        return w.mkAndNotEmpty(exprs);
     }
 
     private BoolExpr encodeTargets()
@@ -112,9 +115,9 @@ public class TASSATEncoder {
             for (int i = 1; i < bound; i++) {
                 subs.add(ctx.mkEq(mkLocVar(i), ctx.mkString(t)));
             }
-            expers.add(Z3Util.mkOrNotEmpty(subs, ctx));
+            expers.add(w.mkOrNotEmpty(subs));
         }
-        return Z3Util.mkAndNotEmpty(expers, ctx);
+        return w.mkAndNotEmpty(expers);
     }
 
     private Optional<BoolExpr> encodeNonTerminated()
@@ -123,7 +126,7 @@ public class TASSATEncoder {
         for (int i = 1; i < bound; i++) {
             exprs.add(ctx.mkNot(ctx.mkEq(mkLocVar(i), ctx.mkString(StateType.FINAL.name()))));
         }
-        return Z3Util.mkAnd(exprs, ctx);
+        return w.mkAnd(exprs);
     }
 
     private void consMscMap()
@@ -185,7 +188,7 @@ public class TASSATEncoder {
      */
     private Expr mkLocVar(int k)
     {
-        return Z3Util.mkStringVar("loc_" + k, ctx);
+        return w.mkStringVar("loc_" + k);
     }
 
     private BoolExpr encodeLocExpr(int k, SimpleState state)
@@ -213,17 +216,17 @@ public class TASSATEncoder {
                                               int sucIndex,
                                               SimpleState suc)
     {
-        String prePrefix = Z3Util.indexPrefix(preIndex);
-        String sucPrefix = Z3Util.indexPrefix(sucIndex);
+        String prePrefix = w.indexPrefix(preIndex);
+        String sucPrefix = w.indexPrefix(sucIndex);
         if (mscMap.containsKey(suc.getStateName()) && mscMap.containsKey(pre.getStateName())) {
-            return Optional.of(ctx.mkLe(Z3Util.mkRealVar(prePrefix + mscMap.get(pre.getStateName()).getEnd(), ctx),
-                    Z3Util.mkRealVar(sucPrefix + mscMap.get(suc.getStateName()).getStart(), ctx)));
+            return Optional.of(ctx.mkLe(w.mkRealVar(prePrefix + mscMap.get(pre.getStateName()).getEnd()),
+                    w.mkRealVar(sucPrefix + mscMap.get(suc.getStateName()).getStart())));
         } else if (mscMap.containsKey(suc.getStateName()) && pre.getType() == StateType.INITIAL) {
-            return Optional.of(ctx.mkLe(Z3Util.mkRealVar(Z3Util.indexPrefix(0) + StateType.INITIAL.name(), ctx),
-                    Z3Util.mkRealVar(sucPrefix + mscMap.get(suc.getStateName()).getStart(), ctx)));
+            return Optional.of(ctx.mkLe(w.mkRealVar(w.indexPrefix(0) + StateType.INITIAL.name()),
+                    w.mkRealVar(sucPrefix + mscMap.get(suc.getStateName()).getStart())));
         } else if (mscMap.containsKey(pre.getStateName()) && suc.getType() == StateType.FINAL) {
-            return Optional.of(ctx.mkLe(Z3Util.mkRealVar(prePrefix + mscMap.get(pre.getStateName()).getEnd(), ctx),
-                    Z3Util.mkRealVar(Z3Util.indexPrefix(bound) + StateType.FINAL.name(), ctx)));
+            return Optional.of(ctx.mkLe(w.mkRealVar(prePrefix + mscMap.get(pre.getStateName()).getEnd()),
+                    w.mkRealVar(w.indexPrefix(bound) + StateType.FINAL.name())));
         } else {
             return Optional.empty();
         }
@@ -241,8 +244,8 @@ public class TASSATEncoder {
             if (constraintMap.containsKey(key)) {
                 String con = constraintMap.get(key);
                 Pair<String, String> vars = p.getVarFromCP(con);
-                con = con.replaceAll(vars.getLeft(), Z3Util.indexPrefix(sucIndex) + vars.getLeft())
-                        .replaceAll(vars.getRight(), Z3Util.indexPrefix(preIndex) + vars.getRight());
+                con = con.replaceAll(vars.getLeft(), w.indexPrefix(sucIndex) + vars.getLeft())
+                        .replaceAll(vars.getRight(), w.indexPrefix(preIndex) + vars.getRight());
                 return Optional.of(p.convert(con));
             }
         }

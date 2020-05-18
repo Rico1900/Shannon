@@ -8,7 +8,7 @@ import edu.nju.seg.exception.Z3Exception;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.ExprParser;
 import edu.nju.seg.solver.SolverManager;
-import edu.nju.seg.util.Z3Util;
+import edu.nju.seg.util.Z3Wrapper;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -30,6 +30,8 @@ public class SimpleMSCEncoder {
     private Context ctx;
 
     private ExprParser p;
+    
+    private Z3Wrapper w;
 
     private Map<Instance, List<Event>> lifeSpanMap;
 
@@ -50,7 +52,8 @@ public class SimpleMSCEncoder {
         this.manager = manager;
         this.ctx = manager.getContext();
         this.p = new ExprParser(ctx);
-        this.prefix = Z3Util.indexPrefix(boundIndex);
+        this.w = new Z3Wrapper(ctx);
+        this.prefix = w.indexPrefix(boundIndex);
         this.miniMap = consMiniMap(global);
     }
 
@@ -63,7 +66,7 @@ public class SimpleMSCEncoder {
         encodeLifeSpan().ifPresent(exprs::add);
         encodeMessage(sd.getContainer().getChildren()).ifPresent(exprs::add);
         encodeConstraints().ifPresent(exprs::add);
-        return Z3Util.mkAndNotEmpty(exprs, ctx);
+        return w.mkAndNotEmpty(exprs);
     }
 
     private Map<Set<String>, String> consMiniMap(List<String> globals)
@@ -124,20 +127,20 @@ public class SimpleMSCEncoder {
     private BoolExpr encodeStartEnd() throws Z3Exception
     {
         List<BoolExpr> exprs = new ArrayList<>();
-        exprs.add(ctx.mkGe(Z3Util.mkSub(prefix + sd.getEnd(), prefix + sd.getStart(), ctx),
-                Z3Util.mkRealExpr("0", ctx)));
+        exprs.add(ctx.mkGe(w.mkSub(prefix + sd.getEnd(), prefix + sd.getStart()),
+                w.mkRealExpr("0")));
         for (Instance ins: lifeSpanMap.keySet()) {
             List<Event> events = lifeSpanMap.get(ins);
             int len = events.size();
             if (len > 0) {
-                exprs.add(ctx.mkLe(Z3Util.mkRealVar(prefix + sd.getStart(), ctx),
-                        Z3Util.mkRealVar(prefix + events.get(0).getName(), ctx)));
-                exprs.add(ctx.mkGe(Z3Util.mkRealVar(prefix + sd.getEnd(), ctx),
-                        Z3Util.mkRealVar(prefix + events.get(len - 1).getName(), ctx)));
+                exprs.add(ctx.mkLe(w.mkRealVar(prefix + sd.getStart()),
+                        w.mkRealVar(prefix + events.get(0).getName())));
+                exprs.add(ctx.mkGe(w.mkRealVar(prefix + sd.getEnd()),
+                        w.mkRealVar(prefix + events.get(len - 1).getName())));
             }
 
         }
-        return Z3Util.mkAndNotEmpty(exprs, ctx);
+        return w.mkAndNotEmpty(exprs);
     }
 
     private Optional<BoolExpr> encodeLifeSpan()
@@ -150,12 +153,12 @@ public class SimpleMSCEncoder {
                 for (int i = 0; i < len - 1; i++) {
                     Event pre = events.get(i);
                     Event suc = events.get(i + 1);
-                    exprs.add(ctx.mkLe(Z3Util.mkRealVar(prefix + pre.getName(), ctx),
-                            Z3Util.mkRealVar(prefix + suc.getName(), ctx)));
+                    exprs.add(ctx.mkLe(w.mkRealVar(prefix + pre.getName()),
+                            w.mkRealVar(prefix + suc.getName())));
                 }
             }
         }
-        return Z3Util.mkAnd(exprs, ctx);
+        return w.mkAnd(exprs);
     }
 
     private Optional<BoolExpr> encodeMessage(List<SDComponent> children)
@@ -165,8 +168,8 @@ public class SimpleMSCEncoder {
             if (c instanceof Message) {
                 Message m = (Message) c;
                 List<BoolExpr> subs = new ArrayList<>();
-                RealExpr start = Z3Util.mkRealVar(prefix + m.getFrom().getName(), ctx);
-                RealExpr end = Z3Util.mkRealVar(prefix + m.getTo().getName(), ctx);
+                RealExpr start = w.mkRealVar(prefix + m.getFrom().getName());
+                RealExpr end = w.mkRealVar(prefix + m.getTo().getName());
                 subs.add(ctx.mkLe(start, end));
                 Set<String> key = new HashSet<>();
                 key.add(m.getFrom().getBelongTo().getVariable());
@@ -174,12 +177,12 @@ public class SimpleMSCEncoder {
                 if (miniMap.containsKey(key)) {
                     subs.add(ctx.mkGe(ctx.mkSub(end, start), ctx.mkReal(miniMap.get(key))));
                 }
-                exprs.add(Z3Util.mkAndNotEmpty(subs, ctx));
+                exprs.add(w.mkAndNotEmpty(subs));
             } else {
                 throw new EncodeException("wrong component");
             }
         }
-        return Z3Util.mkAnd(exprs, ctx);
+        return w.mkAnd(exprs);
     }
 
     private Optional<BoolExpr> encodeConstraints()
@@ -194,7 +197,7 @@ public class SimpleMSCEncoder {
                     }
                 })
                 .collect(Collectors.toList());
-        return Z3Util.mkAnd(exprs, ctx);
+        return w.mkAnd(exprs);
     }
 
     private String mapConstraint(String constraint)

@@ -12,7 +12,7 @@ import edu.nju.seg.model.State;
 import edu.nju.seg.parser.EquationParser;
 import edu.nju.seg.parser.ExprParser;
 import edu.nju.seg.util.$;
-import edu.nju.seg.util.Z3Util;
+import edu.nju.seg.util.Z3Wrapper;
 
 import java.util.*;
 
@@ -26,6 +26,8 @@ public class AutomatonEncoder {
 
     private ExprParser p;
 
+    private Z3Wrapper w;
+
     private int bound;
 
     public AutomatonEncoder(AutomatonDiagram diagram,
@@ -36,6 +38,7 @@ public class AutomatonEncoder {
         this.manager = manager;
         this.ctx = manager.getContext();
         this.p = new ExprParser(ctx);
+        this.w = new Z3Wrapper(ctx);
         this.bound = bound;
     }
 
@@ -58,14 +61,16 @@ public class AutomatonEncoder {
             for (Relation r : outers) {
                 String assignment = r.getAssignment();
                 List<String> assignments = $.splitExpr(assignment);
-                BoolExpr sub = encodeCurrentLocExpr(0, r.getTarget());
+                List<BoolExpr> initExpr = new ArrayList<>();
+                initExpr.add(encodeCurrentLocExpr(0, r.getTarget()));
                 for (String as : assignments) {
-                    sub = ctx.mkAnd(sub, p.convertWithBound(as, 0));
+                    initExpr.add(p.convertWithBound(as, 0));
                 }
                 // ensure initial invariant condition
-                inits.add(ctx.mkAnd(sub, encodeInvariant(0, r.getTarget())));
+                encodeInvariant(0, r.getTarget()).ifPresent(initExpr::add);
+                inits.add(w.mkAndNotEmpty(initExpr));
             }
-            manager.addClause(Z3Util.mkOrNotEmpty(inits, ctx));
+            manager.addClause(w.mkOrNotEmpty(inits));
         } else {
             throw new EncodeException("wrong initial assignment");
         }
@@ -80,7 +85,7 @@ public class AutomatonEncoder {
         for (State s: diagram.getAllStates()) {
             bools.add(encodeCurrentLocExpr(bound, s));
         }
-        manager.addClause(Z3Util.mkOrNotEmpty(bools, ctx));
+        manager.addClause(w.mkOrNotEmpty(bools));
     }
 
     /**
@@ -101,7 +106,12 @@ public class AutomatonEncoder {
                     trans = ctx.mkOr(encodeStutter(i, s, vars),
                             encodeTimed(i, s, vars));
                 }
-                manager.addClause(ctx.mkAnd(ctx.mkImplies(current, trans), encodeInvariant(i + 1, s)));
+                Optional<BoolExpr> invar = encodeInvariant(i + 1, s);
+                if (invar.isPresent()) {
+                    manager.addClause(ctx.mkAnd(ctx.mkImplies(current, trans), invar.get()));
+                } else {
+                    manager.addClause(ctx.mkImplies(current, trans));
+                }
             }
         }
     }
@@ -126,7 +136,7 @@ public class AutomatonEncoder {
         for (String v: vars) {
             bools.add(ctx.mkEq(mkVarVar(v, k + 1), mkVarVar(v, k)));
         }
-        return ctx.mkAnd(result, Z3Util.mkAndNotEmpty(bools, ctx));
+        return ctx.mkAnd(result, w.mkAndNotEmpty(bools));
     }
 
     /**
@@ -176,16 +186,24 @@ public class AutomatonEncoder {
             BoolExpr loc = ctx.mkEq(mkLocVar(k + 1), ctx.mkString(r.getTarget().getStateName()));
             BoolExpr label = encodeLabel(k, "J-" + r.getName());
             BoolExpr single = ctx.mkAnd(time, loc, label);
-            // TODO: jump condition, double check
             for (String c: $.splitExpr(r.getCondition())) {
                 single = ctx.mkAnd(single, p.convertWithBound(c, k));
             }
-            for (String v: vars) {
-                single = ctx.mkAnd(single, ctx.mkEq(mkVarVar(v, k), mkVarVar(v, k + 1)));
+            List<String> assignments = $.splitExpr(r.getAssignment());
+            if ($.isNotBlankList(assignments)) {
+                // encode jump assignment
+                for (String assign: assignments) {
+                    single = ctx.mkAnd(single, p.convertWithBound(assign, k + 1));
+                }
+            } else {
+                // variables remain unchanged
+                for (String v: vars) {
+                    single = ctx.mkAnd(single, ctx.mkEq(mkVarVar(v, k), mkVarVar(v, k + 1)));
+                }
             }
             nexts.add(single);
         }
-        return Z3Util.mkOr(nexts, ctx);
+        return w.mkOr(nexts);
     }
 
     /**
@@ -194,18 +212,17 @@ public class AutomatonEncoder {
      * @param current the current state
      * @return the bool expression that represent the invariant conditions
      */
-    private BoolExpr encodeInvariant(int k, State current) throws Z3Exception
+    private Optional<BoolExpr> encodeInvariant(int k, State current) throws Z3Exception
     {
-        // TODO: double check what to do if there is no invariant conditions
         if ($.isBlankList(current.getConstraints())) {
-            return ctx.mkBoolConst(current.getStateName() + "_" + k + "_dummy");
+            return Optional.empty();
         }
         BoolExpr currentExpr = encodeCurrentLocExpr(k, current);
         List<BoolExpr> invars = new ArrayList<>();
         for (String c: current.getConstraints()) {
             invars.add(p.convertWithBound(c.trim(), k));
         }
-        return ctx.mkImplies(currentExpr, Z3Util.mkAndNotEmpty(invars, ctx));
+        return Optional.of(ctx.mkImplies(currentExpr, w.mkAndNotEmpty(invars)));
     }
 
     /**
@@ -231,7 +248,7 @@ public class AutomatonEncoder {
      */
     private Expr mkLocVar(int k)
     {
-        return Z3Util.mkStringVar("loc_" + k, ctx);
+        return w.mkStringVar("loc_" + k);
     }
 
     /**
@@ -242,12 +259,12 @@ public class AutomatonEncoder {
      */
     private RealExpr mkVarVar(String var, int k)
     {
-        return Z3Util.mkRealVar(var + "_" + k, ctx);
+        return w.mkRealVar(var + "_" + k);
     }
 
     private Expr mkLabelVar(int k)
     {
-        return Z3Util.mkStringVar("label_" + k, ctx);
+        return w.mkStringVar("label_" + k);
     }
 
 }

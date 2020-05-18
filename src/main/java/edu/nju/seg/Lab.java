@@ -84,7 +84,8 @@ public class Lab {
             if (diagrams.size() == 1) {
                 Diagram d = diagrams.get(0);
                 if (d instanceof SequenceDiagram) {
-                    SequenceEncoder encoder = new SequenceEncoder((SequenceDiagram) d, manager);
+                    SequenceEncoder encoder = new SequenceEncoder((SequenceDiagram) d, manager,
+                            config.getType(), config.getBound());
                     encoder.encode();
                 } else {
                     SimpleLog.error("wrong diagram type for ISD SMT verification");
@@ -162,7 +163,8 @@ public class Lab {
         try {
             SolverManager manager = new SolverManager();
             Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(diagrams);
-            SequenceEncoder encoder = new SequenceEncoder(p.getLeft(), manager);
+            SequenceEncoder encoder = new SequenceEncoder(p.getLeft(), manager,
+                    config.getType(), config.getBound());
             encoder.encode();
             encoder.encodeAutomata(p.getRight());
             System.out.println(manager.check());

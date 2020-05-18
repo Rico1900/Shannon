@@ -6,31 +6,33 @@ import edu.nju.seg.exception.Z3Exception;
 import java.util.List;
 import java.util.Optional;
 
-public class Z3Util {
+public class Z3Wrapper {
+
+    private Context ctx;
+
+    public Z3Wrapper(Context ctx) {
+        this.ctx = ctx;
+    }
 
     /**
      * make and expression for the bool expression list
      * @param list the bool expression that may be blank
-     * @param ctx Z3 context
      * @return maybe and expression
      */
-    public static Optional<BoolExpr> mkAnd(List<BoolExpr> list,
-                                           Context ctx)
+    public Optional<BoolExpr> mkAnd(List<BoolExpr> list)
     {
         if ($.isBlankList(list)) {
             return Optional.empty();
         }
-        return Optional.of(mkAndNotEmpty(list, ctx));
+        return Optional.of(mkAndNotEmpty(list));
     }
 
     /**
      * make and expression for non-empty list
      * @param list the bool expression
-     * @param ctx Z3 context
      * @return the and bool expression
      */
-    public static BoolExpr mkAndNotEmpty(List<BoolExpr> list,
-                                         Context ctx)
+    public BoolExpr mkAndNotEmpty(List<BoolExpr> list)
     {
         if (list.size() == 1) {
             return list.get(0);
@@ -41,26 +43,22 @@ public class Z3Util {
     /**
      * make or expression for bool expression
      * @param list the bool expression that may be blank
-     * @param ctx Z3 context
      * @return maybe bool expression
      */
-    public static Optional<BoolExpr> mkOr(List<BoolExpr> list,
-                                          Context ctx)
+    public Optional<BoolExpr> mkOr(List<BoolExpr> list)
     {
         if ($.isBlankList(list)) {
             return Optional.empty();
         }
-        return Optional.of(mkOrNotEmpty(list, ctx));
+        return Optional.of(mkOrNotEmpty(list));
     }
 
     /**
      * make or bool expression for non-empty list
      * @param list bool expression list
-     * @param ctx Z3 context
      * @return the or bool expression
      */
-    public static BoolExpr mkOrNotEmpty(List<BoolExpr> list,
-                                        Context ctx)
+    public BoolExpr mkOrNotEmpty(List<BoolExpr> list)
     {
         if (list.size() == 1) {
             return list.get(0);
@@ -68,16 +66,19 @@ public class Z3Util {
         return ctx.mkOr(list.toArray(new BoolExpr[0]));
     }
 
+    public ArithExpr sumUpReals(List<RealExpr> list)
+    {
+        return ctx.mkAdd(list.toArray(new RealExpr[0]));
+    }
+
     /**
      * make sub expression
      * @param minuend the minuend
      * @param subtrahend the subtrahend
-     * @param ctx Z3 context
      * @return arithmetic expression
      */
-    public static ArithExpr mkSub(String minuend,
-                                  String subtrahend,
-                                  Context ctx)
+    public ArithExpr mkSub(String minuend,
+                                  String subtrahend)
     {
         RealSort rs = ctx.mkRealSort();
         RealExpr v1 = (RealExpr) ctx.mkConst(ctx.mkSymbol(minuend), rs);
@@ -88,12 +89,10 @@ public class Z3Util {
     /**
      * make real expression according to the string
      * @param s the string that needs to be
-     * @param ctx Z3 context
      * @return the arithmetic expression
      * @throws Z3Exception throws when the given string is null
      */
-    public static ArithExpr mkRealExpr(String s,
-                                       Context ctx) throws Z3Exception
+    public ArithExpr mkRealExpr(String s) throws Z3Exception
     {
         if (s == null) {
             throw new Z3Exception();
@@ -101,12 +100,12 @@ public class Z3Util {
         return ctx.mkReal(s);
     }
 
-    public static RealExpr mkRealVar(String s, Context ctx)
+    public RealExpr mkRealVar(String s)
     {
         return (RealExpr) ctx.mkConst(ctx.mkSymbol(s), ctx.mkRealSort());
     }
 
-    public static Expr mkStringVar(String s, Context ctx)
+    public Expr mkStringVar(String s)
     {
         return ctx.mkConst(ctx.mkSymbol(s), ctx.mkStringSort());
     }
@@ -116,14 +115,12 @@ public class Z3Util {
      * @param operator the operator string
      * @param left the left expression
      * @param right the right expression
-     * @param ctx Z3 context
      * @return bool expression
      * @throws Z3Exception when the operator is not supported
      */
-    public static BoolExpr mkOperatorExpr(String operator,
-                                          ArithExpr left,
-                                          ArithExpr right,
-                                          Context ctx) throws Z3Exception
+    public BoolExpr mkOperatorExpr(String operator,
+                                   ArithExpr left,
+                                   ArithExpr right) throws Z3Exception
     {
         switch (operator) {
             case "<":
@@ -148,7 +145,7 @@ public class Z3Util {
      * @param index the bound index
      * @return index prefix
      */
-    public static String indexPrefix(int index)
+    public String indexPrefix(int index)
     {
         return "index_" + index + "_";
     }
