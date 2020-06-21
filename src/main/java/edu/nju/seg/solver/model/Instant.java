@@ -1,5 +1,6 @@
 package edu.nju.seg.solver.model;
 
+import edu.nju.seg.model.Event;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,5 +13,12 @@ public class Instant extends Node {
     private String prefix;
 
     private String name;
+
+    public Instant(Event e,
+                   String prefix)
+    {
+        this.name = e.getName();
+        this.prefix = prefix;
+    }
 
 }

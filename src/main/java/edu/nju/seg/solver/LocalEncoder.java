@@ -40,7 +40,7 @@ public class LocalEncoder {
 
     private Map<String, State> stateMap = new HashMap<>();
 
-    private Map<String, Relation> edgeMap= new HashMap<>();
+    private Map<String, Relation> edgeMap = new HashMap<>();
 
     private int keyIndex;
 

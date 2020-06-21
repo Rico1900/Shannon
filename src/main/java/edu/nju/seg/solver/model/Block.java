@@ -12,4 +12,9 @@ public class Block extends Node {
 
     private Pair<Node, Node> subs;
 
+    public Block(Node l, Node r)
+    {
+        this.subs = new Pair<>(l, r);
+    }
+
 }
