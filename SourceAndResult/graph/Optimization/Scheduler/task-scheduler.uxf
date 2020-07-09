@@ -4,31 +4,27 @@
   <element>
     <id>UMLSequenceAllInOne</id>
     <coordinates>
-      <x>40</x>
+      <x>20</x>
       <y>50</y>
-      <w>530</w>
-      <h>420</h>
+      <w>360</w>
+      <h>210</h>
     </coordinates>
     <panel_attributes>title=Task Scheduler
 obj=T1~a
 obj=Scheduler~b
-obj=T2~c
 
-combinedFragment=int (p=1) TASK1 ~int1
+
 a-&gt;&gt;&gt;b : (e0,e1,waiting1);
 b-&gt;&gt;&gt;a : (e2,e3,running1);
---
 
-combinedFragment=int (p=2) TASK2 ~int2
-c-&gt;&gt;&gt;b : (e4,e5,waiting2);
-b-&gt;&gt;&gt;c : (e6,e7,running2);
---</panel_attributes>
+
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>590</x>
+      <x>440</x>
       <y>50</y>
       <w>200</w>
       <h>130</h>
@@ -40,13 +36,13 @@ b-&gt;&gt;&gt;c : (e6,e7,running2);
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>590</x>
-      <y>340</y>
+      <x>440</x>
+      <y>210</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
-    <panel_attributes>Goal
-min(e1 - e0)</panel_attributes>
+    <panel_attributes>Properties
+0.1 &lt;= e3 - e2 &lt;= 0.5</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>

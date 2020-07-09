@@ -92,7 +92,7 @@ public class Z3Wrapper {
      * @return the arithmetic expression
      * @throws Z3Exception throws when the given string is null
      */
-    public ArithExpr mkRealExpr(String s) throws Z3Exception
+    public ArithExpr mkReal(String s) throws Z3Exception
     {
         if (s == null) {
             throw new Z3Exception();

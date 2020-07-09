@@ -1,6 +1,7 @@
 package edu.nju.seg;
 
 
+import com.microsoft.z3.Status;
 import edu.nju.seg.config.ExperimentConfig;
 import edu.nju.seg.data.ConfigReader;
 import edu.nju.seg.exception.Z3Exception;
@@ -167,8 +168,9 @@ public class Lab {
                     config.getType(), config.getBound());
             encoder.encode();
             encoder.encodeAutomata(p.getRight());
-            System.out.println(manager.check());
-            System.out.println(manager.getEventTrace(true));
+            encoder.delegateToManager();
+            Status result = manager.check();
+            handleResult(result, manager);
         } catch (Z3Exception e) {
            logZ3Exception(e);
         }
@@ -203,9 +205,28 @@ public class Lab {
         return p;
     }
 
+    /**
+     * handle z2 exception log
+     * @param e exception
+     */
     private static void logZ3Exception(Z3Exception e)
     {
         SimpleLog.error(e.toString());
+    }
+
+    /**
+     * handle z3 result
+     * @param result z3 status
+     * @param manager z3 manager
+     */
+    private static void handleResult(Status result, SolverManager manager)
+    {
+        System.out.println(result);
+        if (result.toInt() == 0) {
+            System.out.println(manager.getProof());
+        } else {
+            System.out.println(manager.getEventTrace(true));
+        }
     }
 
 }

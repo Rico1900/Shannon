@@ -118,8 +118,8 @@ public class ExprParser {
                 leftVar = getTokenStr(left.child(0));
                 rightVar = getTokenStr(right);
             }
-            return new Pair<>(w.mkRealExpr(leftVar),
-                    w.mkRealExpr(rightVar));
+            return new Pair<>(w.mkReal(leftVar),
+                    w.mkReal(rightVar));
         } else if (depth == 3) {
             String leftVar = null;
             String rightVar = null;
@@ -130,8 +130,8 @@ public class ExprParser {
             } else {
                 rightVar = getTokenStr(right);
             }
-            return new Pair<>(w.mkRealExpr(leftVar),
-                    w.mkRealExpr(rightVar));
+            return new Pair<>(w.mkReal(leftVar),
+                    w.mkReal(rightVar));
         } else {
             throw new EncodeException("wrong constraints: " + cons);
         }
@@ -193,7 +193,13 @@ public class ExprParser {
 
     private ArithExpr mkExprByToken(SyntaxTree tree) throws Z3Exception
     {
-        return w.mkRealExpr(getTokenStr(tree));
+        String token = getTokenStr(tree);
+        if ($.isNumeric(token)) {
+            return w.mkReal(token);
+        } else {
+            return w.mkRealVar(token);
+        }
+
     }
 
     /**
@@ -209,7 +215,7 @@ public class ExprParser {
         int childDepth = 0;
         for (int i = 0; i < tree.count(); i++) {
             int temp = treeDepth(tree.child(i));
-            childDepth = temp > childDepth ? temp : childDepth;
+            childDepth = Math.max(temp, childDepth);
         }
         return 1 + childDepth;
     }

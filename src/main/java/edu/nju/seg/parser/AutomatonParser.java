@@ -100,8 +100,10 @@ public class AutomatonParser implements Parser {
             String t = m.group(1);
             if (t.equals("initial")) {
                 s.setType(StateType.INITIAL);
+                s.setStateName("INIT");
             } else if (t.equals("final")) {
                 s.setType(StateType.FINAL);
+                s.setStateName("FINAL");
             } else {
                 throw new ParseException("wrong special node type");
             }

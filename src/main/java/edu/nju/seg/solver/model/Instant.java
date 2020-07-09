@@ -21,4 +21,9 @@ public class Instant extends Node {
         this.prefix = prefix;
     }
 
+    public String getFullName()
+    {
+        return prefix + name;
+    }
+
 }

@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class RelationElement extends Element {
-
-    private static int padding = 10;
-
+    
     private int sourceX;
 
     private int sourceY;

@@ -63,6 +63,8 @@ public class SequenceEncoder {
 
     private int bound;
 
+    private List<BoolExpr> allExprs = new ArrayList<>();
+
     public SequenceEncoder(SequenceDiagram diagram,
                            SolverManager manager,
                            ExperimentalType type,
@@ -96,7 +98,12 @@ public class SequenceEncoder {
         finalExpr.add(cleanExpr);
         encodeIntFrag().ifPresent(finalExpr::add);
         w.mkAnd(propertyExpr).ifPresent(e -> finalExpr.add(ctx.mkNot(e)));
-        manager.addClause(w.mkAndNotEmpty(finalExpr));
+        allExprs.add(w.mkAndNotEmpty(finalExpr));
+    }
+
+    public void delegateToManager()
+    {
+        manager.addClause(w.mkAndNotEmpty(allExprs));
     }
 
     public void encodeAutomata(List<AutomatonDiagram> diagrams) throws Z3Exception
@@ -137,7 +144,7 @@ public class SequenceEncoder {
             w.mkAnd(subs).ifPresent(exprs::add);
             exprs.add(encodePathLabel(s.getLabel()));
         }
-        w.mkOr(exprs).ifPresent(manager::addClause);
+        w.mkOr(exprs).ifPresent(allExprs::add);
     }
 
     /**
@@ -627,7 +634,7 @@ public class SequenceEncoder {
         return w.mkAndNotEmpty(exprs);
     }
 
-    // TODO: we assume that option fragment can be treated as normal fragment
+    // TODO: we assume that optional fragment can be treated as normal fragment
     private BoolExpr encodeOptFragment(OptFragment of,
                                        List<Integer> loopQueue,
                                        Sequel current,

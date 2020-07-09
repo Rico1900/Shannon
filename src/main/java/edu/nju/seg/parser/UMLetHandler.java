@@ -131,7 +131,7 @@ public class UMLetHandler extends DefaultHandler {
                 e = new RelationElement();
                 String[] splits = parseAdditional();
                 int len = splits.length;
-                if (elementContent.equals("lt=->")) {
+                if (elementContent.contains("lt=->")) {
                     ((RelationElement) e).setSourceX((int) Float.parseFloat(splits[0]));
                     ((RelationElement) e).setSourceY((int) Float.parseFloat(splits[1]));
                     ((RelationElement) e).setTargetX((int) Float.parseFloat(splits[len - 2]));

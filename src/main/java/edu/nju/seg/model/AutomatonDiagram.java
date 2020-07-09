@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,13 @@ public class AutomatonDiagram extends Diagram {
         for (State s: allStates) {
             allVar.addAll(s.getVariables());
         }
+    }
+
+    public List<State> getAllStatesIncludeInit()
+    {
+        List<State> set = new ArrayList<>(getAllStates());
+        set.add(initial);
+        return set;
     }
 
 }

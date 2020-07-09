@@ -128,7 +128,7 @@ public class SimpleMSCEncoder {
     {
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(ctx.mkGe(w.mkSub(prefix + sd.getEnd(), prefix + sd.getStart()),
-                w.mkRealExpr("0")));
+                w.mkReal("0")));
         for (Instance ins: lifeSpanMap.keySet()) {
             List<Event> events = lifeSpanMap.get(ins);
             int len = events.size();

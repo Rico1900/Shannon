@@ -20,27 +20,26 @@ import edu.nju.seg.util.Pair;
 import edu.nju.seg.util.Z3Wrapper;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class LocalEncoder {
 
-    private AutomatonDiagram diagram;
+    private final AutomatonDiagram diagram;
 
-    private List<Node> lifetime;
+    private final List<Node> lifetime;
 
-    private SolverManager manager;
+    private final SolverManager manager;
 
-    private int bound;
+    private final int bound;
 
-    private Context ctx;
+    private final Context ctx;
 
-    private ExprParser p;
+    private final ExprParser p;
 
-    private Z3Wrapper w;
+    private final Z3Wrapper w;
 
-    private Map<String, State> stateMap = new HashMap<>();
+    private final Map<String, State> stateMap = new HashMap<>();
 
-    private Map<String, Relation> edgeMap = new HashMap<>();
+    private final Map<String, Relation> edgeMap = new HashMap<>();
 
     private int keyIndex;
 
@@ -77,16 +76,10 @@ public class LocalEncoder {
         }
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(encodeInit());
-        List<State> initStates = diagram.getInitial().getOuters().stream()
-                .map(Relation::getTarget)
-                .collect(Collectors.toList());
+        // encode init to first node
         Node firstNode = lifetime.get(0);
         State first = getHeadOfNode(firstNode);
-        List<BoolExpr> initExprs = new ArrayList<>();
-        for (State i: initStates) {
-            initExprs.add(encodeSegment(i, first, 0));
-        }
-        exprs.add(w.mkOrNotEmpty(initExprs));
+        exprs.add(encodeSegment(diagram.getInitial(), first, 0));
         for (int i = 0; i < lifetime.size() - 1; i++) {
             Node pre = lifetime.get(i);
             Node succ = lifetime.get(i + 1);
@@ -138,19 +131,21 @@ public class LocalEncoder {
             List<BoolExpr> exprs = new ArrayList<>();
             exprs.add(encodeCurrentLocExpr(index, r.getSource()));
             exprs.add(encodeCurrentLocExpr(index + 1, r.getTarget()));
-            exprs.add(encodeTimeExpr(index, 0));
-            exprs.add(encodeCurrentTime(((Instant) n).getPrefix() + ((Instant) n).getName(), index));
+            exprs.add(encodeTimeUnchanged(index));
+            // synchronized point
+            exprs.add(encodeTimeUntilNow(((Instant) n).getFullName(), index));
             encodeInvariant(index, r.getSource()).ifPresent(exprs::add);
             return Optional.of(w.mkAndNotEmpty(exprs));
         } else if (n instanceof Block) {
             Pair<Node, Node> p = ((Block) n).getSubs();
-            // TODO: verify the block
             if (p.getLeft() instanceof Instant) {
                 return encodeNode(p.getLeft(), index);
-            } else {
+            } else if (p.getRight() instanceof Instant) {
                 return encodeNode(p.getRight(), index);
+            } else {
+                throw new EncodeException("illegal block: " + n);
             }
-        } else  {
+        } else {
             throw new EncodeException("illegal node type: " + n);
         }
     }
@@ -179,21 +174,21 @@ public class LocalEncoder {
         }
     }
 
-    private BoolExpr encodeCurrentTime(String eventName,
-                                       int index) throws Z3Exception
+    private BoolExpr encodeTimeUntilNow(String eventName,
+                                        int index)
     {
         List<RealExpr> reals = new ArrayList<>();
-        for (int i = 0; i < index; i++) {
+        for (int i = 0; i <= index; i++) {
             reals.add(mkTimeVar(i));
         }
-        return ctx.mkEq(w.mkRealExpr(eventName), w.sumUpReals(reals));
+        return ctx.mkEq(w.mkRealVar(eventName), w.sumUpReals(reals));
     }
 
-    private BoolExpr encodeSingleRelation(int index,
-                                         Relation r) throws Z3Exception
+    private BoolExpr encodeSingleJump(int index,
+                                      Relation r) throws Z3Exception
     {
         State target = r.getTarget();
-        BoolExpr time = encodeTimeExpr(index, 0);
+        BoolExpr time = encodeTimeUnchanged(index);
         BoolExpr loc = ctx.mkEq(mkLocVar(index + 1), ctx.mkString(target.getStateName()));
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(ctx.mkAnd(time, loc));
@@ -239,7 +234,7 @@ public class LocalEncoder {
         int offset = calculateOffset(segIndex);
         List<BoolExpr> exprs = new ArrayList<>();
         for (int i = offset; i < offset + bound; i++) {
-            for (State s: diagram.getAllStates()) {
+            for (State s: diagram.getAllStatesIncludeInit()) {
                 BoolExpr current = encodeCurrentLocExpr(i, s);
                 List<BoolExpr> trans = new ArrayList<>();
                 encodeJump(i, s).ifPresent(trans::add);
@@ -265,15 +260,15 @@ public class LocalEncoder {
     {
         List<BoolExpr> nexts = new ArrayList<>();
         for (Relation r: s.getOuters()) {
-            nexts.add(encodeSingleRelation(index, r));
+            nexts.add(encodeSingleJump(index, r));
         }
         return w.mkOr(nexts);
     }
 
     private BoolExpr encodeStutter(int index)
     {
-        BoolExpr time = encodeTimeExpr(index, 0);
-        BoolExpr loc = ctx.mkEq(mkLabelVar(index + 1), mkLocVar(index));
+        BoolExpr time = encodeTimeUnchanged(index);
+        BoolExpr loc = ctx.mkEq(mkLocVar(index + 1), mkLocVar(index));
         BoolExpr unchanged = encodeVariableUnchanged(index);
         return ctx.mkAnd(time, loc, unchanged);
     }
@@ -326,7 +321,7 @@ public class LocalEncoder {
 
     /**
      * encode current location information
-     * @param k the bound
+     * @param k the index
      * @param current the current state
      * @return current location bool expression
      */
@@ -337,17 +332,17 @@ public class LocalEncoder {
 
     /**
      * make location symbol
-     * @param k bound
+     * @param k the index
      * @return the location symbol
      */
     private Expr mkLocVar(int k)
     {
-        return w.mkStringVar("loc_" + k);
+        return w.mkStringVar(diagram.getTitle() + "_" + "loc_" + k);
     }
 
     private RealExpr mkTimeVar(int k)
     {
-        return w.mkRealVar("delta_" + k);
+        return w.mkRealVar(diagram.getTitle() + "_" + "delta_" + k);
     }
 
     /**
@@ -358,12 +353,7 @@ public class LocalEncoder {
      */
     private RealExpr mkVarVar(String var, int k)
     {
-        return w.mkRealVar(var + "_" + k);
-    }
-
-    private Expr mkLabelVar(int k)
-    {
-        return w.mkStringVar("label_" + k);
+        return w.mkRealVar(diagram.getTitle() + "_" + var + "_" + k);
     }
 
     private String extractVar(String assign)
@@ -381,23 +371,27 @@ public class LocalEncoder {
         return segIndex * bound + keyIndex;
     }
 
-    private BoolExpr encodeTimeExpr(int index,
-                                    int time)
+    private BoolExpr encodeTimeUnchanged(int index)
     {
-        return ctx.mkEq(mkTimeVar(index), ctx.mkReal(time));
+        return ctx.mkEq(mkTimeVar(index), ctx.mkReal(0));
     }
 
+    /**
+     * make sure the variables remain unchanged during the specific transition
+     * @param index the transition index
+     * @return the boolean expression
+     */
     private BoolExpr encodeVariableUnchanged(int index)
     {
         Set<String> vars = diagram.getAllVar();
         if (vars == null || vars.size() == 0) {
             throw new EncodeException("empty variable set");
         }
-        List<BoolExpr> expers = new ArrayList<>();
+        List<BoolExpr> exprs = new ArrayList<>();
         for (String v: vars) {
-            expers.add(ctx.mkEq(mkVarVar(v, index + 1), mkVarVar(v, index)));
+            exprs.add(ctx.mkEq(mkVarVar(v, index + 1), mkVarVar(v, index)));
         }
-        return w.mkAndNotEmpty(expers);
+        return w.mkAndNotEmpty(exprs);
     }
 
 }

@@ -1,7 +1,7 @@
 {
     "type": "ISD_AUTOMATA_OPT",
     "targets": [],
-    "bound": 20,
-    "inputFolder": "C:\\Users\\Rico\\Documents\\Working\\ShallowInterrupt\\SourceAndResult\\graph\\OPTIMIZATION\\SCHEDULER\\",
-    "resultFolder": "C:\\Users\\Rico\\Documents\\Working\\ShallowInterrupt\\SourceAndResult\\result\\"
+    "bound": 2,
+    "inputFolder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Optimization/Scheduler/",
+    "resultFolder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/"
 }

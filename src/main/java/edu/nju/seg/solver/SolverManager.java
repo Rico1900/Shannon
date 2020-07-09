@@ -18,8 +18,7 @@ public class SolverManager {
     public SolverManager()
     {
         Global.ToggleWarningMessages(true);
-//        Global.setParameter(":unsat_core", "true");
-//        Global.setParameter(":proof", "true");
+        Global.setParameter(":proof", "true");
         this.context = new Context();
         Params p = context.mkParams();
         // time limitation: one hour
@@ -75,11 +74,6 @@ public class SolverManager {
             }
         }
         return builder.toString();
-    }
-
-    public BoolExpr[] getUnsatCore()
-    {
-        return solver.getUnsatCore();
     }
 
     public Expr getProof()

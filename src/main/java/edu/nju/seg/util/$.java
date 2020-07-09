@@ -120,4 +120,19 @@ public class $ {
         return o instanceof Number;
     }
 
+    /**
+     * judge if the given string is numeric
+     * @param s the given string
+     * @return if s is numeric
+     */
+    public static boolean isNumeric(String s)
+    {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 }

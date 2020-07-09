@@ -2,6 +2,12 @@
 .idea
 ShallowInterrupt.iml
 
+### z3
+z3
+libz3.dylib
+libz3java.dylib
+
+
 ### Maven template
 target/
 pom.xml.tag

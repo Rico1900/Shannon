@@ -4,8 +4,8 @@
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>160</x>
-      <y>90</y>
+      <x>60</x>
+      <y>160</y>
       <w>180</w>
       <h>110</h>
     </coordinates>
@@ -22,8 +22,8 @@ valign=top
   <element>
     <id>UMLSpecialState</id>
     <coordinates>
-      <x>120</x>
-      <y>310</y>
+      <x>20</x>
+      <y>380</y>
       <w>20</w>
       <h>20</h>
     </coordinates>
@@ -33,8 +33,8 @@ valign=top
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>720</x>
-      <y>90</y>
+      <x>620</x>
+      <y>160</y>
       <w>180</w>
       <h>110</h>
     </coordinates>
@@ -51,8 +51,8 @@ valign=top
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>330</x>
-      <y>120</y>
+      <x>230</x>
+      <y>190</y>
       <w>140</w>
       <h>40</h>
     </coordinates>
@@ -63,8 +63,8 @@ e1:z&gt;=20</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>230</x>
-      <y>190</y>
+      <x>130</x>
+      <y>260</y>
       <w>250</w>
       <h>110</h>
     </coordinates>
@@ -75,8 +75,8 @@ e8:z&gt;=15</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>130</x>
-      <y>300</y>
+      <x>30</x>
+      <y>370</y>
       <w>350</w>
       <h>40</h>
     </coordinates>
@@ -87,8 +87,8 @@ e8:z&gt;=15</panel_attributes>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>460</x>
-      <y>260</y>
+      <x>360</x>
+      <y>330</y>
       <w>180</w>
       <h>110</h>
     </coordinates>
@@ -106,8 +106,8 @@ valign=top
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>630</x>
-      <y>190</y>
+      <x>530</x>
+      <y>260</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
@@ -118,80 +118,8 @@ e9:z=10</panel_attributes>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>160</x>
-      <y>470</y>
-      <w>180</w>
-      <h>110</h>
-    </coordinates>
-    <panel_attributes>waiting2
---
-q'=1
-
--.
-q&gt;=15
-valign=top
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>330</x>
-      <y>480</y>
-      <w>150</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-e5:q&gt;=20</panel_attributes>
-    <additional_attributes>10.0;20.0;130.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLState</id>
-    <coordinates>
-      <x>740</x>
-      <y>470</y>
-      <w>180</w>
-      <h>110</h>
-    </coordinates>
-    <panel_attributes>running2
---
-q'=-1
-
--.
-q&lt;=30
-valign=top
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>230</x>
-      <y>360</y>
-      <w>270</w>
-      <h>130</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-e10:q&gt;=15</panel_attributes>
-    <additional_attributes>250.0;10.0;10.0;110.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>630</x>
-      <y>340</y>
-      <w>210</w>
-      <h>150</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-e11:z=10</panel_attributes>
-    <additional_attributes>190.0;130.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLState</id>
-    <coordinates>
-      <x>450</x>
-      <y>90</y>
+      <x>350</x>
+      <y>160</y>
       <w>180</w>
       <h>110</h>
     </coordinates>
@@ -208,43 +136,13 @@ valign=top
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>620</x>
-      <y>130</y>
+      <x>520</x>
+      <y>200</y>
       <w>120</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 e2:z&gt;=25</panel_attributes>
     <additional_attributes>10.0;20.0;100.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLState</id>
-    <coordinates>
-      <x>460</x>
-      <y>470</y>
-      <w>180</w>
-      <h>110</h>
-    </coordinates>
-    <panel_attributes>ready2
---
-q'=1
-
--.
-q&gt;=25
-valign=top
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>630</x>
-      <y>510</y>
-      <w>130</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-e6:q&gt;=25</panel_attributes>
-    <additional_attributes>10.0;20.0;110.0;20.0</additional_attributes>
   </element>
 </diagram>
