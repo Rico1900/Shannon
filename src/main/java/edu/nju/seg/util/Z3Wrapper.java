@@ -105,6 +105,11 @@ public class Z3Wrapper {
         return (RealExpr) ctx.mkConst(ctx.mkSymbol(s), ctx.mkRealSort());
     }
 
+    public IntExpr mkIntVar(String s)
+    {
+        return (IntExpr) ctx.mkConst(ctx.mkSymbol(s), ctx.mkIntSort());
+    }
+
     public Expr mkStringVar(String s)
     {
         return ctx.mkConst(ctx.mkSymbol(s), ctx.mkStringSort());
@@ -118,9 +123,9 @@ public class Z3Wrapper {
      * @return bool expression
      * @throws Z3Exception when the operator is not supported
      */
-    public BoolExpr mkOperatorExpr(String operator,
-                                   ArithExpr left,
-                                   ArithExpr right) throws Z3Exception
+    public BoolExpr mkAssertExpr(String operator,
+                                 ArithExpr left,
+                                 ArithExpr right) throws Z3Exception
     {
         switch (operator) {
             case "<":
@@ -135,6 +140,24 @@ public class Z3Wrapper {
                 return ctx.mkEq(left, right);
             case "!=":
                 return ctx.mkNot(ctx.mkEq(left, right));
+            default:
+                throw new Z3Exception();
+        }
+    }
+
+    public ArithExpr mkOperationExpr(String op,
+                                     ArithExpr left,
+                                     ArithExpr right) throws Z3Exception
+    {
+        switch (op) {
+            case "+":
+                return ctx.mkAdd(left, right);
+            case "-":
+                return ctx.mkSub(left, right);
+            case "*":
+                return ctx.mkMul(left, right);
+            case "/":
+                return ctx.mkDiv(left, right);
             default:
                 throw new Z3Exception();
         }

@@ -34,7 +34,7 @@ public class SequenceEncoder {
 
     private ExperimentalType type;
 
-    private final List<IntFragment> flow = new ArrayList<>();
+    private final List<IntFragment> flow;
 
     /** the container fragment without int fragment **/
     private final Fragment clean;
@@ -63,7 +63,7 @@ public class SequenceEncoder {
 
     private int bound;
 
-    private List<BoolExpr> allExprs = new ArrayList<>();
+    private final List<BoolExpr> allExprs = new ArrayList<>();
 
     public SequenceEncoder(SequenceDiagram diagram,
                            SolverManager manager,
@@ -76,13 +76,14 @@ public class SequenceEncoder {
         this.ctx = manager.getContext();
         this.p = new ExprParser(ctx);
         this.w = new Z3Wrapper(ctx);
-        this.clean = extractIntFrag(diagram.getContainer());
+        this.clean = diagram.getCleanFragment();
+        this.flow = diagram.getIntFragments();
         calConsAndProp();
         calPriorityMap();
         calCleanEvents();
         calMaskMap();
         unfoldIntFrag();
-        if (type == ExperimentalType.ISD_AUTOMATA_OPT) {
+        if (type == ExperimentalType.ISD_AUTOMATA_VERIFICATION) {
             this.sequelSet = new HashSet<>();
             this.intSequelSetList = new ArrayList<>();
             this.bound = bound;
@@ -158,62 +159,6 @@ public class SequenceEncoder {
         return diagrams.stream().collect(
                 Collectors.toMap(AutomatonDiagram::getTitle,
                         Function.identity()));
-    }
-
-    /**
-     * extract interrupt fragment from the original diagram
-     * @param container the container fragment
-     */
-    private Fragment extractIntFrag(Fragment container)
-    {
-        if (container instanceof IntFragment) {
-            flow.add((IntFragment) container);
-            return null;
-        } else {
-            List<SDComponent> children = filterChildren(container.getChildren());
-            if (container instanceof LoopFragment) {
-                LoopFragment origin = (LoopFragment) container;
-                LoopFragment result = new LoopFragment(origin.getMin(), origin.getMax(),
-                        children, origin.getRaw());
-                result.setCovered(container.getCovered());
-                return result;
-            } else if (container instanceof AltFragment) {
-                AltFragment origin = (AltFragment) container;
-                List<SDComponent> elseChildren = filterChildren(origin.getElseChildren());
-                AltFragment result = new AltFragment(origin.getCondition(), origin.getAltCondition(),
-                        children, elseChildren, origin.getRaw());
-                result.setCovered(container.getCovered());
-                return result;
-            } else if (container instanceof OptFragment) {
-                OptFragment origin = (OptFragment) container;
-                OptFragment result = new OptFragment(children, origin.getCondition(), origin.getRaw());
-                result.setCovered(container.getCovered());
-                return result;
-            } else {
-                return new Fragment(children, container.getCovered(), "container");
-            }
-        }
-    }
-
-    /**
-     * filter component list, extract all the int fragments
-     * @param origin the original list
-     * @return the list without int fragments
-     */
-    private List<SDComponent> filterChildren(List<SDComponent> origin)
-    {
-        List<SDComponent> children = new ArrayList<>();
-        for (SDComponent child: origin) {
-            if (child instanceof Message) {
-                children.add(child);
-            } else {
-                Fragment sub = extractIntFrag((Fragment) child);
-                if (sub != null) {
-                    children.add(sub);
-                }
-            }
-        }
-        return children;
     }
 
     /**

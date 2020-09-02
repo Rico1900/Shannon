@@ -10,9 +10,7 @@ import edu.nju.seg.model.*;
 import edu.nju.seg.parser.Parser;
 import edu.nju.seg.parser.ParserDispatcher;
 import edu.nju.seg.parser.UMLetParser;
-import edu.nju.seg.solver.AutomatonEncoder;
-import edu.nju.seg.solver.SequenceEncoder;
-import edu.nju.seg.solver.SolverManager;
+import edu.nju.seg.solver.*;
 import edu.nju.seg.solver.tassat.TASSATEncoder;
 import edu.nju.seg.util.Pair;
 import edu.nju.seg.util.SimpleLog;
@@ -64,8 +62,11 @@ public class Lab {
                 case AUTOMATON_SMT:
                     runAutomatonSMT(diagrams, config);
                     break;
-                case ISD_AUTOMATA_OPT:
-                    runScenarioOptimization(diagrams, config);
+                case ISD_AUTOMATA_VERIFICATION:
+                    runScenarioVerification(diagrams, config);
+                    break;
+                case ISD_AUTOMATA_OPTIMIZATION:
+
                     break;
             }
         } else {
@@ -158,7 +159,7 @@ public class Lab {
      * @param diagrams diagrams
      * @param config the experimental config
      */
-    private static void runScenarioOptimization(List<Diagram> diagrams,
+    private static void runScenarioVerification(List<Diagram> diagrams,
                                                 ExperimentConfig config)
     {
         try {
@@ -173,6 +174,19 @@ public class Lab {
             handleResult(result, manager);
         } catch (Z3Exception e) {
            logZ3Exception(e);
+        }
+    }
+
+    private static void runScenarioOptimization(List<Diagram> diagrams,
+                                                ExperimentConfig config)
+    {
+        try {
+            OptimizeManager om = new OptimizeManager();
+            Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(diagrams);
+            OptimizeEncoder encoder = new OptimizeEncoder(p.getLeft(), p.getRight(), om, config.getBound());
+            encoder.optimize();
+        } catch (Z3Exception e) {
+            logZ3Exception(e);
         }
     }
 

@@ -5,6 +5,7 @@ public enum ExperimentalType {
     TASSAT_SMT,
     ISD_SMT,
     AUTOMATON_SMT,
-    ISD_AUTOMATA_OPT
+    ISD_AUTOMATA_VERIFICATION,
+    ISD_AUTOMATA_OPTIMIZATION
 
 }

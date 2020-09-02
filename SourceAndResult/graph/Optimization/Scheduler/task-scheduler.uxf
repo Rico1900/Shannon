@@ -41,8 +41,8 @@ b-&gt;&gt;&gt;a : (e2,e3,running1);
       <w>200</w>
       <h>130</h>
     </coordinates>
-    <panel_attributes>Properties
-0.1 &lt;= e3 - e2 &lt;= 0.5</panel_attributes>
+    <panel_attributes>Goal
+Max(e3 - e2)</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>

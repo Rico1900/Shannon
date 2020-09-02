@@ -11,6 +11,9 @@ import org.scijava.parse.Operator;
 import org.scijava.parse.SyntaxTree;
 import org.scijava.parse.Variable;
 
+import java.util.Arrays;
+import java.util.List;
+
 
 public class ExprParser {
 
@@ -142,7 +145,7 @@ public class ExprParser {
         String op = getTokenStr(tree);
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
-        return w.mkOperatorExpr(op, mkExprByToken(left), mkExprByToken(right));
+        return w.mkAssertExpr(op, mkExprByToken(left), mkExprByToken(right));
     }
 
     private BoolExpr handleExpr(SyntaxTree tree) throws Z3Exception
@@ -151,9 +154,9 @@ public class ExprParser {
         SyntaxTree left = tree.child(0);
         SyntaxTree right = tree.child(1);
         if (getTokenStr(left).equals("-")) {
-            return w.mkOperatorExpr(op, mkSubtractExpr(left), mkExprByToken(right));
+            return w.mkAssertExpr(op, mkSubtractExpr(left), mkExprByToken(right));
         } else {
-            return w.mkOperatorExpr(op, mkExprByToken(left), mkSubtractExpr(right));
+            return w.mkAssertExpr(op, mkExprByToken(left), mkSubtractExpr(right));
         }
     }
 
@@ -180,8 +183,8 @@ public class ExprParser {
             rightNum = mkExprByToken(right);
             middle = mkSubtractExpr(left.child(1));
         }
-        return ctx.mkAnd(w.mkOperatorExpr(leftOp, leftNum, middle),
-                w.mkOperatorExpr(rightOp, middle, rightNum));
+        return ctx.mkAnd(w.mkAssertExpr(leftOp, leftNum, middle),
+                w.mkAssertExpr(rightOp, middle, rightNum));
     }
 
     private ArithExpr mkSubtractExpr(SyntaxTree tree)
@@ -251,6 +254,31 @@ public class ExprParser {
             return getTokenStr(tree.child(0));
         } else {
             return t.toString();
+        }
+    }
+
+    // TODO: use jparsec
+    public Expr encodeOptimizeGoal(String goal) throws Z3Exception
+    {
+        List<String> elements = Arrays.asList(goal.split(" "));
+        return encodeOptimizeGoalHelper(elements);
+    }
+
+    private ArithExpr encodeOptimizeGoalHelper(List<String> list) throws Z3Exception
+    {
+        if (list.size() == 3) {
+            return w.mkOperationExpr(list.get(1), convertSingleVal(list.get(0)), convertSingleVal(list.get(2)));
+        } else {
+            return w.mkOperationExpr(list.get(1), convertSingleVal(list.get(0)), encodeOptimizeGoalHelper(list.subList(2, list.size())));
+        }
+    }
+
+    private ArithExpr convertSingleVal(String s) throws Z3Exception
+    {
+        if ($.isNumeric(s)) {
+            return w.mkReal(s);
+        } else {
+            return  w.mkRealVar(s);
         }
     }
 
