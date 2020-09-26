@@ -12,17 +12,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class AutomatonParser implements Parser {
 
-    private static Pattern STATE_PATTERN = Pattern.compile("^(.*)--(.*)-\\.(.*)valign=top.*$", Pattern.DOTALL);
+    private static final Pattern STATE_PATTERN = Pattern.compile("^(.*)--(.*)-\\.(.*)valign=top.*$", Pattern.DOTALL);
 
-    private static Pattern SPECIAL_STATE_PATTERN = Pattern.compile("^type=(.*)$");
+    private static final Pattern SPECIAL_STATE_PATTERN = Pattern.compile("^type=(.*)$");
 
-    private static Pattern RELATION_PATTERN = Pattern.compile("^lt=->(.*)$", Pattern.DOTALL);
+    private static final Pattern RELATION_PATTERN = Pattern.compile("^lt=->(.*)$", Pattern.DOTALL);
 
-    private static Pattern FILENAME_PATTERN = Pattern.compile("^(.*)\\.uxf$");
+    private static final Pattern FILENAME_PATTERN = Pattern.compile("^(.*)\\.uxf$");
 
     private String name;
 
@@ -59,9 +58,10 @@ public class AutomatonParser implements Parser {
      */
     private void parseAutomaton(AutomatonDiagram ad)
     {
-        List<Element> relationEles = UmlUtil.partitionRelation(elements);
-        List<Element> stateEles = UmlUtil.partitionState(elements);
-        List<Element> specialEles = UmlUtil.partitionSpecial(elements);
+        List<Element> relationEles = UmlUtil.pickupRelation(elements);
+        List<Element> stateEles = UmlUtil.pickupState(elements);
+        List<Element> specialEles = UmlUtil.pickupSpecial(elements);
+        List<Element> umlnoteEles = UmlUtil.pickUmlNote(elements);
         List<State> states = new ArrayList<>();
         State initial = null;
         List<Relation> relations = new ArrayList<>();

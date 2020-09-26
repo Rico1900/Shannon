@@ -55,9 +55,9 @@ public class MsgParser implements Parser {
 
     private void parseMsg(MsgDiagram md)
     {
-        List<Element> relationEles = UmlUtil.partitionRelation(elements);
-        List<Element> stateEles = UmlUtil.partitionState(elements);
-        List<Element> specialEles = UmlUtil.partitionSpecial(elements);
+        List<Element> relationEles = UmlUtil.pickupRelation(elements);
+        List<Element> stateEles = UmlUtil.pickupState(elements);
+        List<Element> specialEles = UmlUtil.pickupSpecial(elements);
         List<SimpleState> states = new ArrayList<>();
         SimpleState initial = null;
         SimpleState end = null;

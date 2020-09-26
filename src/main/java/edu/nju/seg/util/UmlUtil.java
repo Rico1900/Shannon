@@ -11,9 +11,9 @@ public class UmlUtil {
 
     /**
      * pick up relation elements
-     * @return relation elements
+     * @return the relation elements
      */
-    public static List<Element> partitionRelation(List<Element> elements)
+    public static List<Element> pickupRelation(List<Element> elements)
     {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.Relation)
@@ -22,9 +22,9 @@ public class UmlUtil {
 
     /**
      * pick up state elements
-     * @return state elements
+     * @return the state elements
      */
-    public static List<Element> partitionState(List<Element> elements)
+    public static List<Element> pickupState(List<Element> elements)
     {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.UMLState)
@@ -33,12 +33,24 @@ public class UmlUtil {
 
     /**
      * pick up special elements
-     * @return special elements
+     * @return the special elements
      */
-    public static List<Element> partitionSpecial(List<Element> elements)
+    public static List<Element> pickupSpecial(List<Element> elements)
     {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.UMLSpecialState)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * pick up uml notes
+     * @param elements the whole elements
+     * @return the uml notes
+     */
+    public static List<Element> pickUmlNote(List<Element> elements)
+    {
+        return elements.stream()
+                .filter(e -> e.getType() == UMLType.UMLNote)
                 .collect(Collectors.toList());
     }
 

@@ -23,6 +23,8 @@ public class AutomatonDiagram extends Diagram {
 
     private List<Relation> allRelations;
 
+    private List<String> properties;
+
     public void setAllStates(List<State> allStates)
     {
         this.allStates = allStates;
