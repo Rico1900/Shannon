@@ -20,28 +20,25 @@ import java.util.*;
 
 public class Lab {
 
-    public static void main(String[] args)
-    {
-        String configPath = System.getProperty("EXPERIMENTAL_CONFIG");
-        if (configPath == null) {
-            SimpleLog.error("no experimental protocol");
-            return;
-        }
-        ConfigReader reader = new ConfigReader(configPath);
-        Optional<ExperimentConfig> maybe = reader.getConfig();
-        maybe.ifPresent(Lab::run);
-    }
+    private final ExperimentConfig config;
 
-    private static void run(ExperimentConfig config)
-    {
-        prepareExperiment(config);
+    public Lab(ExperimentConfig config) {
+        this.config = config;
     }
 
     /**
-     * parse uxf files
-     * @param config experiment configuration
+     * start the laboratory
      */
-    private static void prepareExperiment(ExperimentConfig config)
+    private void run()
+    {
+        List<Diagram> diagrams = prepare_experiment();
+        dispatch_experiment(diagrams);
+    }
+
+    /**
+     * prepare the experimental data
+     */
+    private List<Diagram> prepare_experiment()
     {
         String inputPath = config.getInputFolder();
         File inputFolder = new File(inputPath);
@@ -49,28 +46,38 @@ public class Lab {
             List<Diagram> diagrams = new ArrayList<>();
             for (File f : Objects.requireNonNull(inputFolder.listFiles())) {
                 UMLetParser.parseElement(f)
-                        .map(contents -> Lab.parseDiagram(f.getName(), contents))
+                        .map(contents -> parse_diagram(f.getName(), contents))
                         .ifPresent(diagrams::add);
             }
-            switch (config.getType()) {
-                case ISD_SMT:
-                    runISDSMT(diagrams, config);
-                    break;
-                case TASSAT_SMT:
-                    runTASSAT(diagrams, config);
-                    break;
-                case AUTOMATON_SMT:
-                    runAutomatonSMT(diagrams, config);
-                    break;
-                case ISD_AUTOMATA_VERIFICATION:
-                    runScenarioVerification(diagrams, config);
-                    break;
-                case ISD_AUTOMATA_OPTIMIZATION:
-
-                    break;
-            }
+            return diagrams;
         } else {
             SimpleLog.error("the input path is not a directory");
+            return new ArrayList<>(0);
+        }
+    }
+
+    /**
+     * dispatch the experiment according to the experimental type
+     * @param diagrams the diagram list
+     */
+    private void dispatch_experiment(List<Diagram> diagrams)
+    {
+        switch (config.getType()) {
+            case ISD_SMT:
+                run_ISD_SMT(diagrams);
+                break;
+            case TASSAT_SMT:
+                run_TASSAT(diagrams);
+                break;
+            case AUTOMATON_SMT:
+                run_automaton_SMT(diagrams);
+                break;
+            case ISD_AUTOMATA_VERIFICATION:
+                run_scenario_verification(diagrams);
+                break;
+            case ISD_AUTOMATA_OPTIMIZATION:
+                run_scenario_optimization(diagrams);
+                break;
         }
     }
 
@@ -78,8 +85,7 @@ public class Lab {
      * run the experiment
      * @param diagrams parsed diagrams
      */
-    private static void runISDSMT(List<Diagram> diagrams,
-                                  ExperimentConfig config)
+    private void run_ISD_SMT(List<Diagram> diagrams)
     {
         try {
             SolverManager manager = new SolverManager();
@@ -104,8 +110,11 @@ public class Lab {
         }
     }
 
-    private static void runAutomatonSMT(List<Diagram> diagrams,
-                                        ExperimentConfig config)
+    /**
+     * verify the automaton based on SMT
+     * @param diagrams the diagram list
+     */
+    private void run_automaton_SMT(List<Diagram> diagrams)
     {
         try {
             SolverManager manager = new SolverManager();
@@ -129,10 +138,8 @@ public class Lab {
     /**
      * run TASSAT SMT verification
      * @param diagrams diagrams
-     * @param config the experimental config
      */
-    private static void runTASSAT(List<Diagram> diagrams,
-                                  ExperimentConfig config)
+    private void run_TASSAT(List<Diagram> diagrams)
     {
         try {
             SolverManager manager = new SolverManager();
@@ -157,10 +164,8 @@ public class Lab {
      * scenario-based optimization,
      * a canonical scenario including an ISD and several automaton
      * @param diagrams diagrams
-     * @param config the experimental config
      */
-    private static void runScenarioVerification(List<Diagram> diagrams,
-                                                ExperimentConfig config)
+    private void run_scenario_verification(List<Diagram> diagrams)
     {
         try {
             SolverManager manager = new SolverManager();
@@ -177,8 +182,11 @@ public class Lab {
         }
     }
 
-    private static void runScenarioOptimization(List<Diagram> diagrams,
-                                                ExperimentConfig config)
+    /**
+     * perform scenario-based optimization
+     * @param diagrams the diagram list
+     */
+    private void run_scenario_optimization(List<Diagram> diagrams)
     {
         try {
             OptimizeManager om = new OptimizeManager();
@@ -196,13 +204,18 @@ public class Lab {
      * @param content the element list
      * @return the structure diagram
      */
-    private static Diagram parseDiagram(String fileName, List<Element> content)
+    private Diagram parse_diagram(String fileName, List<Element> content)
     {
         Parser p = ParserDispatcher.dispatch(fileName, content);
         return p.parse();
     }
 
-    private static Pair<SequenceDiagram, List<AutomatonDiagram>> partition(List<Diagram> diagrams)
+    /**
+     * partition a group of diagrams
+     * @param diagrams the diagram list
+     * @return a tuple consisted of diagrams
+     */
+    private Pair<SequenceDiagram, List<AutomatonDiagram>> partition(List<Diagram> diagrams)
     {
         Pair<SequenceDiagram, List<AutomatonDiagram>> p = new Pair<>();
         List<AutomatonDiagram> list = new ArrayList<>();
@@ -220,10 +233,10 @@ public class Lab {
     }
 
     /**
-     * handle z2 exception log
+     * handle z3 exception log
      * @param e exception
      */
-    private static void logZ3Exception(Z3Exception e)
+    private void logZ3Exception(Z3Exception e)
     {
         SimpleLog.error(e.toString());
     }
@@ -233,7 +246,7 @@ public class Lab {
      * @param result z3 status
      * @param manager z3 manager
      */
-    private static void handleResult(Status result, SolverManager manager)
+    private void handleResult(Status result, SolverManager manager)
     {
         System.out.println(result);
         if (result.toInt() == 0) {
@@ -241,6 +254,21 @@ public class Lab {
         } else {
             System.out.println(manager.getEventTrace(true));
         }
+    }
+
+    public static void main(String[] args)
+    {
+        String configPath = System.getProperty("EXPERIMENTAL_CONFIG");
+        if (configPath == null) {
+            SimpleLog.error("no experimental protocol");
+            return;
+        }
+        ConfigReader reader = new ConfigReader(configPath);
+        Optional<ExperimentConfig> maybe = reader.getConfig();
+        maybe.ifPresent(c -> {
+            Lab l = new Lab(c);
+            l.run();
+        });
     }
 
 }
