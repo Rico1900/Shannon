@@ -28,9 +28,7 @@ public class LeftValueParserTest {
         assertEquals(new BinaryExpr(BinaryOp.SUB,
                         new Variable("x"),
                         new Variable("y")),
-                p.parse(Input.of("x-y")).getOrThrow());
+                p.parse(Input.of("(x-y)")).getOrThrow());
     }
-
-
 
 }
