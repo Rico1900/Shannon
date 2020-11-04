@@ -10,20 +10,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AssignmentTest {
 
-    private final Parser<Chr, Expr> assign_parser = ParserGenerator.assignment();
+    private final Parser<Chr, Assignment> assign_parser = ParserGenerator.assignment();
 
     @Test
     void test_assign_number()
     {
         assertEquals(new Assignment(new Variable("x"), new Number(10.0)),
-                assign_parser.parse(Input.of("x=10")).getOrThrow());
+                assign_parser.parse(Input.of("x:=10")).getOrThrow());
     }
 
     @Test
     void test_assign_var()
     {
         assertEquals(new Assignment(new Variable("x"), new Variable("a12")),
-                assign_parser.parse(Input.of("x=a12")).getOrThrow());
+                assign_parser.parse(Input.of("x:=a12")).getOrThrow());
     }
 
     @Test
@@ -33,7 +33,7 @@ public class AssignmentTest {
                 new Variable("x"),
                 new BinaryExpr(BinaryOp.ADD,
                 new Variable("a1"), new Number(10.0))),
-                assign_parser.parse(Input.of("x=(a1+10.0)")).getOrThrow());
+                assign_parser.parse(Input.of("x:=(a1+10.0)")).getOrThrow());
     }
 
     @Test
@@ -45,7 +45,7 @@ public class AssignmentTest {
                                 new Variable("x"),
                                 new Number(12.1)),
                         new Number(2.0))),
-                assign_parser.parse(Input.of("x12=((x+12.1)/2)")).getOrThrow());
+                assign_parser.parse(Input.of("x12:=((x+12.1)/2)")).getOrThrow());
     }
 
 }

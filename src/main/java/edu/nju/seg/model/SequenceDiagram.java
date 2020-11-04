@@ -1,64 +1,52 @@
 package edu.nju.seg.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import edu.nju.seg.expression.Judgement;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+import static edu.nju.seg.config.Constants.OUTERMOST_FRAGMENT_NAME;
+
 public class SequenceDiagram extends Diagram {
 
-    private Fragment container;
+    private final Fragment container;
 
     /**
      * the properties that need to be checked
      */
-    private List<String> properties;
+    private final List<Judgement> properties;
 
-    private List<Goal> goals;
-
-    private String start;
-
-    private String end;
-
-    private String symbol;
-
-    private Fragment cleanFragment;
+    private final Fragment clean;
 
     private List<IntFragment> flow;
 
-    public void initSymbol()
-    {
-        if (end != null
-                && start != null
-                && start.startsWith("s")
-                && end.startsWith("w")) {
-            if (start.substring(1).equals(end.substring(1))) {
-                symbol = start.substring(1);
-            }
-        }
+    public SequenceDiagram(String title,
+                           List<Judgement> constraints,
+                           Fragment container,
+                           List<Judgement> properties) {
+        super(title, constraints);
+        this.container = container;
+        this.properties = properties;
+        this.clean = extractIntFrag(container);
     }
 
-    public Fragment getCleanFragment()
+    public Fragment get_container()
     {
-        if (cleanFragment == null) {
-            cleanFragment = extractIntFrag(getContainer());
-        }
-        return cleanFragment;
+        return container;
     }
 
-    public List<IntFragment> getIntFragments()
+    public List<Judgement> get_properties() {
+        return properties;
+    }
+
+    public Fragment get_clean()
     {
-        if (flow == null) {
-            cleanFragment = extractIntFrag(getContainer());
-        }
+        return clean;
+    }
+
+    public List<IntFragment> get_flow()
+    {
         return flow;
     }
 
@@ -75,27 +63,23 @@ public class SequenceDiagram extends Diagram {
             flow.add((IntFragment) container);
             return null;
         } else {
-            List<SDComponent> children = filterChildren(container.getChildren());
+            List<SDComponent> children = filter_children(container.get_children());
+            List<Instance> covered = container.get_covered();
+            String raw = container.get_raw();
             if (container instanceof LoopFragment) {
                 LoopFragment origin = (LoopFragment) container;
-                LoopFragment result = new LoopFragment(origin.getMin(), origin.getMax(),
-                        children, origin.getRaw());
-                result.setCovered(container.getCovered());
-                return result;
+                return new LoopFragment(children, covered, raw, origin.get_min(), origin.get_max(),
+                        origin.get_interval(), origin.get_start());
             } else if (container instanceof AltFragment) {
                 AltFragment origin = (AltFragment) container;
-                List<SDComponent> elseChildren = filterChildren(origin.getElseChildren());
-                AltFragment result = new AltFragment(origin.getCondition(), origin.getAltCondition(),
-                        children, elseChildren, origin.getRaw());
-                result.setCovered(container.getCovered());
-                return result;
+                List<SDComponent> elseChildren = filter_children(origin.get_else_children());
+                return new AltFragment(children, covered, raw, origin.get_condition(),
+                        origin.get_else_condition(), elseChildren);
             } else if (container instanceof OptFragment) {
                 OptFragment origin = (OptFragment) container;
-                OptFragment result = new OptFragment(children, origin.getCondition(), origin.getRaw());
-                result.setCovered(container.getCovered());
-                return result;
+                return new OptFragment(children, covered, raw, origin.get_condition());
             } else {
-                return new Fragment(children, container.getCovered(), "container");
+                return new Fragment(children, container.get_covered(), OUTERMOST_FRAGMENT_NAME);
             }
         }
     }
@@ -105,7 +89,7 @@ public class SequenceDiagram extends Diagram {
      * @param origin the original list
      * @return the list without int fragments
      */
-    private List<SDComponent> filterChildren(List<SDComponent> origin)
+    private List<SDComponent> filter_children(List<SDComponent> origin)
     {
         List<SDComponent> children = new ArrayList<>();
         for (SDComponent child: origin) {

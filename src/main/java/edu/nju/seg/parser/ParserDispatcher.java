@@ -8,27 +8,52 @@ import edu.nju.seg.util.$;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ParserDispatcher {
 
+    private static final Pattern SD_PATTERN = Pattern.compile("^.*_sd\\.uxf$");
+
+    private static final Pattern HA_PATTERN = Pattern.compile("^.*_ha\\.uxf$");
+
     /**
-     * dispatch the contents to the appropriate parser
-     * @param fileName the file name
+     * dispatch the contents to the appropriate parser,
+     * according to the file name
+     * @param fn the file name
      * @param contents the UMLet model language
      */
-    public static Parser dispatch(String fileName,
-                                  List<Element> contents)
+    public static DiagramParser dispatch_uxf(String fn,
+                                             List<Element> contents)
     {
-        if (isSequenceDiagram(contents)) {
+        if (SD_PATTERN.matcher(fn).matches()) {
             Pair<Element, List<Element>> p = partition(contents);
-            return new SequenceParser(p.getRight(), p.getLeft());
-        } else if (isHybridAutomaton(contents)) {
-            return new AutomatonParser(fileName, contents);
-        } else if (isMsg(contents)) {
-            return new MsgParser(fileName, contents);
+            return new SDParser(p.get_right(), p.get_left());
+        } else if (HA_PATTERN.matcher(fn).matches()) {
+            return new AutomatonParser(fn, contents);
         } else  {
-            throw new ParseException("wrong uxf file: " + fileName);
+            throw new ParseException("Wrong uxf file: " + fn + ", please check the file name.");
         }
+    }
+
+    /**
+     * partition elements in an uxf file
+     * @param contents the elements in the uxf file
+     * @return a tuple: (sequence diagram element, note elements)
+     */
+    private static Pair<Element, List<Element>> partition(List<Element> contents)
+    {
+        List<Element> notes = new ArrayList<>();
+        Element sd = null;
+        for (Element e: contents) {
+            if (e.getType() == UMLType.UMLNote) {
+                notes.add(e);
+            }
+            if (e.getType() == UMLType.UMLSequenceAllInOne) {
+                sd = e;
+            }
+        }
+        return new Pair<>(sd, notes);
     }
 
     /**
@@ -36,7 +61,7 @@ public class ParserDispatcher {
      * @param contents the element list from the XML file
      * @return if contents belong to a sequence diagram
      */
-    private static boolean isSequenceDiagram(List<Element> contents)
+    private static boolean is_sequence_diagram(List<Element> contents)
     {
         if (contents.size() == 3) {
             boolean hasNote = false;
@@ -55,29 +80,12 @@ public class ParserDispatcher {
         }
     }
 
-    private static Pair<Element, List<Element>> partition(List<Element> contents)
-    {
-        Pair<Element, List<Element>> result = new Pair<>();
-        for (Element e: contents) {
-            if (e.getType() == UMLType.UMLNote) {
-                if (result.getRight() == null) {
-                    result.setRight(new ArrayList<>());
-                }
-                result.getRight().add(e);
-            }
-            if (e.getType() == UMLType.UMLSequenceAllInOne) {
-                result.setLeft(e);
-            }
-        }
-        return result;
-    }
-
     /**
      * check if the contents belong to a automaton diagram
      * @param contents the element list from the XML file
      * @return if the contents belong to a automaton diagram
      */
-    private static boolean isHybridAutomaton(List<Element> contents)
+    private static boolean is_hybrid_automaton(List<Element> contents)
     {
         if ($.isBlankList(contents)) {
             return false;
@@ -99,7 +107,12 @@ public class ParserDispatcher {
         }
     }
 
-    private static boolean isMsg(List<Element> contents)
+    /**
+     * judge if the graph is a message graph
+     * @param contents the elements
+     * @return if the contents form a message graph
+     */
+    private static boolean is_MSG(List<Element> contents)
     {
         if ($.isBlankList(contents)) {
             return false;

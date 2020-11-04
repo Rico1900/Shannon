@@ -5,8 +5,8 @@
   <element>
     <id>UMLSequenceAllInOne</id>
     <coordinates>
-      <x>40</x>
-      <y>20</y>
+      <x>100</x>
+      <y>90</y>
       <w>510</w>
       <h>490</h>
     </coordinates>
@@ -16,7 +16,7 @@ obj=converter~b
 obj=PC~c
 
 
-combinedFragment=loop(5) ~loop1
+combinedFragment=loop(5,5) ~loop1
 b-&gt;&gt;&gt;c : report;
 c-&gt;&gt;&gt;b : response;
 --
@@ -35,8 +35,8 @@ c-&gt;&gt;&gt;b : reset
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>40</x>
-      <y>520</y>
+      <x>100</x>
+      <y>590</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
@@ -47,8 +47,8 @@ c-&gt;&gt;&gt;b : reset
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>350</x>
-      <y>520</y>
+      <x>410</x>
+      <y>590</y>
       <w>200</w>
       <h>130</h>
     </coordinates>

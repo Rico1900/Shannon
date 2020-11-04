@@ -1,12 +1,12 @@
 package edu.nju.seg.expression;
 
-import java.util.Objects;
+import java.util.*;
 
 public class UnaryExpr extends Expr {
 
-    private UnaryOp op;
+    private final UnaryOp op;
 
-    private Expr expr;
+    private final Expr expr;
 
     public UnaryExpr(UnaryOp op, Expr expr)
     {
@@ -46,4 +46,18 @@ public class UnaryExpr extends Expr {
                 '}';
     }
 
+    @Override
+    public Expr attach_bound(int k) {
+        return new UnaryExpr(op, expr.attach_bound(k));
+    }
+
+    @Override
+    public Expr attach_loop_queue(List<Integer> loop_queue) {
+        return new UnaryExpr(op, expr.attach_loop_queue(loop_queue));
+    }
+
+    @Override
+    public Set<String> extract_variables() {
+        return new HashSet<>(expr.extract_variables());
+    }
 }

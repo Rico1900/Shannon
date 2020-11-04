@@ -1,23 +1,32 @@
 package edu.nju.seg.model;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import edu.nju.seg.expression.Judgement;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
-@NoArgsConstructor
 public class OptFragment extends Fragment {
 
-    private String condition;
+    private Judgement condition;
 
-    public OptFragment(List<SDComponent> children, String condition, String raw)
+    public OptFragment(List<SDComponent> children,
+                       List<Instance> covered,
+                       String raw)
     {
-        super(children, new ArrayList<>(), raw);
+        super(children, covered, raw);
+    }
+
+    public OptFragment(List<SDComponent> children,
+                       List<Instance> covered,
+                       String raw,
+                       Judgement condition)
+    {
+        super(children, covered, raw);
         this.condition = condition;
+    }
+
+    public Judgement get_condition()
+    {
+        return condition;
     }
 
 }

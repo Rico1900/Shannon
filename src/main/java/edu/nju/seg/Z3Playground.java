@@ -12,8 +12,8 @@ public class Z3Playground {
         Z3Wrapper w = new Z3Wrapper(c);
 //        IntExpr x = w.mkIntVar("x");
 //        IntExpr y = w.mkIntVar("y");
-        RealExpr x = w.mkRealVar("x");
-        RealExpr y = w.mkRealVar("y");
+        RealExpr x = w.mk_real_var("x");
+        RealExpr y = w.mk_real_var("y");
         o.Add(c.mkLe(x, c.mkInt(2)));
         o.Add(c.mkLe(c.mkSub(y , x), c.mkInt(1)));
         Optimize.Handle h = o.MkMaximize(c.mkAdd(x, y));

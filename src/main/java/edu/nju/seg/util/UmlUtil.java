@@ -13,7 +13,7 @@ public class UmlUtil {
      * pick up relation elements
      * @return the relation elements
      */
-    public static List<Element> pickupRelation(List<Element> elements)
+    public static List<Element> pickup_relation(List<Element> elements)
     {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.Relation)
@@ -24,7 +24,7 @@ public class UmlUtil {
      * pick up state elements
      * @return the state elements
      */
-    public static List<Element> pickupState(List<Element> elements)
+    public static List<Element> pickup_state(List<Element> elements)
     {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.UMLState)
@@ -35,7 +35,7 @@ public class UmlUtil {
      * pick up special elements
      * @return the special elements
      */
-    public static List<Element> pickupSpecial(List<Element> elements)
+    public static List<Element> pickup_special(List<Element> elements)
     {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.UMLSpecialState)
@@ -47,7 +47,7 @@ public class UmlUtil {
      * @param elements the whole elements
      * @return the uml notes
      */
-    public static List<Element> pickUmlNote(List<Element> elements)
+    public static List<Element> pick_UML_notes(List<Element> elements)
     {
         return elements.stream()
                 .filter(e -> e.getType() == UMLType.UMLNote)
@@ -55,11 +55,11 @@ public class UmlUtil {
     }
 
     /**
-     * construct location information for an element
+     * parse location according to an element
      * @param e the element
-     * @return the location information
+     * @return the location
      */
-    public static List<Integer> consLocation(Element e)
+    public static List<Integer> parse_location(Element e)
     {
         List<Integer> loc = new ArrayList<>();
         loc.add(e.getX());
@@ -69,12 +69,13 @@ public class UmlUtil {
         return loc;
     }
 
-    public static boolean inSquare(Pair<Integer, Integer> coord, List<Integer> square)
+    public static boolean in_square(Pair<Integer, Integer> coord,
+                                    List<Integer> square)
     {
-        return coord.getLeft() >= square.get(0)
-                && coord.getLeft() <= square.get(1)
-                && coord.getRight() >= square.get(2)
-                && coord.getRight() <= square.get(3);
+        return coord.get_left() >= square.get(0)
+                && coord.get_left() <= square.get(1)
+                && coord.get_right() >= square.get(2)
+                && coord.get_right() <= square.get(3);
     }
 
 }

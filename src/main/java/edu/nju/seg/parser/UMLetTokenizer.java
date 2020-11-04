@@ -11,14 +11,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-public class UMLetParser {
+public class UMLetTokenizer {
 
     /**
      * parse element from file
      * @param f the UMLet .uxf file
      * @return maybe the elements
      */
-    public static Optional<List<Element>> parseElement(File f)
+    public static Optional<List<Element>> tokenize_elements(File f)
     {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {

@@ -1,16 +1,9 @@
 package edu.nju.seg.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Fragment extends SDComponent {
 
     /**
@@ -23,24 +16,27 @@ public class Fragment extends SDComponent {
      */
     protected List<Instance> covered;
 
-    protected Event virtualHead;
-
-    protected Event virtualTail;
-
+    /**
+     * the unparsed fragment string, the outermost fragment is named "container"
+     */
     protected String raw;
 
-    public Fragment(List<SDComponent> children, List<Instance> covered, String raw)
+    protected VirtualNode virtual_head;
+
+    protected VirtualNode virtual_tail;
+
+    public Fragment(List<SDComponent> children,
+                    List<Instance> covered,
+                    String raw)
     {
         this.children = children;
         this.covered = covered;
         this.raw = raw;
-        this.virtualHead = new Event("virtual_head_" + yieldMark(),
-                null, null, true);
-        this.virtualTail = new Event("virtual_tail_" + yieldMark(),
-                null, null, true);
+        this.virtual_head = new VirtualNode("head_" + yield_raw_name());
+        this.virtual_tail = new VirtualNode("tail_" + yield_raw_name());
     }
 
-    private String yieldMark()
+    public String yield_raw_name()
     {
         return "<" + this.raw + ">";
     }
@@ -50,9 +46,54 @@ public class Fragment extends SDComponent {
         children.add(component);
     }
 
-    public void addInstance(Instance i)
+    public List<SDComponent> get_children()
     {
-        covered.add(i);
+        return children;
+    }
+
+    public List<Instance> get_covered()
+    {
+        return covered;
+    }
+
+    public String get_raw()
+    {
+        return raw;
+    }
+
+    public VirtualNode get_virtual_head()
+    {
+        return virtual_head;
+    }
+
+    public VirtualNode get_virtual_tail()
+    {
+        return virtual_tail;
+    }
+
+    @Override
+    public Set<String> extract_variables() {
+        Set<String> result = new HashSet<>();
+        for (SDComponent c: children) {
+            result.addAll(c.extract_variables());
+        }
+        return result;
+    }
+
+    @Override
+    public Set<SDComponent> get_inside_nodes(List<Integer> loop_queue) {
+        Set<SDComponent> set = new HashSet<>();
+        set.add(virtual_head.attach_loop_queue(loop_queue));
+        set.add(virtual_tail.attach_loop_queue(loop_queue));
+        for (SDComponent c: children) {
+            set.addAll(c.get_inside_nodes(loop_queue));
+        }
+        return set;
+    }
+
+    @Override
+    public String get_name() {
+        return yield_raw_name();
     }
 
 }

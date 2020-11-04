@@ -1,6 +1,6 @@
 package edu.nju.seg.expression;
 
-import java.util.Objects;
+import java.util.*;
 
 public class BinaryExpr extends Expr {
 
@@ -50,6 +50,24 @@ public class BinaryExpr extends Expr {
                 ", left=" + left +
                 ", right=" + right +
                 '}';
+    }
+
+    @Override
+    public Expr attach_bound(int k) {
+        return new BinaryExpr(op, left.attach_bound(k), right.attach_bound(k));
+    }
+
+    @Override
+    public Expr attach_loop_queue(List<Integer> loop_queue) {
+        return new BinaryExpr(op, left.attach_loop_queue(loop_queue), right.attach_loop_queue(loop_queue));
+    }
+
+    @Override
+    public Set<String> extract_variables() {
+        Set<String> result = new HashSet<>();
+        result.addAll(left.extract_variables());
+        result.addAll(right.extract_variables());
+        return result;
     }
 
 }

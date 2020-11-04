@@ -2,7 +2,7 @@ package edu.nju.seg.parser;
 
 import edu.nju.seg.model.Diagram;
 
-public interface Parser {
+public interface DiagramParser {
 
     /**
      * parse sequence diagram from the raw text

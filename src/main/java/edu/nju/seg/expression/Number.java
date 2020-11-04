@@ -1,6 +1,9 @@
 package edu.nju.seg.expression;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class Number extends Expr {
 
@@ -33,4 +36,20 @@ public class Number extends Expr {
     public String toString() {
         return value.toString();
     }
+
+    @Override
+    public Expr attach_bound(int k) {
+        return this;
+    }
+
+    @Override
+    public Expr attach_loop_queue(List<Integer> loop_queue) {
+        return this;
+    }
+
+    @Override
+    public Set<String> extract_variables() {
+        return new HashSet<>(0);
+    }
+
 }

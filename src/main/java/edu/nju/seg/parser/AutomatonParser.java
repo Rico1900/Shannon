@@ -1,208 +1,169 @@
 package edu.nju.seg.parser;
 
 import edu.nju.seg.exception.ParseException;
+import edu.nju.seg.expression.Judgement;
 import edu.nju.seg.model.*;
-import edu.nju.seg.util.$;
 import edu.nju.seg.util.Pair;
 import edu.nju.seg.util.UmlUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class AutomatonParser implements Parser {
+public class AutomatonParser implements DiagramParser {
 
-    private static final Pattern STATE_PATTERN = Pattern.compile("^(.*)--(.*)-\\.(.*)valign=top.*$", Pattern.DOTALL);
+    private static final Pattern FILENAME_PATTERN = Pattern.compile("^(.*)_ha\\.uxf$");
 
-    private static final Pattern SPECIAL_STATE_PATTERN = Pattern.compile("^type=(.*)$");
+    private final String file_name;
 
-    private static final Pattern RELATION_PATTERN = Pattern.compile("^lt=->(.*)$", Pattern.DOTALL);
+    private final List<Element> elements;
 
-    private static final Pattern FILENAME_PATTERN = Pattern.compile("^(.*)\\.uxf$");
+    private final List<Pair<List<Integer>, State>> locations;
 
-    private String name;
-
-    private List<Element> elements;
-
-    private List<Pair<List<Integer>, State>> locationList;
-
-    public AutomatonParser(String fileName,
+    public AutomatonParser(String file_name,
                            List<Element> elements)
     {
-        Matcher m = FILENAME_PATTERN.matcher(fileName);
-        if (m.matches()) {
-            this.name = m.group(1);
-        } else {
-            throw new ParseException("wrong file name: " + fileName);
-        }
+        this.file_name = file_name;
         this.elements = elements;
-        this.locationList = new ArrayList<>();
+        this.locations = new ArrayList<>();
+    }
+
+    private String parse_file_name(String file_name)
+    {
+        Matcher m = FILENAME_PATTERN.matcher(file_name);
+        if (m.matches()) {
+            return m.group(1);
+        } else {
+            throw new ParseException("wrong file name: " + file_name);
+        }
     }
 
     @Override
     public Diagram parse()
     {
-        AutomatonDiagram ad = new AutomatonDiagram();
-        ad.setTitle(name);
-        parseAutomaton(ad);
-        ad.setConstraints(mergeConstraints(ad));
-        return ad;
+        String name = parse_file_name(file_name);
+        State init = parse_initial_node();
+        List<State> states = parse_states();
+        List<Relation> relations = parse_relations();
+        List<Judgement> properties = parse_properties_from_notes();
+        return new AutomatonDiagram(name,
+                merge_constraints(states),
+                init,
+                states,
+                relations,
+                properties);
+    }
+
+
+    /**
+     * parse the relation on the graph
+     * @return the relations
+     */
+    private List<Relation> parse_relations()
+    {
+        return UmlUtil.pickup_relation(elements)
+                .stream()
+                .map(e -> (RelationElement) e)
+                .map(this::parse_relation)
+                .collect(Collectors.toList());
     }
 
     /**
-     * parse automaton
-     * @param ad the structure automaton
+     * get all states excluding the initial node
+     * @return the list of states
      */
-    private void parseAutomaton(AutomatonDiagram ad)
+    private List<State> parse_states()
     {
-        List<Element> relationEles = UmlUtil.pickupRelation(elements);
-        List<Element> stateEles = UmlUtil.pickupState(elements);
-        List<Element> specialEles = UmlUtil.pickupSpecial(elements);
-        List<Element> umlnoteEles = UmlUtil.pickUmlNote(elements);
-        List<State> states = new ArrayList<>();
-        State initial = null;
-        List<Relation> relations = new ArrayList<>();
-        for (Element e: stateEles) {
-            states.add(consState(e));
-        }
-        for (Element e: specialEles) {
-            State s = consSpecial(e);
-            if (s.getType() == StateType.INITIAL) {
-                initial = s;
-            } else {
-                states.add(s);
-            }
-        }
-        for (Element e: relationEles) {
-            relations.add(consRelation((RelationElement) e));
-        }
-        if (initial == null) {
-            throw new ParseException("missing initial node");
-        }
-        ad.setInitial(initial);
-        ad.setAllStates(states);
-        ad.setAllRelations(relations);
+        return Stream.concat(
+                UmlUtil.pickup_state(elements).stream().map(this::parse_state),
+                UmlUtil.pickup_special(elements).stream().map(this::parse_special_node))
+                .filter(s -> s.getType() != StateType.INITIAL)
+                .collect(Collectors.toList());
     }
 
     /**
-     * construct special element
-     * @param e element
-     * @return state
+     * parse the initial node
+     * @return the initial node if there exist one
      */
-    private State consSpecial(Element e)
+    private State parse_initial_node()
     {
-        State s = new State();
-        Matcher m = SPECIAL_STATE_PATTERN.matcher(e.getContent());
-        if (m.matches()) {
-            String t = m.group(1);
-            if (t.equals("initial")) {
-                s.setType(StateType.INITIAL);
-                s.setStateName("INIT");
-            } else if (t.equals("final")) {
-                s.setType(StateType.FINAL);
-                s.setStateName("FINAL");
-            } else {
-                throw new ParseException("wrong special node type");
-            }
-        } else {
-            throw new ParseException("wrong special node");
-        }
-        s.setStateName("");
-        s.setEquations(new ArrayList<>());
-        s.setConstraints(new ArrayList<>());
-        addToLocList(e, s);
+        return UmlUtil.pickup_special(elements)
+                .stream()
+                .map(this::parse_special_node)
+                .filter(s -> s.getType() == StateType.INITIAL)
+                .findFirst()
+                .orElseThrow();
+    }
+
+    /**
+     * parse properties from the uml notes
+     * @return the judgements
+     */
+    private List<Judgement> parse_properties_from_notes()
+    {
+         return UmlUtil.pick_UML_notes(elements)
+                 .stream()
+                 .map(UmlNoteParser::parse_note)
+                 .filter(p -> p.get_left() == NoteType.PROPERTIES)
+                 .map(Pair::get_right)
+                 .findFirst()
+                 .orElse(new ArrayList<>());
+    }
+
+    private State parse_special_node(Element e)
+    {
+        State s = new StateParser(e).parse();
+        record_location(e, s);
         return s;
     }
 
     /**
-     * construct relation according to the XML element
+     * parse relation according to the XML element
      * @param e element
      * @return relation
      */
-    private Relation consRelation(RelationElement e)
+    private Relation parse_relation(RelationElement e)
     {
-        Relation r = new Relation();
-        Matcher m = RELATION_PATTERN.matcher(e.getContent());
-        if (m.matches()) {
-            String expr = m.group(1).trim();
-            if (expr.contains(":")) {
-                String[] nameSplits = expr.split(":");
-                r.setName(nameSplits[0]);
-                expr = nameSplits[1];
-            }
-            if (expr.contains(";")) {
-                String[] splits = expr.split(";");
-                r.setCondition(splits[0]);
-                r.setAssignment(splits[1]);
-            } else {
-                r.setCondition(expr);
-            }
-
-            Pair<Integer, Integer> sourceCoord = e.getSource();
-            Pair<Integer, Integer> targetCoord = e.getTarget();
-            Optional<State> maybeSource = searchState(sourceCoord);
-            if (maybeSource.isPresent()) {
-                State source = maybeSource.get();
-                source.addEdge(r);
-                r.setSource(source);
-            } else {
-                throw new ParseException("wrong relation source, condition: " + expr);
-            }
-            Optional<State> maybeTarget = searchState(targetCoord);
-            if (maybeTarget.isPresent()) {
-                r.setTarget(maybeTarget.get());
-            } else {
-                throw new ParseException("wrong relation target, condition: " + expr);
-            }
-            if (r.getSource() == r.getTarget()) {
-                r.getSource().setLoop(true);
-            }
+        Relation r = new RelationParser(e).parse();
+        Pair<Integer, Integer> source_coord = e.getSource();
+        Pair<Integer, Integer> target_coord = e.getTarget();
+        Optional<State> maybe_source = search_state(source_coord);
+        if (maybe_source.isPresent()) {
+            State source = maybe_source.get();
+            source.addEdge(r);
+            r.set_source(source);
         } else {
-            throw new ParseException("wrong relation format");
+            throw new ParseException("wrong relation source, name: " + r.get_name());
+        }
+        Optional<State> maybe_target = search_state(target_coord);
+        if (maybe_target.isPresent()) {
+            r.set_target(maybe_target.get());
+        } else {
+            throw new ParseException("wrong relation target, name: " + r.get_name());
+        }
+        if (r.get_source() == r.get_target()) {
+            r.get_source().setLoop(true);
         }
         return r;
     }
 
-    /**
-     * construct state according to the XML element
-     * @param e element
-     * @return state
-     */
-    private State consState(Element e)
+    private State parse_state(Element e)
     {
-        State s = new State();
-        if (e.getType() == UMLType.UMLState) {
-            s.setType(StateType.NORMAL);
-        } else {
-            throw new ParseException("wrong state type");
-        }
-        Matcher m = STATE_PATTERN.matcher(e.getContent());
-        if (m.matches()) {
-            s.setStateName(m.group(1).trim());
-            s.setEquations($.filterStrList(Arrays.asList(m.group(2).split("\n"))));
-            s.setConstraints($.filterStrList(Arrays.asList(m.group(3).split("\n"))));
-            s.setOuters(new ArrayList<>());
-        } else {
-            throw new ParseException("wrong state element content");
-        }
-        addToLocList(e, s);
+        State s = new StateParser(e).parse();
+        record_location(e, s);
         return s;
     }
 
-    /**
-     * search state by the given coordinate
-     * @param coord coordinate
-     * @return maybe state
-     */
-    private Optional<State> searchState(Pair<Integer, Integer> coord)
+    private Optional<State> search_state(Pair<Integer, Integer> coord)
     {
-        for (Pair<List<Integer>, State> p: locationList) {
-            List<Integer> loc = p.getLeft();
-            if (UmlUtil.inSquare(coord, loc)) {
-                return Optional.of(p.getRight());
+        for (Pair<List<Integer>, State> p: locations) {
+            List<Integer> loc = p.get_left();
+            if (UmlUtil.in_square(coord, loc)) {
+                return Optional.of(p.get_right());
             }
         }
         return Optional.empty();
@@ -213,27 +174,23 @@ public class AutomatonParser implements Parser {
      * @param e XML element
      * @param s state
      */
-    private void addToLocList(Element e, State s)
+    private void record_location(Element e, State s)
     {
-        List<Integer> loc = UmlUtil.consLocation(e);
-        Pair<List<Integer>, State> p = new Pair<>();
-        p.setLeft(loc);
-        p.setRight(s);
-        locationList.add(p);
+        List<Integer> loc = UmlUtil.parse_location(e);
+        locations.add(new Pair<>(loc, s));
     }
 
     /**
-     * merge constraints of
-     * @param ad automaton
-     * @return merged constraints
+     * merge all constraints from the states
+     * @param states the states in the automaton diagram
+     * @return the constraints
      */
-    private List<String> mergeConstraints(AutomatonDiagram ad)
+    private List<Judgement> merge_constraints(List<State> states)
     {
-        List<String> constraints = new ArrayList<>();
-        for (State s: ad.getAllStates()) {
-            constraints.addAll(s.getConstraints());
-        }
-        return constraints;
+        return states.stream()
+                .map(State::getConstraints)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
 }

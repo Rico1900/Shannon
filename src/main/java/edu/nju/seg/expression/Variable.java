@@ -1,6 +1,8 @@
 package edu.nju.seg.expression;
 
-import java.util.Objects;
+import edu.nju.seg.util.$;
+
+import java.util.*;
 
 public class Variable extends Expr {
 
@@ -31,4 +33,22 @@ public class Variable extends Expr {
     public String toString() {
         return name;
     }
+
+    @Override
+    public Variable attach_bound(int k) {
+        return new Variable(name + "_" + k);
+    }
+
+    @Override
+    public Expr attach_loop_queue(List<Integer> loop_queue) {
+        return new Variable($.loop_queue_prefix(loop_queue) + name);
+    }
+
+    @Override
+    public Set<String> extract_variables() {
+        Set<String> result = new HashSet<>();
+        result.add(name);
+        return result;
+    }
+
 }

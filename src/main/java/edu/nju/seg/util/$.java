@@ -62,7 +62,7 @@ public class $ {
      * @param list the string list
      * @return the list without blank string
      */
-    public static List<String> filterStrList(List<String> list)
+    public static List<String> filter_blank_str(List<String> list)
     {
         return list.stream()
                 .filter(s -> !isBlank(s))
@@ -133,6 +133,50 @@ public class $ {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    /**
+     * remove all white space from the given string
+     * @param s the given string
+     * @return the string which all the whitespace is removed
+     */
+    public static String remove_whitespace(String s)
+    {
+        return s.replaceAll(" ", "");
+    }
+
+    /**
+     * get the list derived from the array, whose index starts from one
+     * @param arr the array
+     * @param <T> the type of the List
+     * @return the list
+     */
+    public static <T> List<T> get_list_after_one(T[] arr)
+    {
+        return Arrays.asList(Arrays.copyOfRange(arr, 1, arr.length));
+    }
+
+    public static String loop_queue_prefix(List<Integer> loop_queue)
+    {
+        if ($.isBlankList(loop_queue)) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder("loop_");
+        for (Integer i: loop_queue) {
+            builder.append(i);
+            builder.append("_");
+        }
+        return builder.toString();
+    }
+
+    public static boolean is_odd(int i)
+    {
+        return i % 2 == 1;
+    }
+
+    public static boolean is_even(int i)
+    {
+        return i % 2 == 0;
     }
 
 }

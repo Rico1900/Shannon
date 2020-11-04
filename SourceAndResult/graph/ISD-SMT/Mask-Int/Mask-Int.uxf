@@ -4,8 +4,8 @@
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>630</x>
-      <y>130</y>
+      <x>610</x>
+      <y>20</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
@@ -17,8 +17,8 @@
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>630</x>
-      <y>300</y>
+      <x>610</x>
+      <y>170</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
@@ -30,7 +30,7 @@
   <element>
     <id>UMLSequenceAllInOne</id>
     <coordinates>
-      <x>20</x>
+      <x>10</x>
       <y>20</y>
       <w>580</w>
       <h>280</h>

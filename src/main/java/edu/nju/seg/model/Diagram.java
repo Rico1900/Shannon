@@ -1,12 +1,9 @@
 package edu.nju.seg.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import edu.nju.seg.expression.Judgement;
 
 import java.util.List;
 
-@Data
-@NoArgsConstructor
 public class Diagram {
 
     protected String title;
@@ -14,6 +11,18 @@ public class Diagram {
     /**
      * the constraints that describe the diagram
      */
-    protected List<String> constraints;
+    protected List<Judgement> constraints;
 
+    public Diagram(String title, List<Judgement> constraints) {
+        this.title = title;
+        this.constraints = constraints;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public List<Judgement> getConstraints() {
+        return constraints;
+    }
 }

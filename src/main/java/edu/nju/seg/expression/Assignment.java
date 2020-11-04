@@ -2,11 +2,11 @@ package edu.nju.seg.expression;
 
 import java.util.Objects;
 
-public class Assignment extends Expr {
+public class Assignment {
 
-    private Variable left;
+    private final Variable left;
 
-    private Expr right;
+    private final Expr right;
 
     public Assignment(Variable left, Expr right) {
         this.left = left;

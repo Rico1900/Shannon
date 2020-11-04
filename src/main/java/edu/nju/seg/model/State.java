@@ -1,6 +1,6 @@
 package edu.nju.seg.model;
 
-import edu.nju.seg.exception.ParseException;
+import edu.nju.seg.expression.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,17 +20,17 @@ public class State {
 
     private boolean loop = false;
 
-    private Set<String> variables;
+    private Set<Variable> variables;
 
-    private List<String> equations;
+    private List<DeEquation> deEquations;
 
-    private List<String> constraints;
+    private List<Judgement> constraints;
 
     private List<Relation> outers;
 
-    public void setEquations(List<String> equations)
+    public void setDeEquations(List<DeEquation> equations)
     {
-        this.equations = equations;
+        this.deEquations = equations;
         calVariables();
     }
 
@@ -42,20 +42,19 @@ public class State {
         if (variables == null) {
             variables = new HashSet<>();
         }
-        for (String e: equations) {
-            if (e.contains("=")) {
-                String v = e.split("=")[0].trim();
-                variables.add(v.replace("\'", ""));
-            } else {
-                throw new ParseException("wrong equation: " + e);
-            }
-        }
+        deEquations.stream()
+                .map(DeEquation::get_left)
+                .filter(l -> l.getOp() == UnaryOp.DIFFERENTIAL)
+                .map(UnaryExpr::getExpr)
+                .filter(e -> e instanceof Variable)
+                .map(e -> (Variable) e)
+                .forEach(variables::add);
     }
 
     public List<State> getNext()
     {
         return outers.stream()
-                .map(Relation::getTarget)
+                .map(Relation::get_target)
                 .collect(Collectors.toList());
     }
 

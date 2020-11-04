@@ -1,8 +1,11 @@
 package edu.nju.seg.expression;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
-public class Judgement extends Expr {
+public class Judgement {
 
     private JudgeOp op;
 
@@ -26,6 +29,33 @@ public class Judgement extends Expr {
 
     public Expr getRight() {
         return right;
+    }
+
+    public Judgement attach_bound(int k)
+    {
+        return new Judgement(op, left.attach_bound(k), right.attach_bound(k));
+    }
+
+    public Judgement attach_loop_queue(List<Integer> loop_queue)
+    {
+        return new Judgement(op, left.attach_loop_queue(loop_queue), right.attach_loop_queue(loop_queue));
+    }
+
+    public Set<String> extract_variables()
+    {
+        Set<String> result = new HashSet<>();
+        result.addAll(left.extract_variables());
+        result.addAll(right.extract_variables());
+        return result;
+    }
+
+    public boolean is_task_judgement()
+    {
+        if (left instanceof UnaryExpr) {
+            UnaryExpr ue = (UnaryExpr) left;
+            return ue.getOp() == UnaryOp.TASK_TIME;
+        }
+        return false;
     }
 
     @Override

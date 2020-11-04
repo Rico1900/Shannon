@@ -35,7 +35,7 @@ public class ParserGenerator {
      * construct a parser which parses judgements
      * @return the parser
      */
-    public static Parser<Chr, Expr> judgement()
+    public static Parser<Chr, Judgement> judgement()
     {
         return left_expr()
                 .and(judge_op())
@@ -45,14 +45,43 @@ public class ParserGenerator {
 
     /**
      * construct a parser which parses assignments
-     * @return the parsers
+     * @return the parser
      */
-    public static Parser<Chr, Expr> assignment()
+    public static Parser<Chr, Assignment> assignment()
     {
         return variable()
-                .andL(chr('='))
+                .andL(string(":="))
                 .and(expression())
                 .map(Assignment::new);
+    }
+
+    /**
+     * construct a parser which parses differential equations like "v'=5"
+     * @return the parser
+     */
+    public static Parser<Chr, DeEquation> differential_equation()
+    {
+        return differential_expr()
+                .andL(chr('='))
+                .and(expression())
+                .map(DeEquation::new);
+    }
+
+    /**
+     * construct a parser which parses expressions consisting of variables
+     * @return the parser
+     */
+    public static Parser<Chr, Expr> v_expr()
+    {
+        Ref<Chr, Expr> expr = Parser.ref();
+        Parser<Chr, Expr> bin_expr = chr('(')
+                .andR(expr)
+                .and(binary_op())
+                .and(expr)
+                .andL(chr(')'))
+                .map((l, op, r) -> new BinaryExpr(op, l, r));
+        expr.set(choice(variable(), bin_expr));
+        return expr;
     }
 
     /**
@@ -68,22 +97,6 @@ public class ParserGenerator {
                 .map(Variable::new);
     }
 
-    /**
-     * construct a parser which parses expressions consisting of variables
-     * @return the parser
-     */
-    static Parser<Chr, Expr> v_expr()
-    {
-        Ref<Chr, Expr> expr = Parser.ref();
-        Parser<Chr, Expr> bin_expr = chr('(')
-                .andR(expr)
-                .and(binary_op())
-                .and(expr)
-                .andL(chr(')'))
-                .map((l, op, r) -> new BinaryExpr(op, l, r));
-        expr.set(choice(variable(), bin_expr));
-        return expr;
-    }
 
     /**
      * construct a parser which parses left expressions
@@ -93,7 +106,8 @@ public class ParserGenerator {
     {
         return choice(
                 v_expr(),
-                abs_expr()
+                abs_expr(),
+                task_expr()
         );
     }
 
@@ -105,6 +119,26 @@ public class ParserGenerator {
     {
         return v_expr().between(chr('|'), chr('|'))
                 .map(e -> new UnaryExpr(UnaryOp.ABS, e));
+    }
+
+    /**
+     * construct a parser which parses task expressions like "^(x-y)"
+     * @return the parser
+     */
+    static Parser<Chr, UnaryExpr> task_expr()
+    {
+        return chr('^').andR(v_expr())
+                .map(e -> new UnaryExpr(UnaryOp.TASK_TIME, e));
+    }
+
+    /**
+     * construct a parser which parses differential variable expression like "v'"
+     * @return the parser
+     */
+    static Parser<Chr, UnaryExpr> differential_expr()
+    {
+        return variable().andL(chr('\''))
+                .map(e -> new UnaryExpr(UnaryOp.DIFFERENTIAL, e));
     }
 
     /**

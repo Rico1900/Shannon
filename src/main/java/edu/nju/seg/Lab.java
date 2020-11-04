@@ -4,14 +4,14 @@ package edu.nju.seg;
 import com.microsoft.z3.Status;
 import edu.nju.seg.config.ExperimentConfig;
 import edu.nju.seg.data.ConfigReader;
+import edu.nju.seg.encoder.verification.VerificationEncoder;
+import edu.nju.seg.exception.EncodeException;
 import edu.nju.seg.exception.Z3Exception;
-import edu.nju.seg.metric.SimpleTimer;
 import edu.nju.seg.model.*;
-import edu.nju.seg.parser.Parser;
+import edu.nju.seg.parser.DiagramParser;
 import edu.nju.seg.parser.ParserDispatcher;
-import edu.nju.seg.parser.UMLetParser;
-import edu.nju.seg.solver.*;
-import edu.nju.seg.solver.tassat.TASSATEncoder;
+import edu.nju.seg.parser.UMLetTokenizer;
+import edu.nju.seg.encoder.*;
 import edu.nju.seg.util.Pair;
 import edu.nju.seg.util.SimpleLog;
 
@@ -40,12 +40,12 @@ public class Lab {
      */
     private List<Diagram> prepare_experiment()
     {
-        String inputPath = config.getInputFolder();
+        String inputPath = config.get_input_folder();
         File inputFolder = new File(inputPath);
         if (inputFolder.isDirectory()) {
             List<Diagram> diagrams = new ArrayList<>();
             for (File f : Objects.requireNonNull(inputFolder.listFiles())) {
-                UMLetParser.parseElement(f)
+                UMLetTokenizer.tokenize_elements(f)
                         .map(contents -> parse_diagram(f.getName(), contents))
                         .ifPresent(diagrams::add);
             }
@@ -62,103 +62,16 @@ public class Lab {
      */
     private void dispatch_experiment(List<Diagram> diagrams)
     {
-        switch (config.getType()) {
-            case ISD_SMT:
-                run_ISD_SMT(diagrams);
-                break;
-            case TASSAT_SMT:
-                run_TASSAT(diagrams);
-                break;
-            case AUTOMATON_SMT:
-                run_automaton_SMT(diagrams);
-                break;
+        switch (config.get_type()) {
             case ISD_AUTOMATA_VERIFICATION:
                 run_scenario_verification(diagrams);
                 break;
-            case ISD_AUTOMATA_OPTIMIZATION:
-                run_scenario_optimization(diagrams);
-                break;
+            default:
+                throw new EncodeException("");
         }
     }
 
-    /**
-     * run the experiment
-     * @param diagrams parsed diagrams
-     */
-    private void run_ISD_SMT(List<Diagram> diagrams)
-    {
-        try {
-            SolverManager manager = new SolverManager();
-            if (diagrams.size() == 1) {
-                Diagram d = diagrams.get(0);
-                if (d instanceof SequenceDiagram) {
-                    SequenceEncoder encoder = new SequenceEncoder((SequenceDiagram) d, manager,
-                            config.getType(), config.getBound());
-                    encoder.encode();
-                } else {
-                    SimpleLog.error("wrong diagram type for ISD SMT verification");
-                }
-            } else {
-                SimpleLog.error("ISD SMT verification only supports single diagram");
-            }
-            System.out.println(manager.check());
-            System.out.println();
-            System.out.println(manager.getEventTrace(false));
-            System.out.println();
-        } catch (Z3Exception e) {
-            logZ3Exception(e);
-        }
-    }
 
-    /**
-     * verify the automaton based on SMT
-     * @param diagrams the diagram list
-     */
-    private void run_automaton_SMT(List<Diagram> diagrams)
-    {
-        try {
-            SolverManager manager = new SolverManager();
-            if (diagrams.size() == 1) {
-                Diagram d = diagrams.get(0);
-                if (d instanceof AutomatonDiagram) {
-                    AutomatonEncoder encoder = new AutomatonEncoder((AutomatonDiagram) d,
-                            manager, config.getBound());
-                    encoder.encode();
-                }
-            } else {
-                SimpleLog.error("Automaton SMT verification only support single diagram");
-            }
-            System.out.println(manager.check());
-            System.out.println();
-        } catch (Z3Exception e) {
-            logZ3Exception(e);
-        }
-    }
-
-    /**
-     * run TASSAT SMT verification
-     * @param diagrams diagrams
-     */
-    private void run_TASSAT(List<Diagram> diagrams)
-    {
-        try {
-            SolverManager manager = new SolverManager();
-            TASSATEncoder encoder = new TASSATEncoder(diagrams, config.getBound(),
-                    config.getTargets(), manager);
-            encoder.encode();
-            System.out.println("============================");
-            System.out.println("start TASSAT SMT check");
-            System.out.println("bound: " + config.getBound());
-            SimpleTimer t = new SimpleTimer();
-            System.out.println(manager.check());
-            System.out.println("verification costs: " + t.pastSeconds() + " s");
-//            System.out.println(manager.getProof());
-//            System.out.println(manager.getModel());
-            System.out.println("============================");
-        } catch (Z3Exception e) {
-            logZ3Exception(e);
-        }
-    }
 
     /**
      * scenario-based optimization,
@@ -170,31 +83,13 @@ public class Lab {
         try {
             SolverManager manager = new SolverManager();
             Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(diagrams);
-            SequenceEncoder encoder = new SequenceEncoder(p.getLeft(), manager,
-                    config.getType(), config.getBound());
-            encoder.encode();
-            encoder.encodeAutomata(p.getRight());
-            encoder.delegateToManager();
+            VerificationEncoder ve = new VerificationEncoder(
+                    p.get_left(), p.get_right(), config.get_bound(), manager);
+            manager.addClause(ve.encode());
             Status result = manager.check();
             handleResult(result, manager);
         } catch (Z3Exception e) {
            logZ3Exception(e);
-        }
-    }
-
-    /**
-     * perform scenario-based optimization
-     * @param diagrams the diagram list
-     */
-    private void run_scenario_optimization(List<Diagram> diagrams)
-    {
-        try {
-            OptimizeManager om = new OptimizeManager();
-            Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(diagrams);
-            OptimizeEncoder encoder = new OptimizeEncoder(p.getLeft(), p.getRight(), om, config.getBound());
-            encoder.optimize();
-        } catch (Z3Exception e) {
-            logZ3Exception(e);
         }
     }
 
@@ -206,7 +101,7 @@ public class Lab {
      */
     private Diagram parse_diagram(String fileName, List<Element> content)
     {
-        Parser p = ParserDispatcher.dispatch(fileName, content);
+        DiagramParser p = ParserDispatcher.dispatch_uxf(fileName, content);
         return p.parse();
     }
 
@@ -217,19 +112,18 @@ public class Lab {
      */
     private Pair<SequenceDiagram, List<AutomatonDiagram>> partition(List<Diagram> diagrams)
     {
-        Pair<SequenceDiagram, List<AutomatonDiagram>> p = new Pair<>();
+        SequenceDiagram sd = null;
         List<AutomatonDiagram> list = new ArrayList<>();
         for (Diagram d: diagrams) {
             if (d instanceof SequenceDiagram) {
-                p.setLeft((SequenceDiagram) d);
+                sd = (SequenceDiagram) d;
             } else if (d instanceof AutomatonDiagram) {
                 list.add((AutomatonDiagram) d);
             } else {
                 SimpleLog.error("wrong diagram type for partition");
             }
         }
-        p.setRight(list);
-        return p;
+        return new Pair<>(sd, list);
     }
 
     /**

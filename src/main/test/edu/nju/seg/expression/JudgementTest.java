@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JudgementTest {
 
-    private final Parser<Chr, Expr> j_parser = ParserGenerator.judgement();
+    private final Parser<Chr, Judgement> j_parser = ParserGenerator.judgement();
 
     @Test
     void test_simple_judge()
@@ -52,6 +52,18 @@ public class JudgementTest {
                                         new Variable("y"))),
                         new Number(20D)),
                 j_parser.parse(Input.of("|(x-y)|<=20")).getOrThrow());
+    }
+
+    @Test
+    void test_task_time_judge()
+    {
+        assertEquals(new Judgement(JudgeOp.LE,
+                        new UnaryExpr(UnaryOp.TASK_TIME,
+                                new BinaryExpr(BinaryOp.SUB,
+                                        new Variable("x"),
+                                        new Variable("y"))),
+                        new Number(20D)),
+                j_parser.parse(Input.of("^(x-y)<=20")).getOrThrow());
     }
 
     @Test

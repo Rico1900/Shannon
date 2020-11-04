@@ -1,40 +1,39 @@
 package edu.nju.seg.util;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.Objects;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Pair<L, R> {
 
-    private L l;
+    private final L left;
 
-    private R r;
+    private final R right;
 
-    public L getLeft()
+    public Pair(L left, R right)
     {
-        return l;
+        this.left = left;
+        this.right = right;
     }
 
-    public R getRight()
-    {
-        return r;
+    public L get_left() {
+        return left;
     }
 
-    public void setLeft(L l)
-    {
-        this.l = l;
+    public R get_right() {
+        return right;
     }
 
-    public void setRight(R r)
-    {
-        this.r = r;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pair<?, ?> pair = (Pair<?, ?>) o;
+        return left.equals(pair.left) &&
+                right.equals(pair.right);
     }
 
-    public String unpackToStr()
-    {
-        return l.toString() + "-" + r.toString();
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right);
     }
+
 }

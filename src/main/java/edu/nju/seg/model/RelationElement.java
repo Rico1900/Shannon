@@ -21,18 +21,12 @@ public class RelationElement extends Element {
 
     public Pair<Integer, Integer> getSource()
     {
-        Pair<Integer, Integer> pair = new Pair<>();
-        pair.setLeft(x + sourceX);
-        pair.setRight(y + sourceY);
-        return pair;
+        return new Pair<>(x + sourceX, y + sourceY);
     }
 
     public Pair<Integer, Integer> getTarget()
     {
-        Pair<Integer, Integer> pair = new Pair<>();
-        pair.setLeft(x + targetX);
-        pair.setRight(y + targetY);
-        return pair;
+        return new Pair<>(x + targetX, y + targetY);
     }
 
 }
