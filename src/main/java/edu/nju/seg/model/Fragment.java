@@ -1,5 +1,7 @@
 package edu.nju.seg.model;
 
+import edu.nju.seg.util.$;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +41,11 @@ public class Fragment extends SDComponent {
     public String yield_raw_name()
     {
         return "<" + this.raw + ">";
+    }
+
+    public String get_frag_tag(List<Integer> loop_queue)
+    {
+        return $.loop_queue_prefix(loop_queue) + yield_raw_name();
     }
 
     public void addChild(SDComponent component)

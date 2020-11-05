@@ -13,7 +13,7 @@ public class VirtualNode extends SDComponent {
 
     public VirtualNode(String name)
     {
-        this.name = "virtual_" + name;
+        this.name = name;
     }
 
     public String get_name()

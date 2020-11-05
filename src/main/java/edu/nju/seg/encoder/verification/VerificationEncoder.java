@@ -166,8 +166,8 @@ public class VerificationEncoder {
         // We add the negation form of property expression to the final SMT expression,
         // so if the final SMT expression is unsatisfied, then verification succeed,
         // otherwise, the SMT solver produces the counter example.
-        w.mk_and(property_expr).ifPresent(e -> exprs.add(w.get_ctx().mkNot(e)));
-        encode_networks().ifPresent(exprs::add);
+//        w.mk_and(property_expr).ifPresent(e -> exprs.add(w.get_ctx().mkNot(e)));
+//        encode_networks().ifPresent(exprs::add);
         return w.mk_and_not_empty(exprs);
     }
 
@@ -320,6 +320,7 @@ public class VerificationEncoder {
         encode_properties(f, loop_queue);
         return w.get_ctx().mkAnd(
                 encode_base_fragment(
+                        f,
                         f.get_children(),
                         f.get_covered(),
                         f.get_virtual_head(),
@@ -340,6 +341,7 @@ public class VerificationEncoder {
         encode_properties(of, loop_queue);
         return w.get_ctx().mkAnd(
                 encode_base_fragment(
+                        of,
                         of.get_children(),
                         of.get_covered(),
                         of.get_virtual_head(),
@@ -363,6 +365,7 @@ public class VerificationEncoder {
         expers.add(encode_ge_zero(af.get_virtual_head().attach_loop_queue(loop_queue)));
         expers.add(w.get_ctx().mkAnd(
                 encode_base_fragment(
+                        af,
                         af.get_children(),
                         af.get_covered(),
                         af.get_virtual_head(),
@@ -375,6 +378,7 @@ public class VerificationEncoder {
         ));
         expers.add(w.get_ctx().mkAnd(
                 encode_base_fragment(
+                        af,
                         af.get_else_children(),
                         af.get_covered(),
                         af.get_virtual_head(),
@@ -420,7 +424,7 @@ public class VerificationEncoder {
                     orders
             );
             subs.add(relations);
-            encode_loop_children(lf.get_children(), loop_queue, loop_times, Seq.clone(current), is_outer, collector).ifPresent(subs::add);
+            encode_loop_children(lf, lf.get_children(), loop_queue, loop_times, Seq.clone(current), is_outer, collector).ifPresent(subs::add);
             if (all_expers.size() > 0) {
                 subs.add(w.mk_and_not_empty(all_expers.subList(0, loop_times)));
             }
@@ -431,7 +435,8 @@ public class VerificationEncoder {
 
 
 
-    private BoolExpr encode_base_fragment(List<SDComponent> children,
+    private BoolExpr encode_base_fragment(Fragment f,
+                                          List<SDComponent> children,
                                           List<Instance> covered,
                                           VirtualNode head,
                                           VirtualNode tail,
@@ -441,19 +446,20 @@ public class VerificationEncoder {
                                           Set<Seq> collector) throws Z3Exception
     {
         Map<Instance, List<SDComponent>> orders = cal_life_span_with_loop(covered, children, loop_queue);
-        List<BoolExpr> expers = new ArrayList<>();
-        encode_constraints(children, loop_queue).ifPresent(expers::add);
-        expers.add(encode_relations_inside_fragment(
+        List<BoolExpr> exprs = new ArrayList<>();
+        encode_constraints(children, loop_queue).ifPresent(exprs::add);
+        exprs.add(encode_relations_inside_fragment(
                 head.attach_loop_queue(loop_queue),
                 tail.attach_loop_queue(loop_queue),
                 orders
         ));
-        encode_mask(children, loop_queue).ifPresent(expers::add);
-        encode_children(children, loop_queue, current, is_outer, collector).ifPresent(expers::add);
-        return w.mk_and_not_empty(expers);
+        encode_mask(children, loop_queue).ifPresent(exprs::add);
+        encode_children(f, children, loop_queue, current, is_outer, collector).ifPresent(exprs::add);
+        return w.mk_and_not_empty(exprs);
     }
 
-    private Optional<BoolExpr> encode_children(List<SDComponent> children,
+    private Optional<BoolExpr> encode_children(Fragment f,
+                                               List<SDComponent> children,
                                                List<Integer> loop_queue,
                                                Seq current,
                                                boolean is_outer,
@@ -477,13 +483,14 @@ public class VerificationEncoder {
         if (is_outer) {
             String path_tag = Integer.toString(current.hashCode());
             current.set_label(path_tag);
-            subs.add(encode_path_label(path_tag));
+            subs.add(encode_path_label(f, path_tag));
             collector.add(current);
         }
         return w.mk_and(subs);
     }
 
-    private Optional<BoolExpr> encode_loop_children(List<SDComponent> children,
+    private Optional<BoolExpr> encode_loop_children(LoopFragment lf,
+                                                    List<SDComponent> children,
                                                     List<Integer> loop_queue,
                                                     int loop_times,
                                                     Seq current,
@@ -512,7 +519,7 @@ public class VerificationEncoder {
         if (is_outer) {
             String path_tag = Integer.toString(current.hashCode());
             current.set_label(path_tag);
-            subs.add(encode_path_label(path_tag));
+            subs.add(encode_path_label(lf, path_tag));
             collector.add(current);
         }
         return w.mk_and(subs);
@@ -524,13 +531,13 @@ public class VerificationEncoder {
     {
         List<BoolExpr> subs = new ArrayList<>();
         Set<Pair<SDComponent, SDComponent>> relations = flat_orders(orders);
-        encode_relations(relations).ifPresent(subs::add);
         for (List<SDComponent> order: orders.values()) {
             if (order.size() > 0) {
-                subs.add(encode_pre_and_succ(head, order.get(0)));
-                subs.add(encode_pre_and_succ(order.get(order.size() - 1), tail));
+                relations.add(new Pair<>(head, order.get(0)));
+                relations.add(new Pair<>(order.get(order.size() - 1), tail));
             }
         }
+        encode_relations(relations).ifPresent(subs::add);
         if ($.isBlankList(subs)) {
             subs.add(encode_pre_and_succ(head, tail));
         }
@@ -823,9 +830,9 @@ public class VerificationEncoder {
         return w.mk_string(p.get_left().yield_raw_name() + "_" + p.get_right());
     }
 
-    private BoolExpr encode_path_label(String label)
+    private BoolExpr encode_path_label(Fragment f, String label)
     {
-        return w.mk_eq(w.mk_string_var("path_label"), w.mk_string(label));
+        return w.mk_eq(w.mk_string_var(f.yield_raw_name() + "_path_label"), w.mk_string(label));
     }
 
     private Set<String> extract_variables(List<SDComponent> children)

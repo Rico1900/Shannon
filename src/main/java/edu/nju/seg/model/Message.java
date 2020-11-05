@@ -80,7 +80,7 @@ public class Message extends SDComponent {
 
     public Message attach_loop_queue(List<Integer> loop_queue)
     {
-        Message m = new Message(name + $.loop_queue_prefix(loop_queue),
+        Message m = new Message($.loop_queue_prefix(loop_queue) + name,
                 assignments, mask_instruction, source, target);
         m.set_source_index(source_index);
         m.set_target_index(target_index);
