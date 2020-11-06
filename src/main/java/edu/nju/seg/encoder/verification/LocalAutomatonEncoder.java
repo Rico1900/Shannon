@@ -7,10 +7,7 @@ import edu.nju.seg.encoder.ExpressionEncoder;
 import edu.nju.seg.exception.EncodeException;
 import edu.nju.seg.exception.Z3Exception;
 import edu.nju.seg.expression.Assignment;
-import edu.nju.seg.model.AutomatonDiagram;
-import edu.nju.seg.model.Message;
-import edu.nju.seg.model.Relation;
-import edu.nju.seg.model.State;
+import edu.nju.seg.model.*;
 import edu.nju.seg.parser.EquationParser;
 import edu.nju.seg.util.$;
 import edu.nju.seg.util.Z3Wrapper;
@@ -53,6 +50,9 @@ public class LocalAutomatonEncoder {
 
     public Optional<BoolExpr> encode() throws Z3Exception
     {
+        if (!diagram.getTitle().equals("converter")) {
+            return Optional.empty();
+        }
         if ($.isBlankList(timeline)) {
             return Optional.empty();
         }
@@ -159,24 +159,25 @@ public class LocalAutomatonEncoder {
     private BoolExpr encode_init()
     {
         State initial = diagram.get_initial();
-        List<Relation> outers = initial.getOuters();
-        if (outers != null) {
-            List<BoolExpr> inits = new ArrayList<>();
-            for (Relation r : outers) {
-                List<BoolExpr> subs = new ArrayList<>();
-                subs.add(encode_current_loc(0, r.get_target()));
-                // initial edges only contain assignments, no guards
-                r.get_assignments().stream()
-                        .map(a -> ee.encode_assignment_with_index(a, 0))
-                        .forEach(subs::add);
-                // ensure initial invariant condition
-                encode_invariant(0, r.get_target()).ifPresent(subs::add);
-                inits.add(w.mk_and_not_empty(subs));
-            }
-            return w.mk_or_not_empty(inits);
-        } else {
-            throw new EncodeException("wrong initial assignment");
-        }
+        return encode_current_loc(0, initial);
+//        List<Relation> outers = initial.getOuters();
+//        if (outers != null) {
+//            List<BoolExpr> inits = new ArrayList<>();
+//            for (Relation r : outers) {
+//                List<BoolExpr> subs = new ArrayList<>();
+//                subs.add(encode_current_loc(0, r.get_target()));
+//                // initial edges only contain assignments, no guards
+//                r.get_assignments().stream()
+//                        .map(a -> ee.encode_assignment_with_index(a, 0))
+//                        .forEach(subs::add);
+//                // ensure initial invariant condition
+//                encode_invariant(0, r.get_target()).ifPresent(subs::add);
+//                inits.add(w.mk_and_not_empty(subs));
+//            }
+//            return w.mk_or_not_empty(inits);
+//        } else {
+//            throw new EncodeException("wrong initial assignment");
+//        }
     }
 
     private BoolExpr encode_time_until_now(String eventName,
@@ -337,6 +338,9 @@ public class LocalAutomatonEncoder {
      */
     private BoolExpr encode_current_loc(int k, State current)
     {
+        if (current.getType() == StateType.INITIAL) {
+            return w.mk_eq(mkLocVar(k), w.mk_string(diagram.getTitle() + "_" + current.getStateName()));
+        }
         return w.mk_eq(mkLocVar(k), w.mk_string(current.getStateName()));
     }
 
@@ -363,7 +367,7 @@ public class LocalAutomatonEncoder {
      */
     private RealExpr mkVarVar(String var, int k)
     {
-        return w.mk_real_var(diagram.getTitle() + "_" + var + "_" + k);
+        return w.mk_real_var(var + "_" + k);
     }
 
     /**

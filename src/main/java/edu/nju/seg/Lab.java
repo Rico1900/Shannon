@@ -143,11 +143,8 @@ public class Lab {
     private void handleResult(Status result, SolverManager manager)
     {
         System.out.println(result);
-        if (result.toInt() == 0) {
-            System.out.println(manager.getProof());
-        } else {
-            System.out.println(manager.getEventTrace(true));
-        }
+        manager.print_automata_trace();
+//        System.out.println(manager.getEventTrace());
     }
 
     public static void main(String[] args)

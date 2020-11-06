@@ -1,17 +1,22 @@
 package edu.nju.seg.encoder;
 
-import com.microsoft.z3.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import com.microsoft.z3.*;
+import edu.nju.seg.util.Pair;
+
+import java.util.*;
+import java.util.regex.Matcher;
+
 
 public class SolverManager {
 
-    private Context context;
+    private final static java.util.regex.Pattern LOC_PATTERN = java.util.regex.Pattern.compile("^(.*)_loc_(.*)$");
 
-    private Solver solver;
+    private final static java.util.regex.Pattern DELTA_PATTERN = java.util.regex.Pattern.compile("^(.*)_delta_(.*)$");
+
+    private final Context context;
+
+    private final Solver solver;
 
     public SolverManager()
     {
@@ -35,34 +40,49 @@ public class SolverManager {
         return solver.getModel();
     }
 
-    public String getEventTrace(boolean removeVirtual)
+    public String getEventTrace()
     {
         Model m = solver.getModel();
         FuncDecl[] func = m.getDecls();
-        SortedMap<Double, List<String>> map = new TreeMap<>();
+        StringBuilder sb = new StringBuilder();
         for (FuncDecl f: func) {
-            if (f.getRange() instanceof RealSort) {
-                Double key = Double.valueOf(m.getConstInterp(f).toString() + ".0");
-                if (!map.containsKey(key)) {
-                    map.put(key, new ArrayList<>());
-                }
-                map.get(key).add(f.getName().toString());
-            }
+            sb.append(f.getName()).append(" = ").append(m.getConstInterp(f).toString()).append("\n");
         }
-        StringBuilder builder = new StringBuilder();
-        for (Double d: map.keySet()) {
-            for (String var: map.get(d)) {
-                if (removeVirtual && (var.contains("head") || var.contains("tail"))) {
-                    continue;
-                }
-                builder.append(var);
-                builder.append(": ");
-                builder.append(d);
-                builder.append("\n");
-            }
-        }
-        return builder.toString();
+        return sb.toString();
     }
+
+    public void print_automata_trace()
+    {
+        Model m = solver.getModel();
+        FuncDecl[] func = m.getDecls();
+        Map<String, List<Pair<Integer, String>>> map = new HashMap<>();
+        for (FuncDecl f: func) {
+            String name = f.getName().toString();
+            Matcher mat = LOC_PATTERN.matcher(name);
+            if (mat.matches()) {
+                String a_name = mat.group(1);
+                if (!map.containsKey(a_name)) {
+                    map.put(a_name, new ArrayList<>());
+                }
+                map.get(a_name).add(new Pair<>(Integer.parseInt(mat.group(2)), m.getConstInterp(f).toString()));
+            }
+        }
+        for (String name: map.keySet()) {
+            print_trace(name, map.get(name));
+        }
+    }
+
+    private void print_trace(String name, List<Pair<Integer, String>> trace)
+    {
+        trace.sort(Comparator.comparingInt(Pair::get_left));
+        StringBuilder sb = new StringBuilder();
+        sb.append(name).append(": ");
+        for (Pair<Integer, String> p: trace) {
+            sb.append(p.get_left()).append(", ").append(p.get_right()).append(" -> ");
+        }
+        System.out.println(sb.toString());
+    }
+
 
     public Expr getProof()
     {
