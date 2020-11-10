@@ -6,6 +6,7 @@ import edu.nju.seg.util.Pair;
 
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 
 public class SolverManager {
@@ -75,18 +76,15 @@ public class SolverManager {
     private void print_trace(String name, List<Pair<Integer, String>> trace)
     {
         trace.sort(Comparator.comparingInt(Pair::get_left));
-        StringBuilder sb = new StringBuilder();
-        sb.append(name).append(": ");
-        for (Pair<Integer, String> p: trace) {
-            sb.append(p.get_left()).append(", ").append(p.get_right()).append(" -> ");
-        }
-        System.out.println(sb.toString());
+        String sb = name + ": " +
+                trace.stream().map(p -> p.get_left() + " " + p.get_right()).collect(Collectors.joining(" -> "));
+        System.out.println(sb);
     }
 
 
-    public Expr getProof()
+    public void print_proof()
     {
-        return solver.getProof();
+        System.out.println(solver.getProof());
     }
 
     public Context getContext()

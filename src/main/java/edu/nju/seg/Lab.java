@@ -143,8 +143,13 @@ public class Lab {
     private void handleResult(Status result, SolverManager manager)
     {
         System.out.println(result);
-        manager.print_automata_trace();
-//        System.out.println(manager.getEventTrace());
+        if (result == Status.SATISFIABLE) {
+            manager.print_automata_trace();
+        } else if (result == Status.UNSATISFIABLE) {
+            manager.print_proof();
+        } else {
+            System.out.println("Solver result Unknown");
+        }
     }
 
     public static void main(String[] args)

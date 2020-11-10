@@ -133,7 +133,7 @@ public class VerificationEncoder {
     private void cal_automata_map()
     {
         for (AutomatonDiagram ad: ad_list) {
-            auto_map.put(ad.getTitle(), ad);
+            auto_map.put(ad.get_title(), ad);
         }
     }
 
@@ -161,12 +161,12 @@ public class VerificationEncoder {
         Seq s = new Seq(clean.get_covered());
         List<BoolExpr> exprs = new ArrayList<>();
         BoolExpr clean_expr = encode_clean_frag(clean, new ArrayList<>(), s, true, seq_set);
-//        exprs.add(clean_expr);
-//        encode_int_frags().ifPresent(exprs::add);
-//        // We add the negation form of property expression to the final SMT expression,
-//        // so if the final SMT expression is unsatisfied, then verification succeed,
-//        // otherwise, the SMT solver produces the counter example.
-//        w.mk_and(property_expr).ifPresent(e -> exprs.add(w.get_ctx().mkNot(e)));
+        exprs.add(clean_expr);
+        encode_int_frags().ifPresent(exprs::add);
+        // We add the negation form of property expression to the final SMT expression,
+        // so if the final SMT expression is unsatisfied, then verification succeed,
+        // otherwise, the SMT solver produces the counter example.
+        w.mk_and(property_expr).ifPresent(e -> exprs.add(w.get_ctx().mkNot(e)));
         encode_networks().ifPresent(exprs::add);
         return w.mk_and_not_empty(exprs);
     }

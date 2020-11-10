@@ -2,16 +2,16 @@ package edu.nju.seg.expression;
 
 public class AdJudgement extends Judgement {
 
-    private final UnaryOp op;
+    private final UnaryOp qualifier;
 
-    public AdJudgement(UnaryOp op, Judgement j) {
+    public AdJudgement(UnaryOp qualifier, Judgement j) {
         super(j.getOp(), j.getLeft(), j.getRight());
-        this.op = op;
+        this.qualifier = qualifier;
     }
 
-    public UnaryOp get_op()
+    public UnaryOp get_qualifier()
     {
-        return op;
+        return qualifier;
     }
 
 }

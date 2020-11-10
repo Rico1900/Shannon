@@ -18,7 +18,7 @@ public class Diagram {
         this.constraints = constraints;
     }
 
-    public String getTitle() {
+    public String get_title() {
         return title;
     }
 

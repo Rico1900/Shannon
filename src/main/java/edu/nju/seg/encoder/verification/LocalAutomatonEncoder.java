@@ -6,7 +6,10 @@ import com.microsoft.z3.RealExpr;
 import edu.nju.seg.encoder.ExpressionEncoder;
 import edu.nju.seg.exception.EncodeException;
 import edu.nju.seg.exception.Z3Exception;
+import edu.nju.seg.expression.AdJudgement;
 import edu.nju.seg.expression.Assignment;
+import edu.nju.seg.expression.Judgement;
+import edu.nju.seg.expression.UnaryOp;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.EquationParser;
 import edu.nju.seg.util.$;
@@ -50,11 +53,7 @@ public class LocalAutomatonEncoder {
 
     public Optional<BoolExpr> encode() throws Z3Exception
     {
-        // TODO: debug mode
-        if (!diagram.getTitle().equals("converter")) {
-            return Optional.empty();
-        }
-        if ($.isBlankList(timeline)) {
+        if ($.isBlankList(timeline) || diagram.get_properties().isEmpty()) {
             return Optional.empty();
         }
         List<BoolExpr> exprs = new ArrayList<>();
@@ -79,7 +78,45 @@ public class LocalAutomatonEncoder {
             exprs.add(encode_segment(start, end, i + 1));
         }
         exprs.add(encode_message(timeline.get(timeline.size() - 1), calculate_offset(timeline.size())));
+        encode_properties().ifPresent(exprs::add);
         return Optional.of(w.mk_and_not_empty(exprs));
+    }
+
+    private Optional<BoolExpr> encode_properties()
+    {
+        List<BoolExpr> exprs = new ArrayList<>();
+        List<Judgement> properties = diagram.get_properties();
+        if (properties.size() == 0) {
+            return Optional.empty();
+        }
+        for (Judgement j: properties) {
+            exprs.add(encode_property(j));
+        }
+        return Optional.of(w.get_ctx().mkNot(w.mk_and_not_empty(exprs)));
+    }
+
+    private BoolExpr encode_property(Judgement j)
+    {
+        if (j instanceof AdJudgement) {
+            AdJudgement aj = (AdJudgement) j;
+            if (aj.get_qualifier() == UnaryOp.FORALL) {
+                List<BoolExpr> subs = new ArrayList<>();
+                for (int i = 0; i < calculate_total_index(); i++) {
+                    subs.add(ee.encode_judgement(aj.attach_bound(i)));
+                }
+                return w.mk_and_not_empty(subs);
+            } else if (aj.get_qualifier() == UnaryOp.EXISTS) {
+                List<BoolExpr> subs = new ArrayList<>();
+                for (int i = 0; i < calculate_total_index(); i++) {
+                    subs.add(ee.encode_judgement(aj.attach_bound(i)));
+                }
+                return w.mk_or_not_empty(subs);
+            } else {
+                throw new EncodeException("Wrong AdJudgement: " + aj.toString());
+            }
+        } else {
+            throw new EncodeException("Wrong Judgement for Automaton: " + j.toString());
+        }
     }
 
     /**
@@ -92,7 +129,8 @@ public class LocalAutomatonEncoder {
     private BoolExpr encode_message(Message m, int index)
     {
         Relation r = edge_map.get(m.get_name());
-        if (m.get_target().get_name().equals(diagram.getTitle())) {
+        // if the automaton is the target of the synchronous message
+        if (m.get_target().get_name().equals(diagram.get_title())) {
             State source = r.get_source();
             State target = r.get_target();
             BoolExpr time = encode_time_unchanged(index);
@@ -134,8 +172,9 @@ public class LocalAutomatonEncoder {
                 }
             }
             return w.mk_and_not_empty(exprs);
+        // if the automaton if the source of the synchronous message
         } else {
-            return encode_single_jump(index, r);
+            return w.get_ctx().mkAnd(encode_current_loc(index, r.get_source()), encode_single_jump(index, r));
         }
     }
 
@@ -340,7 +379,7 @@ public class LocalAutomatonEncoder {
     private BoolExpr encode_current_loc(int k, State current)
     {
         if (current.getType() == StateType.INITIAL) {
-            return w.mk_eq(mkLocVar(k), w.mk_string(diagram.getTitle() + "_" + current.getStateName()));
+            return w.mk_eq(mkLocVar(k), w.mk_string(diagram.get_title() + "_" + current.getStateName()));
         }
         return w.mk_eq(mkLocVar(k), w.mk_string(current.getStateName()));
     }
@@ -352,12 +391,12 @@ public class LocalAutomatonEncoder {
      */
     private Expr mkLocVar(int k)
     {
-        return w.mk_string_var(diagram.getTitle() + "_" + "loc_" + k);
+        return w.mk_string_var(diagram.get_title() + "_" + "loc_" + k);
     }
 
     private RealExpr mkTimeVar(int k)
     {
-        return w.mk_real_var(diagram.getTitle() + "_" + "delta_" + k);
+        return w.mk_real_var(diagram.get_title() + "_" + "delta_" + k);
     }
 
     /**
@@ -379,6 +418,11 @@ public class LocalAutomatonEncoder {
     private int calculate_offset(int segIndex)
     {
         return segIndex * (bound + 1);
+    }
+
+    private int calculate_total_index()
+    {
+        return timeline.size() * (bound + 1) + 2;
     }
 
     private BoolExpr encode_time_unchanged(int index)
