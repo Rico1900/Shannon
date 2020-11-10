@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>20</x>
+      <y>20</y>
+      <w>670</w>
+      <h>560</h>
+    </coordinates>
+    <panel_attributes>title=ADC
+obj=belt~a
+obj=workstation~b
+obj=warehouse~c
+obj=manipulator~d
+
+
+combinedFragment=loop(10,10)~loop1
+b-&gt;&gt;&gt;a : place;
+a-&gt;&gt;&gt;d : take;
+--
+
+combinedFragment=int (p=2)(1,5)~int2
+b-&gt;&gt;&gt;a : produce;
+a-&gt;&gt;&gt;c : store;
+--
+
+combinedFragment=int (p=1)(1,5)~int2
+c-&gt;&gt;&gt;a : retrieval;
+a-&gt;&gt;&gt;d : consume;
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>330</x>
+      <y>690</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Properties
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>20</x>
+      <y>690</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

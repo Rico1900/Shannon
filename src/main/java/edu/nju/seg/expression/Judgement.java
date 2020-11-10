@@ -53,7 +53,7 @@ public class Judgement {
     {
         if (left instanceof UnaryExpr) {
             UnaryExpr ue = (UnaryExpr) left;
-            return ue.getOp() == UnaryOp.TASK_TIME;
+            return ue.get_op() == UnaryOp.TASK_TIME;
         }
         return false;
     }

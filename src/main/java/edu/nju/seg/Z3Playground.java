@@ -7,18 +7,18 @@ import edu.nju.seg.util.Z3Wrapper;
 public class Z3Playground {
 
     public static void main(String[] args) throws Z3Exception {
-        Context c = new Context();
-        Optimize o = c.mkOptimize();
-        Z3Wrapper w = new Z3Wrapper(c);
-//        IntExpr x = w.mkIntVar("x");
-//        IntExpr y = w.mkIntVar("y");
-        RealExpr x = w.mk_real_var("x");
-        RealExpr y = w.mk_real_var("y");
-        o.Add(c.mkLe(x, c.mkInt(2)));
-        o.Add(c.mkLe(c.mkSub(y , x), c.mkInt(1)));
-        Optimize.Handle h = o.MkMaximize(c.mkAdd(x, y));
-        System.out.println(o.Check());
-        System.out.println(h.getValue());
+//        Context c = new Context();
+//        BitVecSort bvs = c.mkBitVecSort(32);
+//        BitVecExpr x = (BitVecExpr) c.mkConst("x", bvs);
+//        BitVecExpr a = (BitVecExpr) c.mkConst("a", bvs);
+//        Solver s = c.mkSolver();
+//        s.add(c.mkNot(c.mkEq(c.mkBVSMod(x, a), c.mkBVSMod(c.mkBVAdd(x, a), a))));
+//        System.out.println(s.check());
+//        System.out.println(s.getModel());
+        int a = 0x48000000;
+        int x = 0x68000000;
+        System.out.println(x % a);
+        System.out.println((x + a) % a);
     }
 
 }

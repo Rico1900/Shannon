@@ -17,10 +17,11 @@
     <coordinates>
       <x>490</x>
       <y>220</y>
-      <w>30</w>
+      <w>70</w>
       <h>140</h>
     </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
+    <panel_attributes>lt=-&gt;
+PC_init</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
   </element>
   <element>

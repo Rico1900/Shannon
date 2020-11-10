@@ -50,6 +50,7 @@ public class LocalAutomatonEncoder {
 
     public Optional<BoolExpr> encode() throws Z3Exception
     {
+        // TODO: debug mode
         if (!diagram.getTitle().equals("converter")) {
             return Optional.empty();
         }

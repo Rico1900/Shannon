@@ -44,8 +44,8 @@ public class State {
         }
         deEquations.stream()
                 .map(DeEquation::get_left)
-                .filter(l -> l.getOp() == UnaryOp.DIFFERENTIAL)
-                .map(UnaryExpr::getExpr)
+                .filter(l -> l.get_op() == UnaryOp.DIFFERENTIAL)
+                .map(UnaryExpr::get_expr)
                 .filter(e -> e instanceof Variable)
                 .map(e -> (Variable) e)
                 .forEach(variables::add);

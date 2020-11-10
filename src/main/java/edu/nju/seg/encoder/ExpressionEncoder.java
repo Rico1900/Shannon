@@ -52,7 +52,7 @@ public class ExpressionEncoder {
     {
         if (j.getLeft() instanceof UnaryExpr) {
             UnaryExpr left = (UnaryExpr) j.getLeft();
-            if (left.getOp() == UnaryOp.ABS) {
+            if (left.get_op() == UnaryOp.ABS) {
                 return encode_abs_judgement(j, left);
             }
         }
@@ -67,7 +67,7 @@ public class ExpressionEncoder {
     private BoolExpr encode_abs_judgement(Judgement j, UnaryExpr left)
     {
         List<BoolExpr> es = new ArrayList<>();
-        ArithExpr left_expr = encode_expression(left.getExpr());
+        ArithExpr left_expr = encode_expression(left.get_expr());
         es.add(w.get_ctx().mkAnd(
                 encode_binary_judgement(j.getOp(), left_expr, encode_expression(j.getRight())),
                 w.mk_ge(left_expr, w.get_ctx().mkReal(0))
@@ -133,12 +133,12 @@ public class ExpressionEncoder {
      */
     private ArithExpr encode_unary_expr(UnaryExpr ue)
     {
-        switch (ue.getOp()) {
+        switch (ue.get_op()) {
             case ABS:
             case TASK_TIME:
             case DIFFERENTIAL:
             default:
-                throw new EncodeException("wrong unary operation: " + ue.getOp());
+                throw new EncodeException("wrong unary operation: " + ue.get_op());
         }
     }
 

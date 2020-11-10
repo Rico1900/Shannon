@@ -4,6 +4,8 @@ public enum UnaryOp {
 
     ABS,
     TASK_TIME,
-    DIFFERENTIAL
+    DIFFERENTIAL,
+    FORALL,
+    EXISTS
 
 }

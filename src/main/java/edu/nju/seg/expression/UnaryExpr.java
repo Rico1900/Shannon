@@ -14,12 +14,12 @@ public class UnaryExpr extends Expr {
         this.expr = expr;
     }
 
-    public UnaryOp getOp()
+    public UnaryOp get_op()
     {
         return op;
     }
 
-    public Expr getExpr()
+    public Expr get_expr()
     {
         return expr;
     }

@@ -31,6 +31,11 @@ public class ParserGenerator {
         return expr;
     }
 
+    public static Parser<Chr, AdJudgement> general_judgement()
+    {
+        return choice(forall_judgement(), exists_judgement());
+    }
+
     /**
      * construct a parser which parses judgements
      * @return the parser
@@ -41,6 +46,28 @@ public class ParserGenerator {
                 .and(judge_op())
                 .and(expression())
                 .map((l, op, r) -> new Judgement(op, l, r));
+    }
+
+    /**
+     * construct a parser which parses forall judgements like "forall(x<=5)"
+     * @return the parser
+     */
+    static Parser<Chr, AdJudgement> forall_judgement()
+    {
+        return string("forall(").andR(judgement())
+                .andL(chr(')'))
+                .map(j -> new AdJudgement(UnaryOp.FORALL, j));
+    }
+
+    /**
+     * construct a parser which parses exists judgements like "exists(x>10)"
+     * @return the parser
+     */
+    static Parser<Chr, AdJudgement> exists_judgement()
+    {
+        return string("exists(").andR(judgement())
+                .andL(chr(')'))
+                .map(j -> new AdJudgement(UnaryOp.EXISTS, j));
     }
 
     /**
@@ -112,7 +139,7 @@ public class ParserGenerator {
     }
 
     /**
-     * construct a parser which parses absolute expressions like "|x|" or "|x-y|"
+     * construct a parser which parses absolute expressions like "|x|" or "|(x-y)|"
      * @return the parser
      */
     static Parser<Chr, UnaryExpr> abs_expr()

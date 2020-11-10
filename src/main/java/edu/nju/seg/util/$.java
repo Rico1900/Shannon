@@ -145,6 +145,11 @@ public class $ {
         return s.replaceAll(" ", "");
     }
 
+    public static boolean is_ad_judgement(String s)
+    {
+        return s.startsWith("forall") || s.startsWith("exists");
+    }
+
     /**
      * get the list derived from the array, whose index starts from one
      * @param arr the array

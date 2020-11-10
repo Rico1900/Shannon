@@ -20,10 +20,10 @@ public class EquationParser {
     {
         Map<String, Double> map = new HashMap<>();
         equations.stream()
-                .filter(e -> e.get_left().getOp() == UnaryOp.DIFFERENTIAL)
+                .filter(e -> e.get_left().get_op() == UnaryOp.DIFFERENTIAL)
                 .filter(e -> e.get_right() instanceof Number)
                 .forEach(e -> {
-                   String v = ((Variable) e.get_left().getExpr()).getName();
+                   String v = ((Variable) e.get_left().get_expr()).getName();
                    Double d = ((Number) e.get_right()).getValue();
                    map.put(v, d);
                 });

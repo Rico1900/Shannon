@@ -12,6 +12,8 @@ public class JudgementTest {
 
     private final Parser<Chr, Judgement> j_parser = ParserGenerator.judgement();
 
+    private final Parser<Chr, AdJudgement> general_parser = ParserGenerator.general_judgement();
+
     @Test
     void test_simple_judge()
     {
@@ -82,6 +84,21 @@ public class JudgementTest {
                                                 new Variable("c1")),
                                         new Number(2D)))),
                 j_parser.parse(Input.of("|(x-y)|>=(a1+((b1/c1)-2))")).getOrThrow());
+    }
+
+    @Test
+    void test_general()
+    {
+        assertEquals(new AdJudgement(UnaryOp.FORALL,
+                        new Judgement(JudgeOp.LE,
+                                new Variable("x"),
+                                new Number(5.0))),
+                general_parser.parse(Input.of("forall(x<=5)")).getOrThrow());
+        assertEquals(new AdJudgement(UnaryOp.EXISTS,
+                        new Judgement(JudgeOp.LE,
+                                new Variable("x"),
+                                new Number(5.0))),
+                general_parser.parse(Input.of("exists(x<=5)")).getOrThrow());
     }
 
 }
