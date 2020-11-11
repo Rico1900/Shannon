@@ -162,7 +162,7 @@ public class VerificationEncoder {
         List<BoolExpr> exprs = new ArrayList<>();
         BoolExpr clean_expr = encode_clean_frag(clean, new ArrayList<>(), s, true, seq_set);
         exprs.add(clean_expr);
-        encode_int_frags().ifPresent(exprs::add);
+//        encode_int_frags().ifPresent(exprs::add);
         // We add the negation form of property expression to the final SMT expression,
         // so if the final SMT expression is unsatisfied, then verification succeed,
         // otherwise, the SMT solver produces the counter example.
