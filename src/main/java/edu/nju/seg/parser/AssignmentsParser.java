@@ -8,6 +8,7 @@ import org.typemeta.funcj.parser.Input;
 import org.typemeta.funcj.parser.Parser;
 import org.typemeta.funcj.parser.Result;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +24,9 @@ public class AssignmentsParser {
      */
     public static List<Assignment> parse_assignments(String sl)
     {
+        if ($.isBlank(sl)) {
+            return new ArrayList<>();
+        }
         return Arrays.stream(sl.split(","))
                 .map($::remove_whitespace)
                 .map(Input::of)

@@ -6,10 +6,7 @@ import com.microsoft.z3.RealExpr;
 import edu.nju.seg.encoder.ExpressionEncoder;
 import edu.nju.seg.exception.EncodeException;
 import edu.nju.seg.exception.Z3Exception;
-import edu.nju.seg.expression.AdJudgement;
-import edu.nju.seg.expression.Assignment;
-import edu.nju.seg.expression.Judgement;
-import edu.nju.seg.expression.UnaryOp;
+import edu.nju.seg.expression.*;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.EquationParser;
 import edu.nju.seg.util.$;
@@ -332,18 +329,16 @@ public class LocalAutomatonEncoder {
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(time);
         exprs.add(loc);
-        Map<String, Double> map = EquationParser.parseEquations(s.getDeEquations());
-        for (Map.Entry<String, Double> pair: map.entrySet()) {
-            String v = pair.getKey();
+        Set<String> changed = EquationParser.parse_variables(s.getDeEquations());
+        for (DeEquation e: s.getDeEquations()) {
             // add differential equation to the result, for example
             // f'(x) = 1, make sure that x' - x = 1 * delta
-            exprs.add(w.mk_eq(w.mk_mul(delta, w.mk_real(pair.getValue().toString())),
-                    w.mk_sub(mkVarVar(v, index + 1), mkVarVar(v, index))));
+            exprs.add(ee.encode_deequation_with_index(e, index, delta));
         }
         // rest variables remain unchanged
         Set<String> vars = diagram.get_var_str();
         for (String v: vars) {
-            if (!map.containsKey(v)) {
+            if (!changed.contains(v)) {
                 exprs.add(w.mk_eq(mkVarVar(v, index + 1), mkVarVar(v, index)));
             }
         }
@@ -412,12 +407,12 @@ public class LocalAutomatonEncoder {
 
     /**
      * calculate total offset for the segment encoding
-     * @param segIndex the segment index, start from 0
+     * @param seg_index the segment index, start from 0
      * @return the total offset
      */
-    private int calculate_offset(int segIndex)
+    private int calculate_offset(int seg_index)
     {
-        return segIndex * (bound + 1);
+        return seg_index * (bound + 1);
     }
 
     private int calculate_total_index()

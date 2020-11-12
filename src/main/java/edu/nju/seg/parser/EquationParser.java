@@ -5,9 +5,7 @@ import edu.nju.seg.expression.Number;
 import edu.nju.seg.expression.UnaryOp;
 import edu.nju.seg.expression.Variable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class EquationParser {
 
@@ -28,6 +26,17 @@ public class EquationParser {
                    map.put(v, d);
                 });
         return map;
+    }
+
+    public static Set<String> parse_variables(List<DeEquation> equations)
+    {
+        Set<String> set = new HashSet<>();
+        for (DeEquation e: equations) {
+            if (e.get_left().get_op() == UnaryOp.DIFFERENTIAL) {
+                set.add(((Variable) e.get_left().get_expr()).getName());
+            }
+        }
+        return set;
     }
 
 }

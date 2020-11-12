@@ -6,11 +6,14 @@ public class DeEquation {
 
     private final UnaryExpr left;
 
+    private final JudgeOp op;
+
     private final Expr right;
 
-    public DeEquation(UnaryExpr left, Expr right)
+    public DeEquation(UnaryExpr left, JudgeOp op, Expr right)
     {
         this.left = left;
+        this.op = op;
         this.right = right;
     }
 
@@ -18,30 +21,34 @@ public class DeEquation {
         return left;
     }
 
+    public JudgeOp get_op()
+    {
+        return op;
+    }
+
     public Expr get_right() {
         return right;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DeEquation deEquation = (DeEquation) o;
-        return left.equals(deEquation.left) &&
-                right.equals(deEquation.right);
+        DeEquation that = (DeEquation) o;
+        return left.equals(that.left) &&
+                op == that.op &&
+                right.equals(that.right);
     }
 
     @Override
-    public int hashCode()
-    {
-        return Objects.hash(left, right);
+    public int hashCode() {
+        return Objects.hash(left, op, right);
     }
 
     @Override
     public String toString()
     {
-        return left.toString() + " = " + right.toString();
+        return left.toString() + op.toString() + right.toString();
     }
 
 }

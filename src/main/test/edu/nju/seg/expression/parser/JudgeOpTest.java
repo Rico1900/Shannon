@@ -1,6 +1,7 @@
 package edu.nju.seg.expression.parser;
 
 import edu.nju.seg.expression.JudgeOp;
+import edu.nju.seg.parser.JudgementsParser;
 import org.junit.jupiter.api.Test;
 import org.typemeta.funcj.data.Chr;
 import org.typemeta.funcj.parser.Input;
@@ -40,6 +41,12 @@ public class JudgeOpTest {
     void test_5()
     {
         assertEquals(JudgeOp.GE, p.parse(Input.of(">=")).getOrThrow());
+    }
+
+    @Test
+    void test_6()
+    {
+        assertEquals(JudgeOp.EQ, p.parse(Input.of("=")).getOrThrow());
     }
 
 }

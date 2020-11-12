@@ -22,7 +22,7 @@
     </coordinates>
     <panel_attributes>management
 --
-warehouse_products'=0
+'warehouse_products=0
 
 -.
 warehouse_products&gt;=0

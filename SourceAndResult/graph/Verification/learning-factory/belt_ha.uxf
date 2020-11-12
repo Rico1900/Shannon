@@ -22,7 +22,7 @@
     </coordinates>
     <panel_attributes>running
 --
-belt_products'=0
+'belt_products=0
 
 -.
 belt_products&gt;=0

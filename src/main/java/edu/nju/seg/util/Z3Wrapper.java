@@ -2,6 +2,7 @@ package edu.nju.seg.util;
 
 import com.microsoft.z3.*;
 import edu.nju.seg.exception.Z3Exception;
+import edu.nju.seg.expression.JudgeOp;
 
 import java.util.List;
 import java.util.Optional;
@@ -131,29 +132,27 @@ public class Z3Wrapper {
 
     /**
      * make bool expression according to the operator
-     * @param operator the operator string
+     * @param op the operator string
      * @param left the left expression
      * @param right the right expression
      * @return bool expression
      * @throws Z3Exception when the operator is not supported
      */
-    public BoolExpr mk_judgement(String operator,
+    public BoolExpr mk_judgement(JudgeOp op,
                                  ArithExpr left,
                                  ArithExpr right) throws Z3Exception
     {
-        switch (operator) {
-            case "<":
-                return ctx.mkLt(left, right);
-            case "<=":
-                return ctx.mkLe(left, right);
-            case ">":
-                return ctx.mkGt(left, right);
-            case ">=":
-                return ctx.mkGe(left, right);
-            case "=":
+        switch (op) {
+            case EQ:
                 return ctx.mkEq(left, right);
-            case "!=":
-                return ctx.mkNot(ctx.mkEq(left, right));
+            case LT:
+                return ctx.mkLt(left, right);
+            case LE:
+                return ctx.mkLe(left, right);
+            case GT:
+                return ctx.mkGt(left, right);
+            case GE:
+                return ctx.mkGe(left, right);
             default:
                 throw new Z3Exception();
         }

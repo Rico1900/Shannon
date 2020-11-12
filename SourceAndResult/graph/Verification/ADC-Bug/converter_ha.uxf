@@ -11,7 +11,7 @@
     </coordinates>
     <panel_attributes>reset
 --
-index'=0
+'index=0
 
 -.
 index&gt;=0
@@ -29,7 +29,7 @@ valign=top
     </coordinates>
     <panel_attributes>wait
 --
-index'=0
+'index=0
 
 -.
 index&gt;=0
@@ -71,7 +71,7 @@ reset:index&gt;=0;index:=0</panel_attributes>
     </coordinates>
     <panel_attributes>handle
 --
-index'=0
+'index=0
 
 -.
 index&gt;=0
@@ -136,7 +136,7 @@ init:;index:=0</panel_attributes>
     </coordinates>
     <panel_attributes>posted task
 --
-index'=0
+'index=0
 
 -.
 index&gt;=0

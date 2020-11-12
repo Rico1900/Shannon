@@ -27,7 +27,7 @@ public class ParserGenerator {
                 .and(expr)
                 .andL(chr(')'))
                 .map((l, op, r) -> new BinaryExpr(op, l, r));
-        expr.set(choice(number_or_variable(), bin_expr));
+        expr.set(choice(number_or_variable(), differential_expr(), bin_expr));
         return expr;
     }
 
@@ -89,7 +89,7 @@ public class ParserGenerator {
     public static Parser<Chr, DeEquation> differential_equation()
     {
         return differential_expr()
-                .andL(chr('='))
+                .and(judge_op())
                 .and(expression())
                 .map(DeEquation::new);
     }
@@ -107,7 +107,7 @@ public class ParserGenerator {
                 .and(expr)
                 .andL(chr(')'))
                 .map((l, op, r) -> new BinaryExpr(op, l, r));
-        expr.set(choice(variable(), bin_expr));
+        expr.set(choice(variable(), differential_expr(), bin_expr));
         return expr;
     }
 
@@ -164,7 +164,7 @@ public class ParserGenerator {
      */
     static Parser<Chr, UnaryExpr> differential_expr()
     {
-        return variable().andL(chr('\''))
+        return chr('\'').andR(variable())
                 .map(e -> new UnaryExpr(UnaryOp.DIFFERENTIAL, e));
     }
 
@@ -207,7 +207,7 @@ public class ParserGenerator {
     static Parser<Chr, JudgeOp> judge_op()
     {
         return choice(
-                string("==").map(s -> JudgeOp.EQ),
+                chr('=').andR(eq_or_nil()).map(s -> JudgeOp.EQ),
                 chr('<').andR(eq_or_nil())
                         .map(c -> c.isPresent() ? JudgeOp.LE : JudgeOp.LT),
                 chr('>').andR(eq_or_nil())

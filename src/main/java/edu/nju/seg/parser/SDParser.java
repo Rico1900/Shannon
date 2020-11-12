@@ -57,8 +57,8 @@ public class SDParser implements DiagramParser {
 
     private Pair<List<Judgement>, List<Judgement>> parse_notes(List<Element> notes)
     {
-        List<Judgement> constraints = null;
-        List<Judgement> properties = null;
+        List<Judgement> constraints = new ArrayList<>();
+        List<Judgement> properties = new ArrayList<>();
         for (Element e: notes) {
             Pair<NoteType, List<Judgement>> note = UmlNoteParser.parse_note(e);
             if (note.get_left() == NoteType.CONSTRAINTS) {

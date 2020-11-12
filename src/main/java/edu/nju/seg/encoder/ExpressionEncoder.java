@@ -2,6 +2,7 @@ package edu.nju.seg.encoder;
 
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.RealExpr;
 import edu.nju.seg.exception.EncodeException;
 import edu.nju.seg.exception.Z3Exception;
 import edu.nju.seg.expression.*;
@@ -27,6 +28,80 @@ public class ExpressionEncoder {
                 encode_expression(a.getLeft().attach_bound(index)),
                 encode_expression(a.getRight().attach_bound(index - 1))
         );
+    }
+
+    public BoolExpr encode_deequation_with_index(DeEquation e, int index, RealExpr delta)
+    {
+        return encode_binary_judgement(
+                e.get_op(),
+                encode_de_expression(e.get_left(), index, delta),
+                encode_de_expression(e.get_right(), index, delta)
+        );
+    }
+
+    private ArithExpr encode_de_expression(Expr e, int index, RealExpr delta)
+    {
+        if (e instanceof Number) {
+            return encode_de_number((Number) e, delta);
+        } else if (e instanceof Variable) {
+            return encode_variable((Variable) e);
+        } else if (e instanceof UnaryExpr) {
+            return encode_de_unary((UnaryExpr) e, index);
+        } else {
+            return encode_de_binary((BinaryExpr) e, index, delta);
+        }
+    }
+
+    private ArithExpr encode_de_unary(UnaryExpr e, int index)
+    {
+        if (e.get_op() == UnaryOp.DIFFERENTIAL) {
+            if (e.get_expr() instanceof Variable) {
+                String v = ((Variable) e.get_expr()).getName();
+                int next = index + 1;
+                return w.mk_sub(
+                        w.mk_real_var(v + "_" + next),
+                        w.mk_real_var(v + "_" + index)
+                );
+            }
+        }
+        throw new EncodeException("Wrong unary operation");
+    }
+
+    private ArithExpr encode_de_binary(BinaryExpr e, int index, RealExpr delta)
+    {
+        switch (e.getOp()) {
+            case ADD:
+                return w.mk_add(
+                        encode_de_expression(e.getLeft(), index, delta),
+                        encode_de_expression(e.getRight(), index, delta));
+            case SUB:
+                return w.mk_sub(
+                        encode_de_expression(e.getLeft(), index, delta),
+                        encode_de_expression(e.getRight(), index, delta)
+                );
+            case MUL:
+                return w.mk_mul(
+                        encode_de_expression(e.getLeft(), index, delta),
+                        encode_de_expression(e.getRight(), index, delta)
+                );
+            case DIV:
+                return w.mk_div(
+                        encode_de_expression(e.getLeft(), index, delta),
+                        encode_de_expression(e.getRight(), index, delta)
+                );
+            default:
+                throw new EncodeException("Wrong operation");
+        }
+    }
+
+    private ArithExpr encode_de_number(Number n, RealExpr delta)
+    {
+        try {
+            ArithExpr real = w.mk_real(n.getValue().toString());
+            return w.mk_mul(real, delta);
+        } catch (Z3Exception e) {
+            throw new EncodeException("wrong number: " + n.toString());
+        }
     }
 
     public BoolExpr encode_assignment_with_double_index(Assignment a, int l, int r)
@@ -104,7 +179,7 @@ public class ExpressionEncoder {
         } else if (e instanceof Variable) {
             return encode_variable((Variable) e);
         } else if (e instanceof UnaryExpr) {
-            return encode_unary_expr((UnaryExpr) e);
+            throw new EncodeException("wrong unary operation: " + e);
         } else {
             return encode_binary_expr((BinaryExpr) e);
         }
@@ -123,22 +198,6 @@ public class ExpressionEncoder {
                 return w.mk_mul(encode_expression(be.getLeft()), encode_expression(be.getRight()));
             default:
                 throw new EncodeException("wrong binary operation: " + be.getOp());
-        }
-    }
-
-    /**
-     * no unary expressions are allowed in the simple expression
-     * @param ue unary expression
-     * @return the arithmetic expression
-     */
-    private ArithExpr encode_unary_expr(UnaryExpr ue)
-    {
-        switch (ue.get_op()) {
-            case ABS:
-            case TASK_TIME:
-            case DIFFERENTIAL:
-            default:
-                throw new EncodeException("wrong unary operation: " + ue.get_op());
         }
     }
 
