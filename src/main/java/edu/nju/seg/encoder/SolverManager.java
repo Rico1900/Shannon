@@ -41,7 +41,7 @@ public class SolverManager {
         return solver.getModel();
     }
 
-    public String getEventTrace()
+    public void print_variables()
     {
         Model m = solver.getModel();
         FuncDecl[] func = m.getDecls();
@@ -49,7 +49,7 @@ public class SolverManager {
         for (FuncDecl f: func) {
             sb.append(f.getName()).append(" = ").append(m.getConstInterp(f).toString()).append("\n");
         }
-        return sb.toString();
+        System.out.println(sb.toString());
     }
 
     public void print_automata_trace()

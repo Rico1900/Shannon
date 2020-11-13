@@ -145,6 +145,7 @@ public class Lab {
         System.out.println(result);
         if (result == Status.SATISFIABLE) {
             manager.print_automata_trace();
+            manager.print_variables();
         } else if (result == Status.UNSATISFIABLE) {
             manager.print_proof();
         } else {

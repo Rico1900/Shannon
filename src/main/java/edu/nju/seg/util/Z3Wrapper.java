@@ -19,6 +19,11 @@ public class Z3Wrapper {
         return ctx;
     }
 
+    public BoolExpr mk_not(BoolExpr e)
+    {
+        return ctx.mkNot(e);
+    }
+
     /**
      * make and expression for the bool expression list
      * @param list the bool expression that may be blank

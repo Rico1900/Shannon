@@ -89,7 +89,7 @@ public class LocalAutomatonEncoder {
         for (Judgement j: properties) {
             exprs.add(encode_property(j));
         }
-        return Optional.of(w.get_ctx().mkNot(w.mk_and_not_empty(exprs)));
+        return Optional.of(w.mk_not(w.mk_and_not_empty(exprs)));
     }
 
     private BoolExpr encode_property(Judgement j)
@@ -196,25 +196,21 @@ public class LocalAutomatonEncoder {
     private BoolExpr encode_init()
     {
         State initial = diagram.get_initial();
-        return encode_current_loc(0, initial);
-//        List<Relation> outers = initial.getOuters();
-//        if (outers != null) {
-//            List<BoolExpr> inits = new ArrayList<>();
-//            for (Relation r : outers) {
-//                List<BoolExpr> subs = new ArrayList<>();
-//                subs.add(encode_current_loc(0, r.get_target()));
-//                // initial edges only contain assignments, no guards
-//                r.get_assignments().stream()
-//                        .map(a -> ee.encode_assignment_with_index(a, 0))
-//                        .forEach(subs::add);
-//                // ensure initial invariant condition
-//                encode_invariant(0, r.get_target()).ifPresent(subs::add);
-//                inits.add(w.mk_and_not_empty(subs));
-//            }
-//            return w.mk_or_not_empty(inits);
-//        } else {
-//            throw new EncodeException("wrong initial assignment");
-//        }
+        List<Relation> outers = initial.getOuters();
+        if (outers != null) {
+            List<BoolExpr> inits = new ArrayList<>();
+            for (Relation r : outers) {
+                List<BoolExpr> subs = new ArrayList<>();
+                // initial edges only contain assignments, no guards
+                r.get_assignments().stream()
+                        .map(a -> ee.encode_assignment_with_index(a, 0))
+                        .forEach(subs::add);
+                inits.add(w.mk_and_not_empty(subs));
+            }
+            return w.get_ctx().mkAnd(w.mk_or_not_empty(inits), encode_current_loc(0, initial));
+        } else {
+            throw new EncodeException("wrong initial assignment");
+        }
     }
 
     private BoolExpr encode_time_until_now(String eventName,

@@ -2,23 +2,18 @@ package edu.nju.seg;
 
 import com.microsoft.z3.*;
 import edu.nju.seg.exception.Z3Exception;
-import edu.nju.seg.util.Z3Wrapper;
 
 public class Z3Playground {
 
     public static void main(String[] args) throws Z3Exception {
-//        Context c = new Context();
-//        BitVecSort bvs = c.mkBitVecSort(32);
-//        BitVecExpr x = (BitVecExpr) c.mkConst("x", bvs);
-//        BitVecExpr a = (BitVecExpr) c.mkConst("a", bvs);
-//        Solver s = c.mkSolver();
-//        s.add(c.mkNot(c.mkEq(c.mkBVSMod(x, a), c.mkBVSMod(c.mkBVAdd(x, a), a))));
-//        System.out.println(s.check());
-//        System.out.println(s.getModel());
-        int a = 0x48000000;
-        int x = 0x68000000;
-        System.out.println(x % a);
-        System.out.println((x + a) % a);
+        Context c = new Context();
+        BitVecSort bvs = c.mkBitVecSort(32);
+        BitVecExpr x = (BitVecExpr) c.mkConst("x", bvs);
+        BitVecExpr a = (BitVecExpr) c.mkConst("a", bvs);
+        Solver s = c.mkSolver();
+        s.add(c.mkNot(c.mkEq(c.mkBVSMod(x, a), c.mkBVSMod(c.mkBVAdd(x, a), a))));
+        System.out.println(s.check());
+        System.out.println(s.getModel());
     }
 
 }
