@@ -2,14 +2,20 @@ package edu.nju.seg.metric;
 
 public class ExperimentalData {
 
+    private final String case_name;
+
     private final int bound;
 
     private final int clause_num;
 
     private double running_time;
 
-    public ExperimentalData(int bound, int clause_num)
+    public ExperimentalData(String file_path,
+                            int bound,
+                            int clause_num)
     {
+        String[] splits = file_path.split("/");
+        this.case_name = splits[splits.length - 1];
         this.bound = bound;
         this.clause_num = clause_num;
     }
@@ -37,9 +43,11 @@ public class ExperimentalData {
     @Override
     public String toString() {
         return "ExperimentalData{" +
-                "bound=" + bound +
+                "case_name='" + case_name + '\'' +
+                ", bound=" + bound +
                 ", clause_num=" + clause_num +
                 ", running_time=" + running_time +
                 '}';
     }
+
 }

@@ -22,6 +22,8 @@ import java.util.*;
 
 public class Lab {
 
+    private final boolean debug = false;
+
     private final ExperimentConfig config;
 
     public Lab(ExperimentConfig config) {
@@ -47,9 +49,11 @@ public class Lab {
         if (inputFolder.isDirectory()) {
             List<Diagram> diagrams = new ArrayList<>();
             for (File f : Objects.requireNonNull(inputFolder.listFiles())) {
-                UMLetTokenizer.tokenize_elements(f)
-                        .map(contents -> parse_diagram(f.getName(), contents))
-                        .ifPresent(diagrams::add);
+                if (f.getName().endsWith(".uxf")) {
+                    UMLetTokenizer.tokenize_elements(f)
+                            .map(contents -> parse_diagram(f.getName(), contents))
+                            .ifPresent(diagrams::add);
+                }
             }
             return diagrams;
         } else {
@@ -88,7 +92,10 @@ public class Lab {
             VerificationEncoder ve = new VerificationEncoder(
                     p.get_left(), p.get_right(), config.get_bound(), manager);
             manager.add_clause(ve.encode());
-            ExperimentalData data = new ExperimentalData(config.get_bound(), manager.get_clause_num());
+            ExperimentalData data = new ExperimentalData(
+                    config.get_input_folder(),
+                    config.get_bound(),
+                    manager.get_clause_num());
             SimpleTimer timer = new SimpleTimer();
             Status result = manager.check();
             data.set_running_time(timer.past_seconds());
@@ -151,9 +158,13 @@ public class Lab {
         System.out.println(result);
         if (result == Status.SATISFIABLE) {
             manager.print_automata_trace();
-//            manager.print_variables();
+            if (debug) {
+                manager.print_variables();
+            }
         } else if (result == Status.UNSATISFIABLE) {
-            manager.print_proof();
+            if (debug) {
+                manager.print_proof();
+            }
         } else {
             System.out.println("Solver result Unknown");
         }
