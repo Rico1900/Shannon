@@ -65,7 +65,7 @@ public class VerificationEncoder {
         this.sd = sd;
         this.ad_list = ad_list;
         this.bound = bound;
-        this.w = new Z3Wrapper(manager.getContext());
+        this.w = new Z3Wrapper(manager.get_context());
         this.ee = new ExpressionEncoder(w);
         init();
     }

@@ -31,6 +31,15 @@ public class SolverManager {
         solver.setParameters(p);
     }
 
+    public int get_clause_num()
+    {
+        int sum = 0;
+        for (BoolExpr e: solver.getAssertions()) {
+            sum += calculate_clause_num(e);
+        }
+        return sum;
+    }
+
     public Status check()
     {
         return solver.check();
@@ -87,14 +96,32 @@ public class SolverManager {
         System.out.println(solver.getProof());
     }
 
-    public Context getContext()
+    public Context get_context()
     {
         return context;
     }
 
-    public void addClause(BoolExpr... boolExprs)
+    public void add_clause(BoolExpr... boolExprs)
     {
         solver.add(boolExprs);
+    }
+
+    private long calculate_clause_num(BoolExpr e)
+    {
+        if (e.isAdd()
+                || e.isOr()
+                || e.isNot()
+                || e.isApp()) {
+            int sum = 1;
+            for (Expr sub: e.getArgs()) {
+                if (sub instanceof  BoolExpr) {
+                    sum += calculate_clause_num((BoolExpr) sub);
+                }
+            }
+            return sum;
+        } else {
+            return 1;
+        }
     }
 
 }

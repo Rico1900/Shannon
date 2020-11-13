@@ -2,7 +2,7 @@ package edu.nju.seg.metric;
 
 public class SimpleTimer {
 
-    private long start;
+    private final long start;
 
     public SimpleTimer()
     {
@@ -11,9 +11,9 @@ public class SimpleTimer {
 
     /**
      * count the duration past since the start of the timer in seconds
-     * @return seconds
+     * @return the past time in seconds
      */
-    public double pastSeconds()
+    public double past_seconds()
     {
         double now = System.currentTimeMillis();
         return (now - start) / 1000;

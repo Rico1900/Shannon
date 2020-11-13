@@ -7,6 +7,8 @@ import edu.nju.seg.data.ConfigReader;
 import edu.nju.seg.encoder.verification.VerificationEncoder;
 import edu.nju.seg.exception.EncodeException;
 import edu.nju.seg.exception.Z3Exception;
+import edu.nju.seg.metric.ExperimentalData;
+import edu.nju.seg.metric.SimpleTimer;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.DiagramParser;
 import edu.nju.seg.parser.ParserDispatcher;
@@ -85,8 +87,12 @@ public class Lab {
             Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(diagrams);
             VerificationEncoder ve = new VerificationEncoder(
                     p.get_left(), p.get_right(), config.get_bound(), manager);
-            manager.addClause(ve.encode());
+            manager.add_clause(ve.encode());
+            ExperimentalData data = new ExperimentalData(config.get_bound(), manager.get_clause_num());
+            SimpleTimer timer = new SimpleTimer();
             Status result = manager.check();
+            data.set_running_time(timer.past_seconds());
+            System.out.println(data.toString());
             handleResult(result, manager);
         } catch (Z3Exception e) {
            logZ3Exception(e);
@@ -145,7 +151,7 @@ public class Lab {
         System.out.println(result);
         if (result == Status.SATISFIABLE) {
             manager.print_automata_trace();
-            manager.print_variables();
+//            manager.print_variables();
         } else if (result == Status.UNSATISFIABLE) {
             manager.print_proof();
         } else {

@@ -1,6 +1,6 @@
 {
     "type": "ISD_AUTOMATA_VERIFICATION",
-    "bound": 9,
+    "bound": 10,
     "targets": [],
     "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/water-tanks",
     "output_folder": ""
