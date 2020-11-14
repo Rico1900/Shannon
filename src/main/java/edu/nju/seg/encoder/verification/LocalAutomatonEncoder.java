@@ -89,7 +89,7 @@ public class LocalAutomatonEncoder {
         for (Judgement j: properties) {
             exprs.add(encode_property(j));
         }
-        return Optional.of(w.mk_not(w.mk_and_not_empty(exprs)));
+        return Optional.of(w.mk_and_not_empty(exprs));
     }
 
     private BoolExpr encode_property(Judgement j)
