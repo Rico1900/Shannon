@@ -10,6 +10,7 @@ import edu.nju.seg.expression.*;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.EquationParser;
 import edu.nju.seg.util.$;
+import edu.nju.seg.util.Pair;
 import edu.nju.seg.util.Z3Wrapper;
 
 import java.util.*;
@@ -48,10 +49,10 @@ public class LocalAutomatonEncoder {
                 .collect(Collectors.toMap(Relation::get_name, Function.identity()));
     }
 
-    public Optional<BoolExpr> encode() throws Z3Exception
+    public Pair<Optional<BoolExpr>, Optional<BoolExpr>> encode() throws Z3Exception
     {
-        if ($.isBlankList(timeline) || diagram.get_properties().isEmpty()) {
-            return Optional.empty();
+        if ($.isBlankList(timeline)) {
+            return new Pair<>(Optional.empty(), Optional.empty());
         }
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(encode_init());
@@ -75,8 +76,7 @@ public class LocalAutomatonEncoder {
             exprs.add(encode_segment(start, end, i + 1));
         }
         exprs.add(encode_message(timeline.get(timeline.size() - 1), calculate_offset(timeline.size())));
-        encode_properties().ifPresent(exprs::add);
-        return Optional.of(w.mk_and_not_empty(exprs));
+        return new Pair<>(Optional.of(w.mk_and_not_empty(exprs)), encode_properties());
     }
 
     private Optional<BoolExpr> encode_properties()

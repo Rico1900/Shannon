@@ -166,8 +166,8 @@ public class VerificationEncoder {
         // We add the negation form of property expression to the final SMT expression,
         // so if the final SMT expression is unsatisfied, then verification succeed,
         // otherwise, the SMT solver produces the counter example.
-        w.mk_and(property_expr).ifPresent(e -> exprs.add(w.get_ctx().mkNot(e)));
         encode_networks().ifPresent(exprs::add);
+        w.mk_and(property_expr).ifPresent(e -> exprs.add(w.get_ctx().mkNot(e)));
         return w.mk_and_not_empty(exprs);
     }
 
@@ -210,7 +210,9 @@ public class VerificationEncoder {
     private Optional<BoolExpr> encode_trace_on_automaton(List<Message> trace,
                                                          AutomatonDiagram ad) throws Z3Exception
     {
-        return new LocalAutomatonEncoder(ad, trace, w, bound).encode();
+        Pair<Optional<BoolExpr>, Optional<BoolExpr>> p = new LocalAutomatonEncoder(ad, trace, w, bound).encode();
+        p.get_right().ifPresent(property_expr::add);
+        return p.get_left();
     }
 
     private BoolExpr encode_clean_frag(Fragment f,
