@@ -1,2 +1,2 @@
-Description: correct
-Oracle: UNSATISFIABLE
+Description: change properties of Tank1 to exists(inq1<0)
+Oracle: SATISFIABLE

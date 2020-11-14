@@ -134,7 +134,10 @@ public class LocalAutomatonEncoder {
             BoolExpr loc = encode_current_loc(index, source);
             BoolExpr next_loc = encode_current_loc(index + 1, target);
             List<BoolExpr> exprs = new ArrayList<>();
-            exprs.add(w.get_ctx().mkAnd(time, loc, next_loc));
+            exprs.add(time);
+            exprs.add(loc);
+            exprs.add(next_loc);
+            exprs.add(encode_time_of_message_until_now(m, index));
             // encode jump condition
             r.get_guards().stream()
                     .map(g -> ee.encode_judgement_with_index(g, index))
@@ -159,7 +162,7 @@ public class LocalAutomatonEncoder {
                 // encode unchanged variables
                 for (String v: vars) {
                     if (!changed_vars.contains(v)) {
-                        exprs.add(w.mk_eq(mkVarVar(v, index), mkVarVar(v, index + 1)));
+                        exprs.add(w.mk_eq(mk_var_var(v, index), mk_var_var(v, index + 1)));
                     }
                 }
             } else {
@@ -213,14 +216,20 @@ public class LocalAutomatonEncoder {
         }
     }
 
-    private BoolExpr encode_time_until_now(String eventName,
-                                           int index)
+    /**
+     * encode the time of synchronous message
+     * @param m the message
+     * @param index the index
+     * @return the boolean expression when the synchronous message happens
+     */
+    private BoolExpr encode_time_of_message_until_now(Message m,
+                                                      int index)
     {
         List<RealExpr> reals = new ArrayList<>();
         for (int i = 0; i <= index; i++) {
-            reals.add(mkTimeVar(i));
+            reals.add(mk_time_var(i));
         }
-        return w.mk_eq(w.mk_real_var(eventName), w.sum_reals(reals));
+        return w.mk_eq(mk_synchronous_message_var(m, index), w.sum_reals(reals));
     }
 
     private BoolExpr encode_single_jump(int index,
@@ -228,7 +237,7 @@ public class LocalAutomatonEncoder {
     {
         State target = r.get_target();
         BoolExpr time = encode_time_unchanged(index);
-        BoolExpr loc = w.mk_eq(mkLocVar(index + 1), w.mk_string(target.getStateName()));
+        BoolExpr loc = w.mk_eq(mk_loc_var(index + 1), w.mk_string(target.getStateName()));
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(w.get_ctx().mkAnd(time, loc));
         // encode jump condition
@@ -247,13 +256,13 @@ public class LocalAutomatonEncoder {
             // encode unchanged variables
             for (String v: vars) {
                 if (!changed_vars.contains(v)) {
-                    exprs.add(w.mk_eq(mkVarVar(v, index), mkVarVar(v, index + 1)));
+                    exprs.add(w.mk_eq(mk_var_var(v, index), mk_var_var(v, index + 1)));
                 }
             }
         } else {
             // variables remain unchanged
             for (String v: vars) {
-                exprs.add(w.mk_eq(mkVarVar(v, index), mkVarVar(v, index + 1)));
+                exprs.add(w.mk_eq(mk_var_var(v, index), mk_var_var(v, index + 1)));
             }
         }
         return w.mk_and_not_empty(exprs);
@@ -307,7 +316,7 @@ public class LocalAutomatonEncoder {
     private BoolExpr encode_stutter(int index)
     {
         BoolExpr time = encode_time_unchanged(index);
-        BoolExpr loc = w.mk_eq(mkLocVar(index + 1), mkLocVar(index));
+        BoolExpr loc = w.mk_eq(mk_loc_var(index + 1), mk_loc_var(index));
         if (diagram.get_variables().size() > 0) {
             BoolExpr unchanged = encode_all_variable_unchanged(index);
             return w.get_ctx().mkAnd(time, loc, unchanged);
@@ -319,9 +328,9 @@ public class LocalAutomatonEncoder {
     private BoolExpr encode_timed(int index,
                                   State s) throws Z3Exception
     {
-        RealExpr delta = mkTimeVar(index);
+        RealExpr delta = mk_time_var(index);
         BoolExpr time = w.mk_gt(delta, w.mk_real(0));
-        BoolExpr loc = w.mk_eq(mkLocVar(index + 1), mkLocVar(index));
+        BoolExpr loc = w.mk_eq(mk_loc_var(index + 1), mk_loc_var(index));
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(time);
         exprs.add(loc);
@@ -335,7 +344,7 @@ public class LocalAutomatonEncoder {
         Set<String> vars = diagram.get_var_str();
         for (String v: vars) {
             if (!changed.contains(v)) {
-                exprs.add(w.mk_eq(mkVarVar(v, index + 1), mkVarVar(v, index)));
+                exprs.add(w.mk_eq(mk_var_var(v, index + 1), mk_var_var(v, index)));
             }
         }
         return w.mk_and_not_empty(exprs);
@@ -370,9 +379,9 @@ public class LocalAutomatonEncoder {
     private BoolExpr encode_current_loc(int k, State current)
     {
         if (current.getType() == StateType.INITIAL) {
-            return w.mk_eq(mkLocVar(k), w.mk_string(diagram.get_title() + "_" + current.getStateName()));
+            return w.mk_eq(mk_loc_var(k), w.mk_string(diagram.get_title() + "_" + current.getStateName()));
         }
-        return w.mk_eq(mkLocVar(k), w.mk_string(current.getStateName()));
+        return w.mk_eq(mk_loc_var(k), w.mk_string(current.getStateName()));
     }
 
     /**
@@ -380,14 +389,19 @@ public class LocalAutomatonEncoder {
      * @param k the index
      * @return the location symbol
      */
-    private Expr mkLocVar(int k)
+    private Expr mk_loc_var(int k)
     {
         return w.mk_string_var(diagram.get_title() + "_" + "loc_" + k);
     }
 
-    private RealExpr mkTimeVar(int k)
+    private RealExpr mk_time_var(int k)
     {
         return w.mk_real_var(diagram.get_title() + "_" + "delta_" + k);
+    }
+
+    private RealExpr mk_synchronous_message_var(Message m, int k)
+    {
+        return w.mk_real_var(diagram.get_title() + "_" + m.get_name() + "_" + k);
     }
 
     /**
@@ -396,7 +410,7 @@ public class LocalAutomatonEncoder {
      * @param k bound
      * @return the variable symbol
      */
-    private RealExpr mkVarVar(String var, int k)
+    private RealExpr mk_var_var(String var, int k)
     {
         return w.mk_real_var(var + "_" + k);
     }
@@ -418,7 +432,7 @@ public class LocalAutomatonEncoder {
 
     private BoolExpr encode_time_unchanged(int index)
     {
-        return w.mk_eq(mkTimeVar(index), w.mk_real(0));
+        return w.mk_eq(mk_time_var(index), w.mk_real(0));
     }
 
     /**
@@ -439,7 +453,7 @@ public class LocalAutomatonEncoder {
         }
         List<BoolExpr> exprs = new ArrayList<>();
         for (String v: vars) {
-            exprs.add(w.mk_eq(mkVarVar(v, index + 1), mkVarVar(v, index)));
+            exprs.add(w.mk_eq(mk_var_var(v, index + 1), mk_var_var(v, index)));
         }
         return w.mk_and_not_empty(exprs);
     }

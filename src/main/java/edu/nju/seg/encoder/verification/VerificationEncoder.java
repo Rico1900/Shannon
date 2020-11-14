@@ -35,6 +35,8 @@ public class VerificationEncoder {
 
     private List<IntFragment> flow;
 
+    private int seq_index;
+
     private final Map<Set<String>, Judgement> const_dict = new HashMap<>();
 
     private final Map<Set<String>, Judgement> prop_dict = new HashMap<>();
@@ -50,6 +52,8 @@ public class VerificationEncoder {
     private final List<Pair<IntFragment, Integer>> unfold_ints = new ArrayList<>();
 
     private final List<BoolExpr> property_expr = new ArrayList<>();
+
+    private final List<BoolExpr> synchronous_time_expr = new ArrayList<>();
 
     private final Set<Seq> seq_set = new HashSet<>();
 
@@ -79,6 +83,7 @@ public class VerificationEncoder {
         cal_mask_map();
         unfold_int_frags();
         cal_automata_map();
+        this.seq_index = 0;
     }
 
     private void cal_cons_and_prop()
@@ -167,7 +172,7 @@ public class VerificationEncoder {
         // so if the final SMT expression is unsatisfied, then verification succeed,
         // otherwise, the SMT solver produces the counter example.
         encode_networks().ifPresent(exprs::add);
-        w.mk_and(property_expr).ifPresent(e -> exprs.add(w.get_ctx().mkNot(e)));
+        w.mk_and(property_expr).ifPresent(e -> exprs.add(w.mk_not(e)));
         return w.mk_and_not_empty(exprs);
     }
 
@@ -187,7 +192,9 @@ public class VerificationEncoder {
     {
         List<BoolExpr> exprs = new ArrayList<>();
         for (Seq s: seqs) {
+            encode_synchronous_message(s);
             encode_seq_on_automata(s).ifPresent(exprs::add);
+            seq_index += 1;
         }
         return w.mk_or(exprs);
     }
@@ -205,6 +212,20 @@ public class VerificationEncoder {
             }
         }
         return w.mk_and(exprs);
+    }
+
+    private void encode_synchronous_message(Seq seq)
+    {
+        Set<Message> set = new HashSet<>();
+        seq.get_seq().values().forEach(set::addAll);
+        for (Message m: set) {
+            int from = seq.get_seq().get(m.get_source()).indexOf(m);
+            int to = seq.get_seq().get(m.get_target()).indexOf(m);
+            synchronous_time_expr.add(w.mk_eq(
+                    mk_sync_var(m.get_source(), m, from),
+                    mk_sync_var(m.get_target(), m, to)
+            ));
+        }
     }
 
     private Optional<BoolExpr> encode_trace_on_automaton(List<Message> trace,
@@ -844,6 +865,16 @@ public class VerificationEncoder {
             set.addAll(c.extract_variables());
         }
         return set;
+    }
+
+    private int calculate_offset(int index)
+    {
+        return index * (bound + 1);
+    }
+
+    protected RealExpr mk_sync_var(Instance ins, Message m, int index)
+    {
+        return w.mk_real_var(ins.get_name() + "_" + m.get_name() + "_" + calculate_offset(index));
     }
 
 }
