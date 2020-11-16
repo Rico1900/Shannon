@@ -144,7 +144,7 @@ flowto</panel_attributes>
       <h>40</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-flowin1</panel_attributes>
+unflow</panel_attributes>
     <additional_attributes>320.0;20.0;10.0;20.0</additional_attributes>
   </element>
   <element>
@@ -224,7 +224,7 @@ valign=top
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-forall(q1&gt;=0)</panel_attributes>
+forall(q1&lt;=100)</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>

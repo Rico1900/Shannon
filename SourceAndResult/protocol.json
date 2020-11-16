@@ -1,7 +1,7 @@
 {
     "type": "ISD_AUTOMATA_VERIFICATION",
-    "bound": 10,
+    "bound": 20,
     "targets": [],
-    "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/water-tanks/water-tanks-6",
+    "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/csma-aut/csma-aut-2",
     "output_folder": ""
 }

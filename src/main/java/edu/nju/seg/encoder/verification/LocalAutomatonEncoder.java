@@ -172,7 +172,7 @@ public class LocalAutomatonEncoder {
                 }
             }
             return w.mk_and_not_empty(exprs);
-        // if the automaton if the source of the synchronous message
+        // if the automaton is the source of the synchronous message
         } else {
             return w.get_ctx().mkAnd(encode_current_loc(index, r.get_source()), encode_single_jump(index, r));
         }
