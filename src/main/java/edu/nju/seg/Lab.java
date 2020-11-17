@@ -57,7 +57,7 @@ public class Lab {
             }
             return diagrams;
         } else {
-            SimpleLog.error("the input path is not a directory");
+            SimpleLog.error("the input path is not a directory: " + inputPath);
             return new ArrayList<>(0);
         }
     }

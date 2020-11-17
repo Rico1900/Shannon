@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>300</x>
+      <y>180</y>
+      <w>460</w>
+      <h>360</h>
+    </coordinates>
+    <panel_attributes>title=csma
+obj=Send_1~a
+obj=Send_2~b
+obj=Bus~c
+
+
+a-&gt;&gt;&gt;c : send_1;
+b-&gt;&gt;&gt;c : send_2;
+a-&gt;&gt;&gt;c : cbusy_1;
+b-&gt;&gt;&gt;c : cbusy_2;
+c-&gt;&gt;&gt;b : rec_2;
+c-&gt;&gt;&gt;a : rec_1;
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

@@ -2,6 +2,6 @@
     "type": "ISD_AUTOMATA_VERIFICATION",
     "bound": 20,
     "targets": [],
-    "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/csma-aut/csma-aut-2",
+    "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/hddi/hddi-5",
     "output_folder": ""
 }

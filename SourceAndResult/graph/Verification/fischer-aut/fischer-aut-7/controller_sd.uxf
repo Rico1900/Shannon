@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>350</x>
+      <y>230</y>
+      <w>350</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>title=controller
+obj=P_1~a
+obj=P_2~b
+
+combinedFragment=loop(3,3)~loop1
+a-&gt;&gt;&gt;b : Tsend;
+b-&gt;&gt;&gt;a : Trec;
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>600</x>
+      <y>610</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Properties
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>290</x>
+      <y>610</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Constraints
+(Trec-Tsend)&gt;1</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

@@ -168,7 +168,7 @@ rbusy_1:;c1:=0</panel_attributes>
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-forall(c1&gt;=0)</panel_attributes>
+exists(c1&gt;=1000)</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>
