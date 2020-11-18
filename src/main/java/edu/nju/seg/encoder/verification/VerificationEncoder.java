@@ -166,6 +166,7 @@ public class VerificationEncoder {
         Seq s = new Seq(clean.get_covered());
         List<BoolExpr> exprs = new ArrayList<>();
         BoolExpr clean_expr = encode_clean_frag(clean, new ArrayList<>(), s, true, seq_set);
+        exprs.add(w.mk_and_not_empty(synchronous_time_expr));
         exprs.add(clean_expr);
 //        encode_int_frags().ifPresent(exprs::add);
         // We add the negation form of property expression to the final SMT expression,
@@ -231,7 +232,8 @@ public class VerificationEncoder {
     private Optional<BoolExpr> encode_trace_on_automaton(List<Message> trace,
                                                          AutomatonDiagram ad) throws Z3Exception
     {
-        Pair<Optional<BoolExpr>, Optional<BoolExpr>> p = new LocalAutomatonEncoder(ad, trace, w, bound).encode();
+        Pair<Optional<BoolExpr>, Optional<BoolExpr>> p = new LocalAutomatonEncoder(
+                ad, trace, const_dict, prop_dict, w, bound).encode();
         p.get_right().ifPresent(property_expr::add);
         return p.get_left();
     }
@@ -632,7 +634,7 @@ public class VerificationEncoder {
         return result;
     }
 
-    //I assume that the mask instructions will cross different fragments
+    // We assume that the mask instructions will not cross different fragments
     private Optional<BoolExpr> encode_mask(List<SDComponent> children,
                                            List<Integer> loop_queue)
     {
@@ -687,16 +689,18 @@ public class VerificationEncoder {
         return result;
     }
 
+    // We assume that the variables of properties will not cross different fragments.
     private void encode_properties(Fragment f,
-                                   List<Integer> loop_queue) throws Z3Exception
+                                   List<Integer> loop_queue)
     {
         Set<String> variables = f.extract_variables();
         encode_constraint_or_property(prop_dict, task_prop_dict, variables, loop_queue)
                 .ifPresent(property_expr::add);
     }
 
+    // We assume that the variables of constraints will not cross different fragments.
     private Optional<BoolExpr> encode_constraints(List<SDComponent> children,
-                                                  List<Integer> loop_queue) throws Z3Exception
+                                                  List<Integer> loop_queue)
     {
         Set<String> variables = extract_variables(children);
         return encode_constraint_or_property(const_dict, task_const_dict, variables, loop_queue);
@@ -705,7 +709,7 @@ public class VerificationEncoder {
     private Optional<BoolExpr> encode_constraint_or_property(Map<Set<String>, Judgement> dict,
                                                              Map<Set<String>, Judgement> task_dict,
                                                              Set<String> variables,
-                                                             List<Integer> loop_queue) throws Z3Exception
+                                                             List<Integer> loop_queue)
     {
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.addAll(encode_single_normal_cp(dict, variables, loop_queue));

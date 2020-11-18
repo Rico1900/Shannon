@@ -1,11 +1,11 @@
 package edu.nju.seg.encoder.verification;
 
+import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.RealExpr;
 import edu.nju.seg.encoder.ExpressionEncoder;
 import edu.nju.seg.exception.EncodeException;
-import edu.nju.seg.exception.Z3Exception;
 import edu.nju.seg.expression.*;
 import edu.nju.seg.model.*;
 import edu.nju.seg.parser.EquationParser;
@@ -27,6 +27,10 @@ public class LocalAutomatonEncoder {
 
     private final List<Message> timeline;
 
+    private final Map<Set<String>, Judgement> const_dict;
+
+    private final Map<Set<String>, Judgement> prop_dict;
+
     private final int bound;
 
     private final Z3Wrapper w;
@@ -37,6 +41,8 @@ public class LocalAutomatonEncoder {
 
     public LocalAutomatonEncoder(AutomatonDiagram d,
                                  List<Message> timeline,
+                                 Map<Set<String>, Judgement> const_dict,
+                                 Map<Set<String>, Judgement> prop_dict,
                                  Z3Wrapper w,
                                  int bound)
     {
@@ -45,17 +51,23 @@ public class LocalAutomatonEncoder {
         this.ee = new ExpressionEncoder(w);
         this.bound = bound;
         this.timeline = timeline;
+        this.const_dict = const_dict;
+        this.prop_dict = prop_dict;
         this.edge_map = diagram.get_relations().stream()
                 .collect(Collectors.toMap(Relation::get_name, Function.identity()));
     }
 
-    public Pair<Optional<BoolExpr>, Optional<BoolExpr>> encode() throws Z3Exception
+    public Pair<Optional<BoolExpr>, Optional<BoolExpr>> encode()
     {
         if ($.isBlankList(timeline)) {
             return new Pair<>(Optional.empty(), Optional.empty());
         }
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(encode_init());
+        // encode constraints
+        for (Judgement j: const_dict.values()) {
+            exprs.add(encode_property(j));
+        }
         // encode init to the first edge segment
         List<BoolExpr> init_edge = new ArrayList<>();
         for (Relation ie: diagram.get_initial().getOuters()) {
@@ -83,10 +95,13 @@ public class LocalAutomatonEncoder {
     {
         List<BoolExpr> exprs = new ArrayList<>();
         List<Judgement> properties = diagram.get_properties();
-        if (properties.size() == 0) {
+        if (properties.size() == 0 && prop_dict.size() == 0) {
             return Optional.empty();
         }
         for (Judgement j: properties) {
+            exprs.add(encode_property(j));
+        }
+        for (Judgement j: prop_dict.values()) {
             exprs.add(encode_property(j));
         }
         return Optional.of(w.mk_and_not_empty(exprs));
@@ -112,7 +127,7 @@ public class LocalAutomatonEncoder {
                 throw new EncodeException("Wrong AdJudgement: " + aj.toString());
             }
         } else {
-            throw new EncodeException("Wrong Judgement for Automaton: " + j.toString());
+            return ee.encode_judgement(j);
         }
     }
 
@@ -278,22 +293,24 @@ public class LocalAutomatonEncoder {
      */
     private BoolExpr encode_segment(Message start,
                                     Message end,
-                                    int seg_index) throws Z3Exception
+                                    int seg_index)
     {
         int offset = calculate_offset(seg_index);
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(encode_message(start, offset));
+        List<RealExpr> times = new ArrayList<>();
         for (int i = offset + 1; i < offset + 1 + bound; i++) {
+            times.add(mk_time_var(i));
             for (State s: diagram.get_states_exclude_initial()) {
                 exprs.add(encode_transit(i, s));
                 encode_invariant(i + 1, s).ifPresent(exprs::add);
             }
         }
+        exprs.add(w.mk_eq(w.sum_reals(times), cal_segment_gap(start, end)));
         return w.mk_and_not_empty(exprs);
     }
 
-    private BoolExpr encode_transit(int i,
-                                    State s) throws Z3Exception
+    private BoolExpr encode_transit(int i, State s)
     {
         BoolExpr current = encode_current_loc(i, s);
         List<BoolExpr> trans = new ArrayList<>();
@@ -326,7 +343,7 @@ public class LocalAutomatonEncoder {
     }
 
     private BoolExpr encode_timed(int index,
-                                  State s) throws Z3Exception
+                                  State s)
     {
         RealExpr delta = mk_time_var(index);
         BoolExpr time = w.mk_gt(delta, w.mk_real(0));
@@ -456,6 +473,11 @@ public class LocalAutomatonEncoder {
             exprs.add(w.mk_eq(mk_var_var(v, index + 1), mk_var_var(v, index)));
         }
         return w.mk_and_not_empty(exprs);
+    }
+
+    private ArithExpr cal_segment_gap(Message s, Message e)
+    {
+        return w.mk_sub(w.mk_real_var(e.get_name()), w.mk_real_var(s.get_name()));
     }
 
 }
