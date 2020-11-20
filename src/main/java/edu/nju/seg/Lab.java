@@ -2,6 +2,7 @@ package edu.nju.seg;
 
 
 import com.microsoft.z3.Status;
+import edu.nju.seg.config.ExCase;
 import edu.nju.seg.config.ExperimentConfig;
 import edu.nju.seg.data.ConfigReader;
 import edu.nju.seg.encoder.verification.VerificationEncoder;
@@ -36,42 +37,45 @@ public class Lab {
      */
     private void run()
     {
-        List<Diagram> diagrams = prepare_experiment();
-        dispatch_experiment(diagrams);
+        List<Pair<ExCase, List<Diagram>>> cases = prepare_experiment();
+        dispatch_experiment(cases);
     }
 
     /**
      * prepare the experimental data
      */
-    private List<Diagram> prepare_experiment()
+    private List<Pair<ExCase, List<Diagram>>> prepare_experiment()
     {
-        String inputPath = config.get_input_folder();
-        File inputFolder = new File(inputPath);
-        if (inputFolder.isDirectory()) {
-            List<Diagram> diagrams = new ArrayList<>();
-            for (File f : Objects.requireNonNull(inputFolder.listFiles())) {
-                if (f.getName().endsWith(".uxf")) {
-                    UMLetTokenizer.tokenize_elements(f)
-                            .map(contents -> parse_diagram(f.getName(), contents))
-                            .ifPresent(diagrams::add);
+        List<Pair<ExCase, List<Diagram>>> cases = new ArrayList<>();
+        for (ExCase ec: config.get_cases()) {
+            String input_path = ec.get_input_folder();
+            File input_folder = new File(input_path);
+            if (input_folder.isDirectory()) {
+                List<Diagram> diagrams = new ArrayList<>();
+                for (File f : Objects.requireNonNull(input_folder.listFiles())) {
+                    if (f.getName().endsWith(".uxf")) {
+                        UMLetTokenizer.tokenize_elements(f)
+                                .map(contents -> parse_diagram(f.getName(), contents))
+                                .ifPresent(diagrams::add);
+                    }
                 }
+                cases.add(new Pair<>(ec, diagrams));
+            } else {
+                SimpleLog.error("the input path is not a directory: " + input_path);
             }
-            return diagrams;
-        } else {
-            SimpleLog.error("the input path is not a directory: " + inputPath);
-            return new ArrayList<>(0);
         }
+        return cases;
     }
 
     /**
      * dispatch the experiment according to the experimental type
-     * @param diagrams the diagram list
+     * @param cases the case list
      */
-    private void dispatch_experiment(List<Diagram> diagrams)
+    private void dispatch_experiment(List<Pair<ExCase, List<Diagram>>> cases)
     {
         switch (config.get_type()) {
             case ISD_AUTOMATA_VERIFICATION:
-                run_scenario_verification(diagrams);
+                run_scenario_verification(cases);
                 break;
             default:
                 throw new EncodeException("");
@@ -83,27 +87,28 @@ public class Lab {
     /**
      * scenario-based optimization,
      * a canonical scenario including an ISD and several automaton
-     * @param diagrams diagrams
+     * @param cases diagrams
      */
-    private void run_scenario_verification(List<Diagram> diagrams)
+    private void run_scenario_verification(List<Pair<ExCase, List<Diagram>>> cases)
     {
-        try {
-            SolverManager manager = new SolverManager();
-            Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(diagrams);
-            VerificationEncoder ve = new VerificationEncoder(
-                    p.get_left(), p.get_right(), config.get_bound(), manager);
-            manager.add_clause(ve.encode());
-            ExperimentalData data = new ExperimentalData(
-                    config.get_input_folder(),
-                    config.get_bound(),
-                    manager.get_clause_num());
-            SimpleTimer timer = new SimpleTimer();
-            Status result = manager.check();
-            data.set_running_time(timer.past_seconds());
-            System.out.println(data.toString());
-            handleResult(result, manager);
-        } catch (Z3Exception e) {
-           logZ3Exception(e);
+        for (Pair<ExCase, List<Diagram>> c: cases) {
+            try {
+                SolverManager manager = new SolverManager();
+                Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(c.get_right());
+                VerificationEncoder ve = new VerificationEncoder(
+                        p.get_left(), p.get_right(), config.get_bound(), manager);
+                manager.add_clause(ve.encode());
+                ExperimentalData data = new ExperimentalData(
+                        c.get_left().get_input_folder(),
+                        config.get_bound(),
+                        manager.get_clause_num());
+                SimpleTimer timer = new SimpleTimer();
+                Status result = manager.check();
+                data.set_running_time(timer.past_seconds());
+                handle_result(result, data, manager);
+            } catch (Z3Exception e) {
+                logZ3Exception(e);
+            }
         }
     }
 
@@ -154,8 +159,9 @@ public class Lab {
      * @param result z3 status
      * @param manager z3 manager
      */
-    private void handleResult(Status result, SolverManager manager)
+    private void handle_result(Status result, ExperimentalData data, SolverManager manager)
     {
+        System.out.println(data.toString());
         System.out.println(result);
         if (result == Status.SATISFIABLE) {
             if (debug) {
@@ -169,6 +175,9 @@ public class Lab {
         } else {
             System.out.println("Solver result Unknown");
         }
+        System.out.println();
+        System.out.println();
+        System.out.println();
     }
 
     public static void main(String[] args)
