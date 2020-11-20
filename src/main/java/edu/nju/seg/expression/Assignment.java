@@ -13,12 +13,17 @@ public class Assignment {
         this.right = right;
     }
 
-    public Variable getLeft() {
+    public Variable get_left() {
         return left;
     }
 
-    public Expr getRight() {
+    public Expr get_right() {
         return right;
+    }
+
+    public Assignment mark_seq_index(int k)
+    {
+        return new Assignment((Variable) left.mark_seq_index(k), right.mark_seq_index(k));
     }
 
     @Override

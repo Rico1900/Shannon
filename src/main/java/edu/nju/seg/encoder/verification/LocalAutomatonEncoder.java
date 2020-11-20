@@ -33,6 +33,8 @@ public class LocalAutomatonEncoder {
 
     private final int bound;
 
+    private final int seq_index;
+
     private final Z3Wrapper w;
 
     private final ExpressionEncoder ee;
@@ -44,12 +46,14 @@ public class LocalAutomatonEncoder {
                                  Map<Set<String>, Judgement> const_dict,
                                  Map<Set<String>, Judgement> prop_dict,
                                  Z3Wrapper w,
-                                 int bound)
+                                 int bound,
+                                 int seq_index)
     {
         this.diagram = d;
         this.w = w;
         this.ee = new ExpressionEncoder(w);
         this.bound = bound;
+        this.seq_index = seq_index;
         this.timeline = timeline;
         this.const_dict = const_dict;
         this.prop_dict = prop_dict;
@@ -76,7 +80,6 @@ public class LocalAutomatonEncoder {
             for (int i = 1; i < 1 + bound; i++) {
                 for (State s: diagram.get_states_exclude_initial()) {
                     exprs.add(encode_transit(i, s));
-                    encode_invariant(i + 1, s).ifPresent(exprs::add);
                 }
             }
             init_edge.add(w.mk_and_not_empty(subs));
@@ -99,10 +102,10 @@ public class LocalAutomatonEncoder {
             return Optional.empty();
         }
         for (Judgement j: properties) {
-            exprs.add(encode_property(j));
+            exprs.add(encode_property(j.mark_seq_index(seq_index)));
         }
         for (Judgement j: prop_dict.values()) {
-            exprs.add(encode_property(j));
+            exprs.add(encode_property(j.mark_seq_index(seq_index)));
         }
         return Optional.of(w.mk_and_not_empty(exprs));
     }
@@ -145,51 +148,40 @@ public class LocalAutomatonEncoder {
         if (m.get_target().get_name().equals(diagram.get_title())) {
             State source = r.get_source();
             State target = r.get_target();
-            BoolExpr time = encode_time_unchanged(index);
-            BoolExpr loc = encode_current_loc(index, source);
-            BoolExpr next_loc = encode_current_loc(index + 1, target);
             List<BoolExpr> exprs = new ArrayList<>();
-            exprs.add(time);
-            exprs.add(loc);
-            exprs.add(next_loc);
+            exprs.add(encode_time_unchanged(index));
+            exprs.add(encode_loc_info(index, source));
+            exprs.add(encode_loc_info(index + 1, target));
             exprs.add(encode_time_of_message_until_now(m, index));
             // encode jump condition
             r.get_guards().stream()
-                    .map(g -> ee.encode_judgement_with_index(g, index))
+                    .map(g -> ee.encode_judgement_with_index(g.mark_seq_index(seq_index), index))
                     .forEach(exprs::add);
             Set<String> vars = diagram.get_var_str();
             List<Assignment> assignments = exclude_synchronized_assignments(r.get_assignments(), m.get_assignments());
+            Set<String> changed_vars = new HashSet<>();
             if ($.isNotBlankList(assignments)) {
                 // encode jump assignment
-                Set<String> changed_vars = new HashSet<>();
                 for (Assignment a: assignments) {
-                    changed_vars.add(a.getLeft().getName());
-                    exprs.add(ee.encode_assignment_with_index(a, index + 1));
+                    changed_vars.add(a.get_left().getName());
+                    exprs.add(ee.encode_assignment_with_index(a.mark_seq_index(seq_index), index + 1));
                 }
                 // encode synchronized assignment
                 for (Assignment a: m.get_assignments()) {
-                    changed_vars.add(a.getLeft().getName());
+                    changed_vars.add(a.get_left().getName());
                     exprs.add(ee.encode_assignment_with_double_index(
-                            a,
+                            a.mark_seq_index(seq_index),
                             calculate_offset(m.get_target_index() + 1) + 1,
                             calculate_offset(m.get_source_index() + 1)));
                 }
-                // encode unchanged variables
-                for (String v: vars) {
-                    if (!changed_vars.contains(v)) {
-                        exprs.add(w.mk_eq(mk_var_var(v, index), mk_var_var(v, index + 1)));
-                    }
-                }
-            } else {
-                // variables remain unchanged
-                if (vars.size() > 0) {
-                    exprs.add(encode_variable_unchanged(index, vars));
-                }
             }
+            // encode unchanged variables
+            vars.removeAll(changed_vars);
+            encode_variable_unchanged(index, vars).ifPresent(exprs::add);
             return w.mk_and_not_empty(exprs);
         // if the automaton is the source of the synchronous message
         } else {
-            return w.get_ctx().mkAnd(encode_current_loc(index, r.get_source()), encode_single_jump(index, r));
+            return w.get_ctx().mkAnd(encode_loc_info(index, r.get_source()), encode_single_jump(index, r));
         }
     }
 
@@ -204,7 +196,7 @@ public class LocalAutomatonEncoder {
     private boolean is_excluded(Assignment a, List<Assignment> exclude)
     {
         for (Assignment e: exclude) {
-            if (e.getLeft().equals(a.getLeft())) {
+            if (e.get_left().equals(a.get_left())) {
                 return true;
             }
         }
@@ -221,11 +213,11 @@ public class LocalAutomatonEncoder {
                 List<BoolExpr> subs = new ArrayList<>();
                 // initial edges only contain assignments, no guards
                 r.get_assignments().stream()
-                        .map(a -> ee.encode_assignment_with_index(a, 0))
+                        .map(a -> ee.encode_assignment_with_index(a.mark_seq_index(seq_index), 0))
                         .forEach(subs::add);
                 inits.add(w.mk_and_not_empty(subs));
             }
-            return w.get_ctx().mkAnd(w.mk_or_not_empty(inits), encode_current_loc(0, initial));
+            return w.get_ctx().mkAnd(w.mk_or_not_empty(inits), encode_loc_info(0, initial));
         } else {
             throw new EncodeException("wrong initial assignment");
         }
@@ -252,34 +244,29 @@ public class LocalAutomatonEncoder {
     {
         State target = r.get_target();
         BoolExpr time = encode_time_unchanged(index);
-        BoolExpr loc = w.mk_eq(mk_loc_var(index + 1), w.mk_string(target.getStateName()));
+        BoolExpr loc = encode_loc_info(index + 1, target);
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(w.get_ctx().mkAnd(time, loc));
         // encode jump condition
         r.get_guards().stream()
-                .map(g -> ee.encode_judgement_with_index(g, index))
+                .map(g -> ee.encode_judgement_with_index(g.mark_seq_index(seq_index), index))
                 .forEach(exprs::add);
         Set<String> vars = diagram.get_var_str();
+        Set<String> changed_vars = new HashSet<>();
         List<Assignment> assignments = r.get_assignments();
         if ($.isNotBlankList(assignments)) {
-            // encode jump assignment
-            Set<String> changed_vars = new HashSet<>();
+            // encode jump assignments
             for (Assignment a: assignments) {
-                changed_vars.add(a.getLeft().getName());
-                exprs.add(ee.encode_assignment_with_index(a, index + 1));
-            }
-            // encode unchanged variables
-            for (String v: vars) {
-                if (!changed_vars.contains(v)) {
-                    exprs.add(w.mk_eq(mk_var_var(v, index), mk_var_var(v, index + 1)));
-                }
-            }
-        } else {
-            // variables remain unchanged
-            for (String v: vars) {
-                exprs.add(w.mk_eq(mk_var_var(v, index), mk_var_var(v, index + 1)));
+                changed_vars.add(a.get_left().getName());
+                exprs.add(ee.encode_assignment_with_index(a.mark_seq_index(seq_index), index + 1));
             }
         }
+        vars.removeAll(changed_vars);
+        // variables remain unchanged
+        for (String v: vars) {
+            exprs.add(w.mk_eq(mk_var_var(v, index), mk_var_var(v, index + 1)));
+        }
+        encode_invariant(index + 1, r.get_target()).ifPresent(exprs::add);
         return w.mk_and_not_empty(exprs);
     }
 
@@ -303,7 +290,6 @@ public class LocalAutomatonEncoder {
             times.add(mk_time_var(i));
             for (State s: diagram.get_states_exclude_initial()) {
                 exprs.add(encode_transit(i, s));
-                encode_invariant(i + 1, s).ifPresent(exprs::add);
             }
         }
         exprs.add(w.mk_eq(w.sum_reals(times), cal_segment_gap(start, end)));
@@ -312,7 +298,7 @@ public class LocalAutomatonEncoder {
 
     private BoolExpr encode_transit(int i, State s)
     {
-        BoolExpr current = encode_current_loc(i, s);
+        BoolExpr current = encode_loc_info(i, s);
         List<BoolExpr> trans = new ArrayList<>();
         encode_jump(i, s).ifPresent(trans::add);
         trans.add(encode_stutter(i));
@@ -330,40 +316,36 @@ public class LocalAutomatonEncoder {
         return w.mk_or(next);
     }
 
+    // We can infer that the stutter transition will not break invariant constraints.
     private BoolExpr encode_stutter(int index)
     {
-        BoolExpr time = encode_time_unchanged(index);
-        BoolExpr loc = w.mk_eq(mk_loc_var(index + 1), mk_loc_var(index));
-        if (diagram.get_variables().size() > 0) {
-            BoolExpr unchanged = encode_all_variable_unchanged(index);
-            return w.get_ctx().mkAnd(time, loc, unchanged);
-        } else {
-            return w.get_ctx().mkAnd(time, loc);
-        }
+        List<BoolExpr> exprs = new ArrayList<>();
+        exprs.add(encode_time_unchanged(index));
+        exprs.add(w.mk_eq(mk_loc_var(index + 1), mk_loc_var(index)));
+        encode_all_variable_unchanged(index). ifPresent(exprs::add);
+        return w.mk_and_not_empty(exprs);
     }
 
     private BoolExpr encode_timed(int index,
                                   State s)
     {
         RealExpr delta = mk_time_var(index);
-        BoolExpr time = w.mk_gt(delta, w.mk_real(0));
-        BoolExpr loc = w.mk_eq(mk_loc_var(index + 1), mk_loc_var(index));
         List<BoolExpr> exprs = new ArrayList<>();
-        exprs.add(time);
-        exprs.add(loc);
+        // delta time > 0
+        exprs.add(w.mk_gt(delta, w.mk_real(0)));
+        // the location will not change.
+        exprs.add(w.mk_eq(mk_loc_var(index + 1), mk_loc_var(index)));
         Set<String> changed = EquationParser.parse_variables(s.getDeEquations());
         for (DeEquation e: s.getDeEquations()) {
             // add differential equation to the result, for example
             // f'(x) = 1, make sure that x' - x = 1 * delta
-            exprs.add(ee.encode_deequation_with_index(e, index, delta));
+            exprs.add(ee.encode_deequation_with_index(e.mark_seq_index(seq_index), index, delta));
         }
         // rest variables remain unchanged
         Set<String> vars = diagram.get_var_str();
-        for (String v: vars) {
-            if (!changed.contains(v)) {
-                exprs.add(w.mk_eq(mk_var_var(v, index + 1), mk_var_var(v, index)));
-            }
-        }
+        vars.removeAll(changed);
+        encode_variable_unchanged(index, vars);
+        encode_invariant(index + 1, s).ifPresent(exprs::add);
         return w.mk_and_not_empty(exprs);
     }
 
@@ -378,13 +360,14 @@ public class LocalAutomatonEncoder {
         if ($.isBlankList(current.getConstraints())) {
             return Optional.empty();
         }
-        BoolExpr currentExpr = encode_current_loc(index, current);
+        BoolExpr current_expr = encode_loc_info(index, current);
         List<BoolExpr> invars = current.getConstraints()
                 .stream()
+                .map(j -> j.mark_seq_index(seq_index))
                 .map(j -> j.attach_bound(index))
                 .map(ee::encode_judgement)
                 .collect(Collectors.toList());
-        return Optional.of(w.get_ctx().mkImplies(currentExpr, w.mk_and_not_empty(invars)));
+        return Optional.of(w.get_ctx().mkImplies(current_expr, w.mk_and_not_empty(invars)));
     }
 
     /**
@@ -393,7 +376,7 @@ public class LocalAutomatonEncoder {
      * @param current the current state
      * @return current location bool expression
      */
-    private BoolExpr encode_current_loc(int k, State current)
+    private BoolExpr encode_loc_info(int k, State current)
     {
         if (current.getType() == StateType.INITIAL) {
             return w.mk_eq(mk_loc_var(k), w.mk_string(diagram.get_title() + "_" + current.getStateName()));
@@ -408,17 +391,17 @@ public class LocalAutomatonEncoder {
      */
     private Expr mk_loc_var(int k)
     {
-        return w.mk_string_var(diagram.get_title() + "_" + "loc_" + k);
+        return w.mk_string_var(seq_index + "_" + diagram.get_title() + "_" + "loc_" + k);
     }
 
     private RealExpr mk_time_var(int k)
     {
-        return w.mk_real_var(diagram.get_title() + "_" + "delta_" + k);
+        return w.mk_real_var(seq_index + "_" + diagram.get_title() + "_" + "delta_" + k);
     }
 
     private RealExpr mk_synchronous_message_var(Message m, int k)
     {
-        return w.mk_real_var(diagram.get_title() + "_" + m.get_name() + "_" + k);
+        return w.mk_real_var(seq_index + "_" + diagram.get_title() + "_" + m.get_name() + "_" + k);
     }
 
     /**
@@ -429,7 +412,7 @@ public class LocalAutomatonEncoder {
      */
     private RealExpr mk_var_var(String var, int k)
     {
-        return w.mk_real_var(var + "_" + k);
+        return w.mk_real_var(seq_index + "_" + var + "_" + k);
     }
 
     /**
@@ -457,27 +440,28 @@ public class LocalAutomatonEncoder {
      * @param index the transition index
      * @return the boolean expression
      */
-    private BoolExpr encode_all_variable_unchanged(int index)
+    private Optional<BoolExpr> encode_all_variable_unchanged(int index)
     {
         Set<String> vars = diagram.get_var_str();
         return encode_variable_unchanged(index, vars);
     }
 
-    private BoolExpr encode_variable_unchanged(int index, Set<String> vars)
+    private Optional<BoolExpr> encode_variable_unchanged(int index, Set<String> vars)
     {
         if (vars == null) {
-            throw new EncodeException("empty variable set");
+            return Optional.empty();
         }
         List<BoolExpr> exprs = new ArrayList<>();
         for (String v: vars) {
             exprs.add(w.mk_eq(mk_var_var(v, index + 1), mk_var_var(v, index)));
         }
-        return w.mk_and_not_empty(exprs);
+        return w.mk_and(exprs);
     }
 
     private ArithExpr cal_segment_gap(Message s, Message e)
     {
-        return w.mk_sub(w.mk_real_var(e.get_name()), w.mk_real_var(s.get_name()));
+        return w.mk_sub(w.mk_real_var(seq_index + "_" + e.get_name()),
+                w.mk_real_var(seq_index + "_" + s.get_name()));
     }
 
 }

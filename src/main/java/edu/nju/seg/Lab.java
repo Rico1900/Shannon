@@ -22,12 +22,13 @@ import java.util.*;
 
 public class Lab {
 
-    private final boolean debug = false;
+    private final boolean debug;
 
     private final ExperimentConfig config;
 
     public Lab(ExperimentConfig config) {
         this.config = config;
+        debug = config.is_debug();
     }
 
     /**

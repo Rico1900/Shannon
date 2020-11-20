@@ -30,6 +30,11 @@ public class DeEquation {
         return right;
     }
 
+    public DeEquation mark_seq_index(int k)
+    {
+        return new DeEquation((UnaryExpr) left.mark_seq_index(k), op, right.mark_seq_index(k));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

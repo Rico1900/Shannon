@@ -9,9 +9,9 @@ public class Judgement {
 
     private JudgeOp op;
 
-    private Expr left;
+    private final Expr left;
 
-    private Expr right;
+    private final Expr right;
 
     public Judgement(JudgeOp op, Expr left, Expr right) {
         this.op = op;
@@ -34,6 +34,11 @@ public class Judgement {
     public Judgement attach_bound(int k)
     {
         return new Judgement(op, left.attach_bound(k), right.attach_bound(k));
+    }
+
+    public Judgement mark_seq_index(int k)
+    {
+        return new Judgement(op, left.mark_seq_index(k), right.mark_seq_index(k));
     }
 
     public Judgement attach_loop_queue(List<Integer> loop_queue)

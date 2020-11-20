@@ -5,6 +5,8 @@ import java.util.List;
 
 public class ExperimentConfig {
 
+    private final boolean debug;
+
     private final ExperimentalType type;
 
     private final int bound;
@@ -15,8 +17,14 @@ public class ExperimentConfig {
 
     private final String result_folder;
 
-    public ExperimentConfig(ExperimentalType type, int bound, List<String> targets, String input_folder, String result_folder)
+    public ExperimentConfig(boolean debug,
+                            ExperimentalType type,
+                            int bound,
+                            List<String> targets,
+                            String input_folder,
+                            String result_folder)
     {
+        this.debug = debug;
         this.type = type;
         this.bound = bound;
         this.targets = targets;
@@ -43,4 +51,9 @@ public class ExperimentConfig {
     public String get_result_folder() {
         return result_folder;
     }
+
+    public boolean is_debug() {
+        return debug;
+    }
+
 }

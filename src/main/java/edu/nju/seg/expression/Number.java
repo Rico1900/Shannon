@@ -43,6 +43,11 @@ public class Number extends Expr {
     }
 
     @Override
+    public Expr mark_seq_index(int k) {
+        return this;
+    }
+
+    @Override
     public Expr attach_loop_queue(List<Integer> loop_queue) {
         return this;
     }

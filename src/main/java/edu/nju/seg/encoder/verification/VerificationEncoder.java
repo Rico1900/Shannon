@@ -150,7 +150,7 @@ public class VerificationEncoder {
                 Message m = (Message) c;
                 if (m.get_mask_instruction() != null) {
                     Assignment a = m.get_mask_instruction();
-                    String v = a.getLeft().getName();
+                    String v = a.get_left().getName();
                     if (!map.containsKey(v)) {
                         map.put(v, new ArrayList<>());
                     }
@@ -166,18 +166,18 @@ public class VerificationEncoder {
         Seq s = new Seq(clean.get_covered());
         List<BoolExpr> exprs = new ArrayList<>();
         BoolExpr clean_expr = encode_clean_frag(clean, new ArrayList<>(), s, true, seq_set);
-        exprs.add(w.mk_and_not_empty(synchronous_time_expr));
         exprs.add(clean_expr);
-//        encode_int_frags().ifPresent(exprs::add);
+        encode_int_frags().ifPresent(exprs::add);
         // We add the negation form of property expression to the final SMT expression,
         // so if the final SMT expression is unsatisfied, then verification succeed,
         // otherwise, the SMT solver produces the counter example.
         encode_networks().ifPresent(exprs::add);
+        exprs.add(w.mk_and_not_empty(synchronous_time_expr));
         w.mk_and(property_expr).ifPresent(e -> exprs.add(w.mk_not(e)));
         return w.mk_and_not_empty(exprs);
     }
 
-    private Optional<BoolExpr> encode_networks() throws Z3Exception
+    private Optional<BoolExpr> encode_networks()
     {
         List<BoolExpr> exprs = new ArrayList<>();
         // clean traces
@@ -189,25 +189,25 @@ public class VerificationEncoder {
         return w.mk_and(exprs);
     }
 
-    private Optional<BoolExpr> encode_all_seq_on_automata(Set<Seq> seqs) throws Z3Exception
+    private Optional<BoolExpr> encode_all_seq_on_automata(Set<Seq> seqs)
     {
         List<BoolExpr> exprs = new ArrayList<>();
         for (Seq s: seqs) {
-            encode_synchronous_message(s);
-            encode_seq_on_automata(s).ifPresent(exprs::add);
+            encode_synchronous_message(s, seq_index);
+            encode_seq_on_automata(s, seq_index).ifPresent(exprs::add);
             seq_index += 1;
         }
         return w.mk_or(exprs);
     }
 
-    private Optional<BoolExpr> encode_seq_on_automata(Seq seq) throws Z3Exception
+    private Optional<BoolExpr> encode_seq_on_automata(Seq seq, int seq_index)
     {
         Map<Instance, List<Message>> traces = seq.get_seq();
         List<BoolExpr> exprs = new ArrayList<>();
         for (Instance key: traces.keySet()) {
             if (auto_map.containsKey(key.get_name())) {
                 AutomatonDiagram ad = auto_map.get(key.get_name());
-                encode_trace_on_automaton(traces.get(key), ad).ifPresent(exprs::add);
+                encode_trace_on_automaton(traces.get(key), ad, seq_index).ifPresent(exprs::add);
             } else {
                 throw new EncodeException("Unmatched instance: " + key.get_name());
             }
@@ -215,7 +215,7 @@ public class VerificationEncoder {
         return w.mk_and(exprs);
     }
 
-    private void encode_synchronous_message(Seq seq)
+    private void encode_synchronous_message(Seq seq, int seq_index)
     {
         Set<Message> set = new HashSet<>();
         seq.get_seq().values().forEach(set::addAll);
@@ -223,17 +223,18 @@ public class VerificationEncoder {
             int from = seq.get_seq().get(m.get_source()).indexOf(m);
             int to = seq.get_seq().get(m.get_target()).indexOf(m);
             synchronous_time_expr.add(w.mk_eq(
-                    mk_sync_var(m.get_source(), m, from),
-                    mk_sync_var(m.get_target(), m, to)
+                    mk_sync_var(m.get_source(), m, from, seq_index),
+                    mk_sync_var(m.get_target(), m, to, seq_index)
             ));
         }
     }
 
     private Optional<BoolExpr> encode_trace_on_automaton(List<Message> trace,
-                                                         AutomatonDiagram ad) throws Z3Exception
+                                                         AutomatonDiagram ad,
+                                                         int seq_index)
     {
         Pair<Optional<BoolExpr>, Optional<BoolExpr>> p = new LocalAutomatonEncoder(
-                ad, trace, const_dict, prop_dict, w, bound).encode();
+                ad, trace, const_dict, prop_dict, w, bound, seq_index).encode();
         p.get_right().ifPresent(property_expr::add);
         return p.get_left();
     }
@@ -667,11 +668,11 @@ public class VerificationEncoder {
     {
         Assignment turn_off = close.get_mask_instruction();
         Assignment turn_on = open.get_mask_instruction();
-        if (!(turn_off.getLeft().equals(turn_on.getLeft())
-                && turn_off.getRight() instanceof Number
-                && turn_on.getRight() instanceof Number)) {
-            Number off = (Number) turn_off.getRight();
-            Number on = (Number) turn_on.getRight();
+        if (!(turn_off.get_left().equals(turn_on.get_left())
+                && turn_off.get_right() instanceof Number
+                && turn_on.get_right() instanceof Number)) {
+            Number off = (Number) turn_off.get_right();
+            Number on = (Number) turn_on.get_right();
             if (!(off.getValue() == 0.0 && on.getValue() == 0.0)) {
                 throw new EncodeException("Mask instruction unmatched.");
             }
@@ -876,9 +877,9 @@ public class VerificationEncoder {
         return index * (bound + 1);
     }
 
-    protected RealExpr mk_sync_var(Instance ins, Message m, int index)
+    protected RealExpr mk_sync_var(Instance ins, Message m, int index, int seq_index)
     {
-        return w.mk_real_var(ins.get_name() + "_" + m.get_name() + "_" + calculate_offset(index));
+        return w.mk_real_var(seq_index + "_" + ins.get_name() + "_" + m.get_name() + "_" + calculate_offset(index));
     }
 
 }

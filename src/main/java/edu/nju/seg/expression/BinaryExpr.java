@@ -58,6 +58,11 @@ public class BinaryExpr extends Expr {
     }
 
     @Override
+    public Expr mark_seq_index(int k) {
+        return new BinaryExpr(op, left.mark_seq_index(k), right.mark_seq_index(k));
+    }
+
+    @Override
     public Expr attach_loop_queue(List<Integer> loop_queue) {
         return new BinaryExpr(op, left.attach_loop_queue(loop_queue), right.attach_loop_queue(loop_queue));
     }

@@ -59,7 +59,7 @@ public class IntFragment extends Fragment {
 
     private void init_var()
     {
-        mask_var = instruction.getLeft().getName();
+        mask_var = instruction.get_left().getName();
     }
 
     public int get_priority()

@@ -14,4 +14,8 @@ public class AdJudgement extends Judgement {
         return qualifier;
     }
 
+    @Override
+    public AdJudgement mark_seq_index(int k) {
+        return new AdJudgement(qualifier, super.mark_seq_index(k));
+    }
 }

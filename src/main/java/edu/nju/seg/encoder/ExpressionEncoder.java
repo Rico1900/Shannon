@@ -25,8 +25,8 @@ public class ExpressionEncoder {
     {
         return encode_binary_judgement(
                 JudgeOp.EQ,
-                encode_expression(a.getLeft().attach_bound(index)),
-                encode_expression(a.getRight().attach_bound(index - 1))
+                encode_expression(a.get_left().attach_bound(index)),
+                encode_expression(a.get_right().attach_bound(index - 1))
         );
     }
 
@@ -108,8 +108,8 @@ public class ExpressionEncoder {
     {
         return encode_binary_judgement(
                 JudgeOp.EQ,
-                encode_expression(a.getLeft().attach_bound(l)),
-                encode_expression(a.getRight().attach_bound(r))
+                encode_expression(a.get_left().attach_bound(l)),
+                encode_expression(a.get_right().attach_bound(r))
         );
     }
 

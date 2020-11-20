@@ -40,6 +40,11 @@ public class Variable extends Expr {
     }
 
     @Override
+    public Expr mark_seq_index(int k) {
+        return new Variable(k + "_" + name);
+    }
+
+    @Override
     public Expr attach_loop_queue(List<Integer> loop_queue) {
         return new Variable($.loop_queue_prefix(loop_queue) + name);
     }
