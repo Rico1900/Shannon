@@ -12,7 +12,9 @@ import java.util.regex.Pattern;
 
 public class MessageParser {
 
-    private static final Pattern MESSAGE_DETAIL = Pattern.compile("^(.*?):(.*);(.*);?$");
+    private static final Pattern FULL_MESSAGE_DETAIL = Pattern.compile("^(.*?)\\[(.*)\\]:(.*?);?$");
+
+    private static final Pattern MESSAGE_DETAIL = Pattern.compile("(.*?):(.*?);?$");
 
     private final Map<String, Instance> instance_map;
 
@@ -44,11 +46,16 @@ public class MessageParser {
         String name;
         List<Assignment> assignments;
         Assignment mask_instruction;
+        Matcher fm = FULL_MESSAGE_DETAIL.matcher(info);
         Matcher m = MESSAGE_DETAIL.matcher(info);
-        if (m.matches()) {
+        if (fm.matches()) {
+            name = fm.group(1);
+            assignments = AssignmentsParser.parse_assignments(fm.group(3));
+            mask_instruction = AssignmentsParser.parse_assignment(fm.group(2));
+        } else if (m.matches()) {
             name = m.group(1);
             assignments = AssignmentsParser.parse_assignments(m.group(2));
-            mask_instruction = AssignmentsParser.parse_assignment(m.group(3));
+            mask_instruction = null;
         } else {
             name = info.replace(";", "").trim();
             assignments = new ArrayList<>(0);

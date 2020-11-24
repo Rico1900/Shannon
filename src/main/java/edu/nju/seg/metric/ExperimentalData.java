@@ -8,6 +8,8 @@ public class ExperimentalData {
 
     private final int clause_num;
 
+    private double encoding_time;
+
     private double running_time;
 
     public ExperimentalData(String file_path,
@@ -30,6 +32,14 @@ public class ExperimentalData {
         this.running_time = running_time;
     }
 
+    public double get_encoding_time() {
+        return encoding_time;
+    }
+
+    public void set_encoding_time(double encoding_time) {
+        this.encoding_time = encoding_time;
+    }
+
     public int get_bound()
     {
         return bound;
@@ -46,6 +56,7 @@ public class ExperimentalData {
                 "case_name='" + case_name + '\'' +
                 ", bound=" + bound +
                 ", clause_num=" + clause_num +
+                ", encoding_time=" + encoding_time +
                 ", running_time=" + running_time +
                 '}';
     }

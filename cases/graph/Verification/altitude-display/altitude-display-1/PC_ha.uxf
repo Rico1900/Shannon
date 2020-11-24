@@ -11,10 +11,10 @@
     </coordinates>
     <panel_attributes>init
 --
-penu'=0
-pre'=0
-cal'=0
-truth'=0
+'penu=0
+'pre=0
+'cal=0
+'truth=0
 -.
 truth&gt;=1000
 truth&lt;=2000
@@ -38,14 +38,14 @@ valign=top
     <coordinates>
       <x>530</x>
       <y>340</y>
-      <w>120</w>
+      <w>150</w>
       <h>250</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-;penu=1500,
-pre=1500,
-cal=1500,
-truth=1500</panel_attributes>
+Init:;penu:=1500,
+pre:=1500,
+cal:=1500,
+truth:=1500</panel_attributes>
     <additional_attributes>10.0;230.0;10.0;10.0</additional_attributes>
   </element>
   <element>
@@ -58,8 +58,8 @@ truth=1500</panel_attributes>
     </coordinates>
     <panel_attributes>lt=-&gt;
 g_read: truth&gt;=1000;
-penu=pre,
-pre=cal</panel_attributes>
+penu:=pre,
+pre:=cal</panel_attributes>
     <additional_attributes>380.0;10.0;10.0;180.0;270.0;180.0;400.0;10.0</additional_attributes>
   </element>
   <element>
@@ -72,9 +72,9 @@ pre=cal</panel_attributes>
     </coordinates>
     <panel_attributes>lt=-&gt;
 g_display: truth&gt;=1000;
-penu=pre,
-pre=cal,
-cal=((2*pre)-penu)</panel_attributes>
+penu:=pre,
+pre:=cal,
+cal:=((2*pre)-penu)</panel_attributes>
     <additional_attributes>40.0;10.0;510.0;190.0;260.0;190.0;10.0;10.0</additional_attributes>
   </element>
   <element>
@@ -86,7 +86,7 @@ cal=((2*pre)-penu)</panel_attributes>
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-|truth-cal|&lt;=15</panel_attributes>
+forall(|(truth-cal)|&lt;=15)</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -99,8 +99,8 @@ cal=((2*pre)-penu)</panel_attributes>
     </coordinates>
     <panel_attributes>lt=-&gt;
 c_read: truth&gt;=1000;
-penu=pre,
-pre=cal</panel_attributes>
+penu:=pre,
+pre:=cal</panel_attributes>
     <additional_attributes>410.0;10.0;10.0;10.0;10.0;70.0;410.0;60.0</additional_attributes>
   </element>
   <element>
@@ -113,8 +113,8 @@ pre=cal</panel_attributes>
     </coordinates>
     <panel_attributes>lt=-&gt;
 d_read: truth&gt;=1000;
-penu=pre,
-pre=cal</panel_attributes>
+penu:=pre,
+pre:=cal</panel_attributes>
     <additional_attributes>290.0;150.0;290.0;20.0;10.0;20.0;270.0;210.0</additional_attributes>
   </element>
   <element>
@@ -127,9 +127,9 @@ pre=cal</panel_attributes>
     </coordinates>
     <panel_attributes>lt=-&gt;
 c_display: truth&gt;=1000;
-penu=pre,
-pre=cal,
-cal=((2*pre)-penu)</panel_attributes>
+penu:=pre,
+pre:=cal,
+cal:=((2*pre)-penu)</panel_attributes>
     <additional_attributes>10.0;10.0;320.0;10.0;320.0;60.0;10.0;60.0</additional_attributes>
   </element>
   <element>
@@ -142,9 +142,9 @@ cal=((2*pre)-penu)</panel_attributes>
     </coordinates>
     <panel_attributes>lt=-&gt;
 d_display: truth&gt;=1000;
-penu=pre,
-pre=cal,
-cal=((2*pre)-penu)</panel_attributes>
+penu:=pre,
+pre:=cal,
+cal:=((2*pre)-penu)</panel_attributes>
     <additional_attributes>10.0;150.0;10.0;20.0;340.0;20.0;60.0;200.0</additional_attributes>
   </element>
 </diagram>

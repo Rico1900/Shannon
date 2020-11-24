@@ -142,7 +142,7 @@ public class $ {
      */
     public static String remove_whitespace(String s)
     {
-        return s.replaceAll(" ", "");
+        return s.replaceAll(" ", "").replaceAll("\n", "");
     }
 
     public static boolean is_ad_judgement(String s)

@@ -1,0 +1,53 @@
+{
+    "debug": false,
+    "type": "ISD_AUTOMATA_VERIFICATION",
+    "bound": 10,
+    "cases": [
+        {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/fischer-aut/fischer-aut-0",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/fischer-aut/fischer-aut-1",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/fischer-aut/fischer-aut-2",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/fischer-aut/fischer-aut-3",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/fischer-aut/fischer-aut-4",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/fischer-aut/fischer-aut-5",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/fischer-aut/fischer-aut-6",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/fischer-aut/fischer-aut-7",
+            "output_folder": ""
+        }, {
+            "runable": true,
+            "targets": [],
+            "input_folder": "/Users/rico/Documents/Working/ShallowInterrupt/SourceAndResult/graph/Verification/ADC-Bug",
+            "output_folder": ""
+        }
+    ]
+}

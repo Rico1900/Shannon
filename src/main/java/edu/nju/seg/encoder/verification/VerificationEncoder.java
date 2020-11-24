@@ -387,35 +387,41 @@ public class VerificationEncoder {
                                          Set<Seq> collector) throws Z3Exception
     {
         encode_properties(af, loop_queue);
-        List<BoolExpr> expers = new ArrayList<>();
-        expers.add(encode_ge_zero(af.get_virtual_head().attach_loop_queue(loop_queue)));
-        expers.add(w.get_ctx().mkAnd(
-                encode_base_fragment(
-                        af,
-                        af.get_children(),
-                        af.get_covered(),
-                        af.get_virtual_head(),
-                        af.get_virtual_tail(),
-                        loop_queue,
-                        Seq.clone(current),
-                        is_outer,
-                        collector),
-                ee.encode_judgement_with_loop_queue(af.get_condition(), loop_queue)
-        ));
-        expers.add(w.get_ctx().mkAnd(
-                encode_base_fragment(
-                        af,
-                        af.get_else_children(),
-                        af.get_covered(),
-                        af.get_virtual_head(),
-                        af.get_virtual_tail(),
-                        loop_queue,
-                        Seq.clone(current),
-                        is_outer,
-                        collector),
-                ee.encode_judgement_with_loop_queue(af.get_else_condition(), loop_queue)
-        ));
-        return w.mk_or_not_empty(expers);
+        List<BoolExpr> exprs = new ArrayList<>();
+        BoolExpr gez = encode_ge_zero(af.get_virtual_head().attach_loop_queue(loop_queue));
+        List<BoolExpr> if_list = new ArrayList<>();
+        if_list.add(gez);
+        if_list.add(encode_base_fragment(
+                af,
+                af.get_children(),
+                af.get_covered(),
+                af.get_virtual_head(),
+                af.get_virtual_tail(),
+                loop_queue,
+                Seq.clone(current),
+                is_outer,
+                collector));
+        if (af.get_condition() != null) {
+            if_list.add(ee.encode_judgement_with_loop_queue(af.get_condition(), loop_queue));
+        }
+        exprs.add(w.mk_and_not_empty(if_list));
+        List<BoolExpr> else_list = new ArrayList<>();
+        else_list.add(gez);
+        else_list.add(encode_base_fragment(
+                af,
+                af.get_else_children(),
+                af.get_covered(),
+                af.get_virtual_head(),
+                af.get_virtual_tail(),
+                loop_queue,
+                Seq.clone(current),
+                is_outer,
+                collector));
+        if (af.get_else_condition() != null) {
+            ee.encode_judgement_with_loop_queue(af.get_else_condition(), loop_queue);
+        }
+        exprs.add(w.mk_and_not_empty(else_list));
+        return w.mk_or_not_empty(exprs);
     }
 
     private BoolExpr encode_loop_fragment(LoopFragment lf,

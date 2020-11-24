@@ -48,20 +48,22 @@ public class Lab {
     {
         List<Pair<ExCase, List<Diagram>>> cases = new ArrayList<>();
         for (ExCase ec: config.get_cases()) {
-            String input_path = ec.get_input_folder();
-            File input_folder = new File(input_path);
-            if (input_folder.isDirectory()) {
-                List<Diagram> diagrams = new ArrayList<>();
-                for (File f : Objects.requireNonNull(input_folder.listFiles())) {
-                    if (f.getName().endsWith(".uxf")) {
-                        UMLetTokenizer.tokenize_elements(f)
-                                .map(contents -> parse_diagram(f.getName(), contents))
-                                .ifPresent(diagrams::add);
+            if (ec.is_runable()) {
+                String input_path = config.get_base_path() + ec.get_input_folder();
+                File input_folder = new File(input_path);
+                if (input_folder.isDirectory()) {
+                    List<Diagram> diagrams = new ArrayList<>();
+                    for (File f : Objects.requireNonNull(input_folder.listFiles())) {
+                        if (f.getName().endsWith(".uxf")) {
+                            UMLetTokenizer.tokenize_elements(f)
+                                    .map(contents -> parse_diagram(f.getName(), contents))
+                                    .ifPresent(diagrams::add);
+                        }
                     }
+                    cases.add(new Pair<>(ec, diagrams));
+                } else {
+                    SimpleLog.error("the input path is not a directory: " + input_path);
                 }
-                cases.add(new Pair<>(ec, diagrams));
-            } else {
-                SimpleLog.error("the input path is not a directory: " + input_path);
             }
         }
         return cases;
@@ -97,14 +99,17 @@ public class Lab {
                 Pair<SequenceDiagram, List<AutomatonDiagram>> p = partition(c.get_right());
                 VerificationEncoder ve = new VerificationEncoder(
                         p.get_left(), p.get_right(), config.get_bound(), manager);
+                SimpleTimer encoding_timer = new SimpleTimer();
                 manager.add_clause(ve.encode());
+                double encoding_time = encoding_timer.past_seconds();
                 ExperimentalData data = new ExperimentalData(
                         c.get_left().get_input_folder(),
                         config.get_bound(),
                         manager.get_clause_num());
-                SimpleTimer timer = new SimpleTimer();
+                data.set_encoding_time(encoding_time);
+                SimpleTimer running_timer = new SimpleTimer();
                 Status result = manager.check();
-                data.set_running_time(timer.past_seconds());
+                data.set_running_time(running_timer.past_seconds());
                 handle_result(result, data, manager);
             } catch (Z3Exception e) {
                 logZ3Exception(e);

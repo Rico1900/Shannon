@@ -11,7 +11,7 @@
     </coordinates>
     <panel_attributes>climb
 --
-altitude'=5
+'altitude=5
 
 -.
 altitude&gt;=1000
@@ -30,7 +30,7 @@ valign=top
     </coordinates>
     <panel_attributes>descend
 --
-altitude'=-5
+'altitude=-5
 
 -.
 altitude&gt;=1000
@@ -83,7 +83,7 @@ d2c</panel_attributes>
       <h>160</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-;altitude=1500</panel_attributes>
+cinit:;altitude:=1500</panel_attributes>
     <additional_attributes>160.0;140.0;10.0;10.0</additional_attributes>
   </element>
   <element>
@@ -95,7 +95,7 @@ d2c</panel_attributes>
       <h>160</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-;altitude=1500</panel_attributes>
+dinit:;altitude:=1500</panel_attributes>
     <additional_attributes>10.0;140.0;190.0;10.0</additional_attributes>
   </element>
   <element>
@@ -108,7 +108,7 @@ d2c</panel_attributes>
     </coordinates>
     <panel_attributes>glide
 --
-altitude'=0
+'altitude=0
 
 -.
 altitude&gt;=1000

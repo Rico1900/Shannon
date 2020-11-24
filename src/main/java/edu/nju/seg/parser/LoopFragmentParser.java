@@ -37,10 +37,10 @@ public class LoopFragmentParser {
             return new LoopFragment(new ArrayList<>(),
                     instances,
                     info,
-                    Integer.parseInt(m.group(1)),
-                    Integer.parseInt(m.group(2)),
-                    AssignmentsParser.parse_assignment(m.group(3)),
-                    AssignmentsParser.parse_assignment(m.group(4)));
+                    Integer.parseInt(tm.group(1)),
+                    Integer.parseInt(tm.group(2)),
+                    AssignmentsParser.parse_assignment(tm.group(3)),
+                    AssignmentsParser.parse_assignment(tm.group(4)));
         } else if (m.matches()) {
             return new LoopFragment(new ArrayList<>(),
                     instances,

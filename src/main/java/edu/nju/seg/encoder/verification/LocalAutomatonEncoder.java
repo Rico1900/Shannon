@@ -144,6 +144,9 @@ public class LocalAutomatonEncoder {
     private BoolExpr encode_message(Message m, int index)
     {
         Relation r = edge_map.get(m.get_name());
+        if (r == null) {
+            throw new EncodeException("wrong message:" + m.get_name());
+        }
         // if the automaton is the target of the synchronous message
         if (m.get_target().get_name().equals(diagram.get_title())) {
             State source = r.get_source();
