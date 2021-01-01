@@ -1,21 +1,31 @@
 {
     "debug": false,
     "type": "ISD_AUTOMATA_VERIFICATION",
-    "bound": 5,
+    "bound": 3,
     "base_path": "/Users/rico/Documents/Working/ShallowInterrupt/cases/graph/Verification",
     "cases": [
         {
             "runable": false,
             "targets": [],
-            "input_folder": "/ADC-Bug/ADC-Bug-0",
+            "input_folder": "/ADC-Bug-int/ADC-Bug-int-0",
             "output_folder": ""
         }, {
             "runable": false,
             "targets": [],
-            "input_folder": "/ADC-Bug/ADC-Bug-1",
+            "input_folder": "/ADC-Bug-int/ADC-Bug-int-1",
             "output_folder": ""
         }, {
-            "runable": true,
+            "runable": false,
+            "targets": [],
+            "input_folder": "/ADC-Bug-d-int/ADC-Bug-d-int-0",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/ADC-Bug-d-int/ADC-Bug-d-int-1",
+            "output_folder": ""
+        }, {
+            "runable": false,
             "targets": [],
             "input_folder": "/altitude-display/altitude-display-0",
             "output_folder": ""
@@ -27,32 +37,32 @@
         }, {
             "runable": false,
             "targets": [],
+            "input_folder": "/altitude-display-int/altitude-display-int-0",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/altitude-display-int/altitude-display-int-1",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
+            "input_folder": "/car-controller/car-controller-0",
+            "output_folder": ""
+        }, {
+            "runable": true,
+            "targets": [],
+            "input_folder": "/car-controller/car-controller-1",
+            "output_folder": ""
+        }, {
+            "runable": false,
+            "targets": [],
             "input_folder": "/csma-aut/csma-aut-0",
             "output_folder": ""
         }, {
-            "runable": false,
+            "runable": true,
             "targets": [],
             "input_folder": "/csma-aut/csma-aut-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/csma-aut/csma-aut-2",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/csma-aut/csma-aut-3",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/csma-aut/csma-aut-4",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/csma-aut/csma-aut-5",
             "output_folder": ""
         }, {
             "runable": false,

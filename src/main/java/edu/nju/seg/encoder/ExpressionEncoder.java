@@ -44,7 +44,7 @@ public class ExpressionEncoder {
         if (e instanceof Number) {
             return encode_de_number((Number) e, delta);
         } else if (e instanceof Variable) {
-            return encode_variable((Variable) e);
+            return encode_de_variable(((Variable) e).attach_bound(index), delta);
         } else if (e instanceof UnaryExpr) {
             return encode_de_unary((UnaryExpr) e, index);
         } else {
@@ -102,6 +102,11 @@ public class ExpressionEncoder {
         } catch (Z3Exception e) {
             throw new EncodeException("wrong number: " + n.toString());
         }
+    }
+
+    private ArithExpr encode_de_variable(Variable v, RealExpr delta)
+    {
+        return w.mk_mul(w.mk_real_var(v.getName()), delta);
     }
 
     public BoolExpr encode_assignment_with_double_index(Assignment a, int l, int r)

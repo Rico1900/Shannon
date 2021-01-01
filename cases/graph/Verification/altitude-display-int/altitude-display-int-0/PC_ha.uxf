@@ -86,10 +86,7 @@ cal:=((2*pre)-penu)</panel_attributes>
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-forall(truth&gt;=0)
-forall(pre&gt;=0)
-forall(cal&gt;=0)
-forall(penu&gt;=0)</panel_attributes>
+forall(truth&gt;=0)</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

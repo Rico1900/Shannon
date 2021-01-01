@@ -6,15 +6,15 @@
     <coordinates>
       <x>30</x>
       <y>30</y>
-      <w>700</w>
-      <h>860</h>
+      <w>560</w>
+      <h>500</h>
     </coordinates>
     <panel_attributes>title=altitude-display
 obj=PC~a
 obj=IO~b
 
 
-combinedFragment=loop(10,10)[interval:=1,start:=0]~loop1
+combinedFragment=loop(2,2)[interval:=1,start:=0]~loop1
 combinedFragment=alt~alt1
 b-&gt;&gt;&gt;a : d_display:truth:=altitude;
 ..
@@ -26,17 +26,6 @@ b-&gt;&gt;&gt;a : g_display:truth:=altitude
 --
 --
 
-combinedFragment=int(p=1)~int1
-combinedFragment=alt~alt3
-b-&gt;&gt;&gt;a : d_read:truth:=altitude,cal:=altitude
-..
-combinedFragment=alt~alt4
-b-&gt;&gt;&gt;a : c_read:truth:=altitude,cal:=altitude
-..
-b-&gt;&gt;&gt;a : g_read:truth:=altitude,cal:=altitude
---
---
---
 </panel_attributes>
     <additional_attributes/>
   </element>

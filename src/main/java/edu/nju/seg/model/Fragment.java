@@ -40,7 +40,7 @@ public class Fragment extends SDComponent {
 
     public String yield_raw_name()
     {
-        return "<" + this.raw + ">";
+        return "<" + this.raw + this.hashCode() + ">";
     }
 
     public String get_frag_tag(List<Integer> loop_queue)

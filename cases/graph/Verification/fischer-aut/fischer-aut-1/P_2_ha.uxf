@@ -2,18 +2,6 @@
 <diagram program="umlet" version="14.3.0">
   <zoom_level>10</zoom_level>
   <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>600</x>
-      <y>380</y>
-      <w>420</w>
-      <h>200</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-T-send:x2&gt;3,id2==2;</panel_attributes>
-    <additional_attributes>10.0;10.0;400.0;180.0</additional_attributes>
-  </element>
-  <element>
     <id>UMLSpecialState</id>
     <coordinates>
       <x>100</x>
@@ -40,6 +28,19 @@ T-send:x2&gt;3,id2==2;</panel_attributes>
 
 valign=top
 </panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1190</x>
+      <y>60</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Properties
+forall(x2&gt;=0)
+forall(id2&gt;=2)</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -136,18 +137,6 @@ T22:x2&lt;=3;x2:=0,id2:=2</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>600</x>
-      <y>360</y>
-      <w>320</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-IP:id2==0;x2:=0</panel_attributes>
-    <additional_attributes>10.0;20.0;300.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>600</x>
       <y>630</y>
       <w>320</w>
       <h>40</h>
@@ -155,5 +144,29 @@ IP:id2==0;x2:=0</panel_attributes>
     <panel_attributes>lt=-&gt;
 T-rec:;id2:=0</panel_attributes>
     <additional_attributes>300.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>600</x>
+      <y>380</y>
+      <w>420</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T-send:x2&gt;3,id2==2;</panel_attributes>
+    <additional_attributes>10.0;10.0;400.0;180.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>600</x>
+      <y>360</y>
+      <w>320</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T23:id2==0;x2:=0</panel_attributes>
+    <additional_attributes>10.0;20.0;300.0;20.0</additional_attributes>
   </element>
 </diagram>

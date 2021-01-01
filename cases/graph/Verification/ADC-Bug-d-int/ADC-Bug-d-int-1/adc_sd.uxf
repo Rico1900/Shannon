@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <diagram program="umlet" version="14.3.0">
+  <help_text/>
   <zoom_level>10</zoom_level>
   <element>
     <id>UMLSequenceAllInOne</id>
     <coordinates>
-      <x>30</x>
-      <y>30</y>
-      <w>560</w>
-      <h>500</h>
+      <x>100</x>
+      <y>90</y>
+      <w>510</w>
+      <h>490</h>
     </coordinates>
-    <panel_attributes>title=altitude-display
-obj=PC~a
-obj=IO~b
+    <panel_attributes>title=ADC
+obj=sensor~a
+obj=converter~b
+obj=PC~c
 
 
-combinedFragment=loop(2,2)[interval:=1,start:=0]~loop1
-combinedFragment=alt~alt1
-b-&gt;&gt;&gt;a : d_display:truth:=altitude;
-..
-combinedFragment=alt~alt2
-b-&gt;&gt;&gt;a : c_display:truth:=altitude
-..
-b-&gt;&gt;&gt;a : g_display:truth:=altitude
+combinedFragment=loop(5,5) ~loop1
+b-&gt;&gt;&gt;c : report;
+c-&gt;&gt;&gt;b : response;
 --
+
+combinedFragment=int (p=2)~int1
+a-&gt;&gt;&gt;b : send_data
 --
+
+combinedFragment=int (p=1)~int2
+c-&gt;&gt;&gt;b : reset
 --
 
 </panel_attributes>
@@ -32,24 +35,24 @@ b-&gt;&gt;&gt;a : g_display:truth:=altitude
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>840</x>
-      <y>310</y>
-      <w>200</w>
-      <h>130</h>
-    </coordinates>
-    <panel_attributes>Properties
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLNote</id>
-    <coordinates>
-      <x>840</x>
-      <y>30</y>
+      <x>100</x>
+      <y>590</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>Constraints
+(response-report)&gt;3</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>410</x>
+      <y>590</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Properties
 </panel_attributes>
     <additional_attributes/>
   </element>

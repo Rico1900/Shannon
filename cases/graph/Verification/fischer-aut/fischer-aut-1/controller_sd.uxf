@@ -7,14 +7,15 @@
       <x>330</x>
       <y>260</y>
       <w>320</w>
-      <h>180</h>
+      <h>210</h>
     </coordinates>
     <panel_attributes>title=controller
 obj=P_1~a
 obj=P_2~b
 
 
-a-&gt;&gt;&gt;b : IP;
+a-&gt;&gt;&gt;b : T-send;
+b-&gt;&gt;&gt;a : T-rec;
 </panel_attributes>
     <additional_attributes/>
   </element>

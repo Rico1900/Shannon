@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>130</x>
+      <y>490</y>
+      <w>180</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>broken
+--
+'time=1
+'acce=0
+'speed=0
+-.
+acce==0
+speed==0
+valign=top
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSpecialState</id>
+    <coordinates>
+      <x>670</x>
+      <y>770</y>
+      <w>20</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>type=initial</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>780</x>
+      <y>490</y>
+      <w>180</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>init
+--
+'time=0
+'acce=0
+'speed=0
+-.
+acce==0
+speed==0
+valign=top
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1140</x>
+      <y>90</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Properties
+forall(time&gt;=0)
+forall(acce&gt;=0)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>870</x>
+      <y>190</y>
+      <w>180</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>forward
+--
+'time=1
+'acce=1
+'speed=acce
+-.
+acce&lt;=10
+speed&lt;=100
+valign=top
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>660</x>
+      <y>630</y>
+      <w>230</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+Init:;time:=0,acce:=0,speed:=0</panel_attributes>
+    <additional_attributes>20.0;140.0;200.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>470</x>
+      <y>190</y>
+      <w>180</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>balance
+--
+'time=1
+'acce=0
+'speed=0
+-.
+acce==0
+valign=top
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>80</x>
+      <y>190</y>
+      <w>180</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>brake
+--
+'time=1
+'acce=-1
+'speed=acce
+-.
+acce&gt;=-10
+valign=top
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>870</x>
+      <y>330</y>
+      <w>100</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T1</panel_attributes>
+    <additional_attributes>10.0;160.0;80.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>200</y>
+      <w>250</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T2:;acce:=0</panel_attributes>
+    <additional_attributes>230.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>250</x>
+      <y>200</y>
+      <w>240</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T4:acce==0;</panel_attributes>
+    <additional_attributes>220.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>250</x>
+      <y>270</y>
+      <w>240</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T5:;acce:=0</panel_attributes>
+    <additional_attributes>10.0;20.0;220.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>270</y>
+      <w>250</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T3:acce==0;</panel_attributes>
+    <additional_attributes>10.0;20.0;230.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>140</x>
+      <y>330</y>
+      <w>130</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T6:;acce:=0</panel_attributes>
+    <additional_attributes>10.0;10.0;60.0;160.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>250</x>
+      <y>330</y>
+      <w>310</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T7:;acce:=0</panel_attributes>
+    <additional_attributes>290.0;10.0;10.0;160.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>300</x>
+      <y>330</y>
+      <w>630</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T8:;acce:=0</panel_attributes>
+    <additional_attributes>610.0;10.0;10.0;190.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>300</x>
+      <y>560</y>
+      <w>500</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+recovery:;speed:=0</panel_attributes>
+    <additional_attributes>10.0;20.0;480.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>300</x>
+      <y>330</y>
+      <w>310</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T9</panel_attributes>
+    <additional_attributes>10.0;230.0;290.0;10.0</additional_attributes>
+  </element>
+</diagram>
