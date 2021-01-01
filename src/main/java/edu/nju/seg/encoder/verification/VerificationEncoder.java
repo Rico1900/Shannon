@@ -309,7 +309,7 @@ public class VerificationEncoder {
                     encode_strict_pre_and_succ(n, tail)
             )));
         }
-        return w.mk_or_not_empty(subs);
+        return w.mk_and_not_empty(subs);
     }
 
     private Set<SDComponent> get_lower_priority_nodes(IntFragment f)
