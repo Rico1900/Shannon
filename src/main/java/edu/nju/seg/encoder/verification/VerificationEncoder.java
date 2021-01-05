@@ -495,6 +495,7 @@ public class VerificationEncoder {
                                                boolean is_outer,
                                                Set<Seq> collector) throws Z3Exception {
         List<BoolExpr> subs = new ArrayList<>();
+        Map<Instance, List<Message>> appended = new HashMap<>();
         for (SDComponent c: children) {
             if (c instanceof Message) {
                 Message m = ((Message) c).clone();
@@ -504,6 +505,14 @@ public class VerificationEncoder {
                 m.set_target_index(target_list.size());
                 source_list.add(m);
                 target_list.add(m);
+                if (!appended.containsKey(m.get_source())) {
+                    appended.put(m.get_source(), new ArrayList<>());
+                }
+                appended.get(m.get_source()).add(m);
+                if (!appended.containsKey(m.get_target())) {
+                    appended.put(m.get_target(), new ArrayList<>());
+                }
+                appended.get(m.get_target()).add(m);
             } else if (c instanceof VirtualNode) {
                 // do nothing
             } else {
@@ -694,6 +703,32 @@ public class VerificationEncoder {
         return result;
     }
 
+    private void encode_properties_for_trace(Seq current, Map<Instance, List<Message>> appended)
+    {
+        for (Instance c: appended.keySet()) {
+            List<Message> trace = appended.get(c);
+            Set<String> variables = extract(trace);
+            for (Set<String> key: prop_dict.keySet()) {
+                if (variables.containsAll(key)) {
+                    current.append_property();
+                }
+            }
+        }
+    }
+
+    private void encode_constraints_for_trace(Seq current, Map<Instance, List<Message>> appended)
+    {
+        for (Instance c: appended.keySet()) {
+            List<Message> trace = appended.get(c);
+            Set<String> variables = extract(trace);
+            for (Set<String> key: const_dict.keySet()) {
+                if (variables.containsAll(key)) {
+                    current.append_constraint();
+                }
+            }
+        }
+    }
+
     // We assume that the variables of properties will not cross different fragments.
     private void encode_properties(Fragment f,
                                    List<Integer> loop_queue)
@@ -874,6 +909,15 @@ public class VerificationEncoder {
             if (c instanceof Message) {
                 set.addAll(c.extract_variables());
             }
+        }
+        return set;
+    }
+
+    private Set<String> extract(List<Message> messages)
+    {
+        Set<String> set = new HashSet<>();
+        for (Message m: messages) {
+            set.add(m.get_name());
         }
         return set;
     }

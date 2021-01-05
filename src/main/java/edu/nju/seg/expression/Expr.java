@@ -14,4 +14,6 @@ public abstract class Expr {
 
     public abstract Set<String> extract_variables();
 
+    public abstract void replace_variable(String source, String target);
+
 }

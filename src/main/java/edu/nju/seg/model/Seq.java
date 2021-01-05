@@ -1,5 +1,7 @@
 package edu.nju.seg.model;
 
+import com.microsoft.z3.BoolExpr;
+
 import java.util.*;
 
 public class Seq {
@@ -7,6 +9,10 @@ public class Seq {
     private String label = "";
 
     private Map<Instance, List<Message>> seq = new HashMap<>();
+
+    private List<BoolExpr> properties = new ArrayList<>();
+
+    private List<BoolExpr> constraints = new ArrayList<>();
 
     public Seq(Map<Instance, List<Message>> seq)
     {
@@ -24,6 +30,26 @@ public class Seq {
     {
         this.label = label;
         this.seq = seq;
+    }
+
+    public List<BoolExpr> get_properties()
+    {
+        return properties;
+    }
+
+    public List<BoolExpr> get_constraints()
+    {
+        return constraints;
+    }
+
+    public void append_property(BoolExpr e)
+    {
+        properties.add(e);
+    }
+
+    public void append_constraint(BoolExpr e)
+    {
+        constraints.add(e);
     }
 
     public void set_label(String label) {

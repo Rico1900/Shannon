@@ -57,4 +57,9 @@ public class Number extends Expr {
         return new HashSet<>(0);
     }
 
+    @Override
+    public void replace_variable(String source, String target) {
+
+    }
+
 }

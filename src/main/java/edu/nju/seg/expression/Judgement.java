@@ -63,6 +63,12 @@ public class Judgement {
         return false;
     }
 
+    public void replace_variable(String source, String target)
+    {
+        left.replace_variable(source, target);
+        right.replace_variable(source, target);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

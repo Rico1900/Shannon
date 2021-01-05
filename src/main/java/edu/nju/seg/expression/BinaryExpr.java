@@ -75,4 +75,10 @@ public class BinaryExpr extends Expr {
         return result;
     }
 
+    @Override
+    public void replace_variable(String source, String target) {
+        left.replace_variable(source, target);
+        right.replace_variable(source, target);
+    }
+
 }

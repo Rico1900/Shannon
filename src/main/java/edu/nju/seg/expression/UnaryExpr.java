@@ -65,4 +65,9 @@ public class UnaryExpr extends Expr {
     public Set<String> extract_variables() {
         return new HashSet<>(expr.extract_variables());
     }
+
+    @Override
+    public void replace_variable(String source, String target) {
+        expr.replace_variable(source, target);
+    }
 }
