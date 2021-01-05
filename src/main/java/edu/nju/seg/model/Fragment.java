@@ -82,7 +82,9 @@ public class Fragment extends SDComponent {
     public Set<String> extract_variables() {
         Set<String> result = new HashSet<>();
         for (SDComponent c: children) {
-            result.addAll(c.extract_variables());
+            if (c instanceof Message) {
+                result.addAll(c.extract_variables());
+            }
         }
         return result;
     }

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class Message extends SDComponent {
+public class Message extends SDComponent implements Cloneable {
 
     private final String name;
 
@@ -118,6 +118,12 @@ public class Message extends SDComponent {
     @Override
     public int hashCode() {
         return Objects.hash(name, assignments, mask_instruction, source, target, source_index, target_index);
+    }
+
+    @Override
+    public Message clone()
+    {
+        return new Message(name, assignments, mask_instruction, source, target);
     }
 
 }

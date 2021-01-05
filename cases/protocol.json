@@ -7,22 +7,22 @@
         {
             "runable": false,
             "targets": [],
-            "input_folder": "/ADC-Bug-int/ADC-Bug-int-0",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/ADC-Bug-int/ADC-Bug-int-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
             "input_folder": "/ADC-Bug-d-int/ADC-Bug-d-int-0",
             "output_folder": ""
         }, {
             "runable": false,
             "targets": [],
             "input_folder": "/ADC-Bug-d-int/ADC-Bug-d-int-1",
+            "output_folder": ""
+        }, {
+            "runable": true,
+            "targets": [],
+            "input_folder": "/ADC-Bug-int/ADC-Bug-int-0",
+            "output_folder": ""
+        }, {
+            "runable": true,
+            "targets": [],
+            "input_folder": "/ADC-Bug-int/ADC-Bug-int-1",
             "output_folder": ""
         }, {
             "runable": false,
@@ -50,7 +50,7 @@
             "input_folder": "/car-controller/car-controller-0",
             "output_folder": ""
         }, {
-            "runable": true,
+            "runable": false,
             "targets": [],
             "input_folder": "/car-controller/car-controller-1",
             "output_folder": ""
@@ -60,7 +60,7 @@
             "input_folder": "/csma-aut/csma-aut-0",
             "output_folder": ""
         }, {
-            "runable": true,
+            "runable": false,
             "targets": [],
             "input_folder": "/csma-aut/csma-aut-1",
             "output_folder": ""
@@ -77,36 +77,6 @@
         }, {
             "runable": false,
             "targets": [],
-            "input_folder": "/fischer-aut/fischer-aut-2",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/fischer-aut/fischer-aut-3",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/fischer-aut/fischer-aut-4",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/fischer-aut/fischer-aut-5",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/fischer-aut/fischer-aut-6",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/fischer-aut/fischer-aut-7",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
             "input_folder": "/hddi/hddi-0",
             "output_folder": ""
         }, {
@@ -117,27 +87,22 @@
         }, {
             "runable": false,
             "targets": [],
-            "input_folder": "/hddi/hddi-2",
+            "input_folder": "/learning-factory/learning-factory-0",
             "output_folder": ""
         }, {
             "runable": false,
             "targets": [],
-            "input_folder": "/hddi/hddi-3",
+            "input_folder": "/learning-factory/learning-factory-1",
             "output_folder": ""
         }, {
             "runable": false,
             "targets": [],
-            "input_folder": "/hddi/hddi-4",
+            "input_folder": "/medical-monitor/medical-monitor-0",
             "output_folder": ""
         }, {
             "runable": false,
             "targets": [],
-            "input_folder": "/hddi/hddi-5",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/hddi/hddi-6",
+            "input_folder": "/medical-monitor/medical-monitor-1",
             "output_folder": ""
         }, {
             "runable": false,
@@ -148,31 +113,6 @@
             "runable": false,
             "targets": [],
             "input_folder": "/water-tanks/water-tanks-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/water-tanks/water-tanks-2",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/water-tanks/water-tanks-3",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/water-tanks/water-tanks-4",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/water-tanks/water-tanks-5",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/water-tanks/water-tanks-6",
             "output_folder": ""
         }
     ]

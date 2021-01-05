@@ -437,9 +437,7 @@ public class VerificationEncoder {
             List<BoolExpr> single_loop = new ArrayList<>();
             encode_constraints(lf.get_children(), next_queue).ifPresent(single_loop::add);
             encode_mask(lf.get_children(), next_queue).ifPresent(single_loop::add);
-            if (loop_queue.size() != 0) {
-                all_expers.add(w.mk_and_not_empty(single_loop));
-            }
+            all_expers.add(w.mk_and_not_empty(single_loop));
         }
         List<BoolExpr> expers = new ArrayList<>();
         for (int loop_times = lf.get_min(); loop_times <= lf.get_max(); loop_times++) {
@@ -499,13 +497,13 @@ public class VerificationEncoder {
         List<BoolExpr> subs = new ArrayList<>();
         for (SDComponent c: children) {
             if (c instanceof Message) {
-                Message m = (Message) c;
+                Message m = ((Message) c).clone();
                 List<Message> source_list = current.get_seq().get(m.get_source());
                 List<Message> target_list = current.get_seq().get(m.get_target());
+                m.set_source_index(source_list.size());
+                m.set_target_index(target_list.size());
                 source_list.add(m);
                 target_list.add(m);
-                m.set_source_index(source_list.size() - 1);
-                m.set_target_index(target_list.size() - 1);
             } else if (c instanceof VirtualNode) {
                 // do nothing
             } else {
@@ -515,7 +513,7 @@ public class VerificationEncoder {
         if (is_outer) {
             String path_tag = Integer.toString(current.hashCode());
             current.set_label(path_tag);
-            subs.add(encode_path_label(f, path_tag));
+//            subs.add(encode_path_label(f, path_tag));
             collector.add(current);
         }
         return w.mk_and(subs);
@@ -534,13 +532,13 @@ public class VerificationEncoder {
             List<Integer> next_queue = $.addToList(loop_queue, i);
             for (SDComponent c: children) {
                 if (c instanceof Message) {
-                    Message m = (Message) c;
+                    Message m = ((Message) c).clone();
                     List<Message> source_list = current.get_seq().get(m.get_source());
                     List<Message> target_list = current.get_seq().get(m.get_target());
+                    m.set_source_index(source_list.size());
+                    m.set_target_index(target_list.size());
                     source_list.add(m);
                     target_list.add(m);
-                    m.set_source_index(source_list.size() - 1);
-                    m.set_target_index(target_list.size() - 1);
                 } else if (c instanceof VirtualNode) {
                     // do nothing
                 } else {
@@ -551,7 +549,7 @@ public class VerificationEncoder {
         if (is_outer) {
             String path_tag = Integer.toString(current.hashCode());
             current.set_label(path_tag);
-            subs.add(encode_path_label(lf, path_tag));
+//            subs.add(encode_path_label(lf, path_tag));
             collector.add(current);
         }
         return w.mk_and(subs);
@@ -873,7 +871,9 @@ public class VerificationEncoder {
     {
         Set<String> set = new HashSet<>();
         for (SDComponent c: children) {
-            set.addAll(c.extract_variables());
+            if (c instanceof Message) {
+                set.addAll(c.extract_variables());
+            }
         }
         return set;
     }

@@ -168,6 +168,7 @@ public class Lab {
     {
         System.out.println(data.toString());
         System.out.println(result);
+        System.out.println(data.get_clause_num() + "\t" + data.get_encoding_time() + "\t" + data.get_running_time());
         if (result == Status.SATISFIABLE) {
             if (debug) {
                 manager.print_automata_trace();

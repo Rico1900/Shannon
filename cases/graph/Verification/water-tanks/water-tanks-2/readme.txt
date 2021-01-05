@@ -1,2 +1,0 @@
-Description: correct
-Oracle: UNSATISFIABLE

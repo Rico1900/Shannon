@@ -40,6 +40,7 @@ tank2_init:;q2:=0,inq2:=0,outq2:=0</panel_attributes>
 'outq2&gt;=1
 -.
 q2&gt;=0
+q2&lt;=100
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -59,6 +60,7 @@ valign=top
 'inq2&lt;=2
 'outq2&gt;=1
 -.
+
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -77,7 +79,7 @@ valign=top
 'inq2=0
 'outq2&gt;=1
 -.
-q2=0
+
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -116,7 +118,7 @@ valign=top
 'inq2=0
 'outq2&gt;=1
 -.
-q2=100
+
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -208,7 +210,7 @@ T24</panel_attributes>
 'inq2&lt;=2
 'outq2&gt;=1
 -.
-q2=0
+
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -216,15 +218,25 @@ valign=top
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>1240</x>
-      <y>120</y>
+      <x>1210</x>
+      <y>170</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-forall(inq2&gt;=0)
-forall(outq2&gt;=0)
-forall(q2&lt;=100)</panel_attributes>
+forall(inq2&gt;=0)</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>490</x>
+      <y>330</y>
+      <w>340</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T25</panel_attributes>
+    <additional_attributes>10.0;140.0;320.0;10.0</additional_attributes>
   </element>
 </diagram>

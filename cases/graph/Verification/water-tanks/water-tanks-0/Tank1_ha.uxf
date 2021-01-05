@@ -60,7 +60,7 @@ valign=top
 'inq1&lt;=2
 'outq1&gt;=1
 -.
-q1=100
+
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -79,7 +79,7 @@ valign=top
 'inq1=0
 'outq1&gt;=1
 -.
-q1=0
+
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -118,7 +118,7 @@ valign=top
 'inq1=0
 'outq1&gt;=1
 -.
-q1=100
+
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -210,7 +210,7 @@ T14</panel_attributes>
 'inq1&lt;=2
 'outq1&gt;=1
 -.
-q1=0
+
 valign=top
 </panel_attributes>
     <additional_attributes/>
@@ -226,5 +226,17 @@ valign=top
     <panel_attributes>Properties
 forall(inq1&gt;=0)</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>610</x>
+      <y>500</y>
+      <w>340</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+T15</panel_attributes>
+    <additional_attributes>320.0;10.0;10.0;170.0</additional_attributes>
   </element>
 </diagram>

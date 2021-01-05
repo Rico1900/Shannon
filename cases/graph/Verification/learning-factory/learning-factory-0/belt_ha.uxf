@@ -123,7 +123,7 @@ consume:;belt_products:=(belt_products-1)</panel_attributes>
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-exists(belt_products&lt;=5)</panel_attributes>
+forall(belt_products&gt;=0)</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>

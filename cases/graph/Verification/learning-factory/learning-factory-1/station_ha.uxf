@@ -22,8 +22,7 @@
     </coordinates>
     <panel_attributes>producing
 --
-
-
+'x1==2
 -.
 
 valign=top
@@ -35,11 +34,11 @@ valign=top
     <coordinates>
       <x>570</x>
       <y>110</y>
-      <w>100</w>
+      <w>150</w>
       <h>140</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-station_init</panel_attributes>
+station_init:;x1:=0</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
   </element>
   <element>
@@ -51,7 +50,31 @@ station_init</panel_attributes>
       <h>110</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-place</panel_attributes>
+place:;x1:=0</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;90.0;100.0;90.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>940</x>
+      <y>110</y>
+      <w>200</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>Properties
+forall(x1&gt;=0)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>320</x>
+      <y>250</y>
+      <w>190</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+produce</panel_attributes>
+    <additional_attributes>170.0;10.0;10.0;10.0;10.0;60.0;170.0;60.0</additional_attributes>
   </element>
 </diagram>

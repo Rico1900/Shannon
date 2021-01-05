@@ -4,21 +4,21 @@
   <element>
     <id>UMLSequenceAllInOne</id>
     <coordinates>
-      <x>20</x>
-      <y>20</y>
+      <x>0</x>
+      <y>30</y>
       <w>670</w>
       <h>560</h>
     </coordinates>
     <panel_attributes>title=ADC
 obj=belt~a
-obj=workstation~b
+obj=station~b
 obj=warehouse~c
 obj=manipulator~d
 
 
 combinedFragment=loop(10,10)~loop1
 b-&gt;&gt;&gt;a : place;
-a-&gt;&gt;&gt;d : take;
+a-&gt;&gt;&gt;d : take:d1:=belt_products;
 --
 
 combinedFragment=int (p=2)(1,5)~int2
@@ -35,8 +35,8 @@ a-&gt;&gt;&gt;d : consume;
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>330</x>
-      <y>690</y>
+      <x>310</x>
+      <y>700</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
@@ -47,16 +47,16 @@ a-&gt;&gt;&gt;d : consume;
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>20</x>
-      <y>690</y>
+      <x>0</x>
+      <y>700</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>Constraints
-(take-place)^&lt;5
-(take-place)^&gt;1
-(store-produce)&gt;1
-(consume-retrieval)&gt;1</panel_attributes>
+(take-place)&lt;5
+(take-place)&gt;1
+(store-produce)&lt;1
+(consume-retrieval)&lt;1</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>

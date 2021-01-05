@@ -1,32 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <diagram program="umlet" version="14.3.0">
-  <help_text/>
   <zoom_level>10</zoom_level>
   <element>
     <id>UMLSequenceAllInOne</id>
     <coordinates>
-      <x>100</x>
-      <y>90</y>
-      <w>510</w>
-      <h>420</h>
+      <x>120</x>
+      <y>20</y>
+      <w>350</w>
+      <h>350</h>
     </coordinates>
-    <panel_attributes>title=ADC
-obj=sensor~a
-obj=converter~b
-obj=PC~c
+    <panel_attributes>title=medical-system
+obj=monitor~a
+obj=processor~b
 
 
-combinedFragment=loop(5,5) ~loop1
-b-&gt;&gt;&gt;c : report;
-c-&gt;&gt;&gt;b : response;
+combinedFragment=loop(2,2)~loop1
+a-&gt;&gt;&gt;b: receive:u:=t
 --
 
-
-
-combinedFragment=int (p=1)~int2
-a-&gt;&gt;&gt;b : send_data
-c-&gt;&gt;&gt;b : reset
+combinedFragment=int(p=1)(1,2) ~int1
+b-&gt;&gt;&gt;a: push
 --
+
 
 </panel_attributes>
     <additional_attributes/>
@@ -34,26 +29,25 @@ c-&gt;&gt;&gt;b : reset
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>750</x>
-      <y>90</y>
+      <x>620</x>
+      <y>20</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>Constraints
-(response-report)&gt;=5
-(reset-send_data)&gt;=2</panel_attributes>
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>750</x>
-      <y>310</y>
+      <x>620</x>
+      <y>250</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-(response-report)&lt;9</panel_attributes>
+</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>

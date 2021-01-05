@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * the loc_i represents the diagram location before the ith action happens;
+ * the loc_i represents the diagram location before the i-th action happens;
  * loc_num = action_num + 1
  */
 public class LocalAutomatonEncoder {
@@ -68,10 +68,6 @@ public class LocalAutomatonEncoder {
         }
         List<BoolExpr> exprs = new ArrayList<>();
         exprs.add(encode_init());
-        // encode constraints
-        for (Judgement j: const_dict.values()) {
-            exprs.add(encode_property(j));
-        }
         // encode init to the first edge segment
         List<BoolExpr> init_edge = new ArrayList<>();
         for (Relation ie: diagram.get_initial().getOuters()) {
@@ -98,13 +94,10 @@ public class LocalAutomatonEncoder {
     {
         List<BoolExpr> exprs = new ArrayList<>();
         List<Judgement> properties = diagram.get_properties();
-        if (properties.size() == 0 && prop_dict.size() == 0) {
+        if (properties.size() == 0) {
             return Optional.empty();
         }
         for (Judgement j: properties) {
-            exprs.add(encode_property(j.mark_seq_index(seq_index)));
-        }
-        for (Judgement j: prop_dict.values()) {
             exprs.add(encode_property(j.mark_seq_index(seq_index)));
         }
         return Optional.of(w.mk_and_not_empty(exprs));
@@ -147,6 +140,7 @@ public class LocalAutomatonEncoder {
         if (r == null) {
             throw new EncodeException("wrong message:" + m.get_name());
         }
+        BoolExpr until_now = encode_time_of_message_until_now(m, index);
         // if the automaton is the target of the synchronous message
         if (m.get_target().get_name().equals(diagram.get_title())) {
             State source = r.get_source();
@@ -155,7 +149,7 @@ public class LocalAutomatonEncoder {
             exprs.add(encode_time_unchanged(index));
             exprs.add(encode_loc_info(index, source));
             exprs.add(encode_loc_info(index + 1, target));
-            exprs.add(encode_time_of_message_until_now(m, index));
+            exprs.add(until_now);
             // encode jump condition
             r.get_guards().stream()
                     .map(g -> ee.encode_judgement_with_index(g.mark_seq_index(seq_index), index))
@@ -184,7 +178,7 @@ public class LocalAutomatonEncoder {
             return w.mk_and_not_empty(exprs);
         // if the automaton is the source of the synchronous message
         } else {
-            return w.get_ctx().mkAnd(encode_loc_info(index, r.get_source()), encode_single_jump(index, r));
+            return w.get_ctx().mkAnd(encode_loc_info(index, r.get_source()), encode_single_jump(index, r), until_now);
         }
     }
 

@@ -61,7 +61,7 @@ valign=top
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-forall(time&gt;=0)
+forall(time&lt;5)
 forall(acce&gt;=0)</panel_attributes>
     <additional_attributes/>
   </element>

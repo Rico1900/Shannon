@@ -118,10 +118,15 @@ public class ParserGenerator {
      */
     static Parser<Chr, Variable> variable()
     {
-        return alpha.many1().and(digit.many())
+        return valid_char().many1().and(digit.many())
                 .map(IList::appendAll)
                 .map(ls -> ls.foldLeft((acc, x) -> acc + x.toString(), ""))
                 .map(Variable::new);
+    }
+
+    static Parser<Chr, Chr> valid_char()
+    {
+        return alpha.or(chr('_'));
     }
 
 

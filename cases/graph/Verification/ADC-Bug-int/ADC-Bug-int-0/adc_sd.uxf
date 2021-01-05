@@ -8,7 +8,7 @@
       <x>100</x>
       <y>90</y>
       <w>510</w>
-      <h>380</h>
+      <h>420</h>
     </coordinates>
     <panel_attributes>title=ADC
 obj=sensor~a
@@ -24,6 +24,7 @@ c-&gt;&gt;&gt;b : response;
 
 
 combinedFragment=int (p=1)~int2
+a-&gt;&gt;&gt;b : send_data
 c-&gt;&gt;&gt;b : reset
 --
 
@@ -33,25 +34,26 @@ c-&gt;&gt;&gt;b : reset
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>100</x>
-      <y>590</y>
+      <x>750</x>
+      <y>90</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>Constraints
-</panel_attributes>
+(response-report)&gt;=5
+(reset-send_data)&gt;=2</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>410</x>
-      <y>590</y>
+      <x>750</x>
+      <y>310</y>
       <w>200</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>Properties
-</panel_attributes>
+(response-report)&gt;=0</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>
