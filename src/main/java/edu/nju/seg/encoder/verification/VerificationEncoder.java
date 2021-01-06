@@ -52,6 +52,8 @@ public class VerificationEncoder {
 
     private final List<BoolExpr> property_expr = new ArrayList<>();
 
+    private final List<BoolExpr> trace_constraints = new ArrayList<>();
+
     private final List<BoolExpr> synchronous_time_expr = new ArrayList<>();
 
     private final Set<Seq> seq_set = new HashSet<>();
@@ -171,6 +173,7 @@ public class VerificationEncoder {
         // otherwise, the SMT solver produces the counter example.
         encode_networks().ifPresent(exprs::add);
         exprs.add(w.mk_and_not_empty(synchronous_time_expr));
+        w.mk_and(trace_constraints).ifPresent(exprs::add);
         w.mk_and(property_expr).ifPresent(e -> exprs.add(w.mk_not(e)));
         return w.mk_and_not_empty(exprs);
     }
@@ -191,6 +194,8 @@ public class VerificationEncoder {
     {
         List<BoolExpr> exprs = new ArrayList<>();
         for (Seq s: seqs) {
+            property_expr.addAll(s.get_properties());
+            trace_constraints.addAll(s.get_constraints());
             encode_synchronous_message(s, s.get_index());
             encode_seq_on_automata(s, s.get_index()).ifPresent(exprs::add);
         }
