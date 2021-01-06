@@ -6,17 +6,23 @@ import java.util.*;
 
 public class Seq {
 
+    private static int global_index = 0;
+
+    private int index;
+
     private String label = "";
 
     private Map<Instance, List<Message>> seq = new HashMap<>();
 
-    private List<BoolExpr> properties = new ArrayList<>();
+    private final List<BoolExpr> properties = new ArrayList<>();
 
-    private List<BoolExpr> constraints = new ArrayList<>();
+    private final List<BoolExpr> constraints = new ArrayList<>();
 
     public Seq(Map<Instance, List<Message>> seq)
     {
         this.seq = seq;
+        index = global_index;
+        global_index += 1;
     }
 
     public Seq(List<Instance> covered)
@@ -24,12 +30,21 @@ public class Seq {
         for (Instance i: covered) {
             seq.put(i, new ArrayList<>());
         }
+        index = global_index;
+        global_index += 1;
     }
 
     public Seq(String label, Map<Instance, List<Message>> seq)
     {
         this.label = label;
         this.seq = seq;
+        index = global_index;
+        global_index += 1;
+    }
+
+    public int get_index()
+    {
+        return index;
     }
 
     public List<BoolExpr> get_properties()

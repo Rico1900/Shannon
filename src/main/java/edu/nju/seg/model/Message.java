@@ -62,6 +62,15 @@ public class Message extends SDComponent implements Cloneable {
         return mask_instruction;
     }
 
+    public int get_index(Instance c)
+    {
+        if (source.equals(c)) {
+            return source_index;
+        } else {
+            return target_index;
+        }
+    }
+
     public int get_source_index() {
         return source_index;
     }

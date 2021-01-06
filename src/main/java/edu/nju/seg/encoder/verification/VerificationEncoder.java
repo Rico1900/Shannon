@@ -17,6 +17,7 @@ import edu.nju.seg.util.Pair;
 import edu.nju.seg.util.Z3Wrapper;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class VerificationEncoder {
@@ -34,8 +35,6 @@ public class VerificationEncoder {
     private Fragment clean;
 
     private List<IntFragment> flow;
-
-    private int seq_index;
 
     private final Map<Set<String>, Judgement> const_dict = new HashMap<>();
 
@@ -83,7 +82,6 @@ public class VerificationEncoder {
         cal_mask_map();
         unfold_int_frags();
         cal_automata_map();
-        this.seq_index = 0;
     }
 
     private void cal_cons_and_prop()
@@ -193,9 +191,8 @@ public class VerificationEncoder {
     {
         List<BoolExpr> exprs = new ArrayList<>();
         for (Seq s: seqs) {
-            encode_synchronous_message(s, seq_index);
-            encode_seq_on_automata(s, seq_index).ifPresent(exprs::add);
-            seq_index += 1;
+            encode_synchronous_message(s, s.get_index());
+            encode_seq_on_automata(s, s.get_index()).ifPresent(exprs::add);
         }
         return w.mk_or(exprs);
     }
@@ -220,11 +217,9 @@ public class VerificationEncoder {
         Set<Message> set = new HashSet<>();
         seq.get_seq().values().forEach(set::addAll);
         for (Message m: set) {
-            int from = seq.get_seq().get(m.get_source()).indexOf(m);
-            int to = seq.get_seq().get(m.get_target()).indexOf(m);
             synchronous_time_expr.add(w.mk_eq(
-                    mk_sync_var(m.get_source(), m, from, seq_index),
-                    mk_sync_var(m.get_target(), m, to, seq_index)
+                    mk_sync_var(m.get_source(), m, m.get_source_index(), seq_index),
+                    mk_sync_var(m.get_target(), m, m.get_target_index(), seq_index)
             ));
         }
     }
@@ -519,6 +514,8 @@ public class VerificationEncoder {
                 subs.add(encode_clean_frag((Fragment) c, loop_queue, current, false, collector));
             }
         }
+        encode_properties_for_trace(current, appended);
+        encode_constraints_for_trace(current, appended);
         if (is_outer) {
             String path_tag = Integer.toString(current.hashCode());
             current.set_label(path_tag);
@@ -539,6 +536,7 @@ public class VerificationEncoder {
         List<BoolExpr> subs = new ArrayList<>();
         for (int i = 0; i < loop_times; i++) {
             List<Integer> next_queue = $.addToList(loop_queue, i);
+            Map<Instance, List<Message>> appended = new HashMap<>();
             for (SDComponent c: children) {
                 if (c instanceof Message) {
                     Message m = ((Message) c).clone();
@@ -548,12 +546,22 @@ public class VerificationEncoder {
                     m.set_target_index(target_list.size());
                     source_list.add(m);
                     target_list.add(m);
+                    if (!appended.containsKey(m.get_source())) {
+                        appended.put(m.get_source(), new ArrayList<>());
+                    }
+                    appended.get(m.get_source()).add(m);
+                    if (!appended.containsKey(m.get_target())) {
+                        appended.put(m.get_target(), new ArrayList<>());
+                    }
+                    appended.get(m.get_target()).add(m);
                 } else if (c instanceof VirtualNode) {
                     // do nothing
                 } else {
                     subs.add(encode_clean_frag((Fragment) c, next_queue, current, false, collector));
                 }
             }
+            encode_properties_for_trace(current, appended);
+            encode_constraints_for_trace(current, appended);
         }
         if (is_outer) {
             String path_tag = Integer.toString(current.hashCode());
@@ -707,10 +715,13 @@ public class VerificationEncoder {
     {
         for (Instance c: appended.keySet()) {
             List<Message> trace = appended.get(c);
+            Map<String, Message> map = cons_msg_map(trace);
             Set<String> variables = extract(trace);
             for (Set<String> key: prop_dict.keySet()) {
+                Judgement j = prop_dict.get(key);
                 if (variables.containsAll(key)) {
-                    current.append_property();
+                    j = replace_variable(c, j, key, map, current.get_index());
+                    current.append_property(ee.encode_judgement(j));
                 }
             }
         }
@@ -720,13 +731,39 @@ public class VerificationEncoder {
     {
         for (Instance c: appended.keySet()) {
             List<Message> trace = appended.get(c);
+            Map<String, Message> map = cons_msg_map(trace);
             Set<String> variables = extract(trace);
             for (Set<String> key: const_dict.keySet()) {
+                Judgement j = const_dict.get(key);
                 if (variables.containsAll(key)) {
-                    current.append_constraint();
+                    j = replace_variable(c, j, key, map, current.get_index());
+                    current.append_constraint(ee.encode_judgement(j));
                 }
             }
         }
+    }
+
+    private Map<String, Message> cons_msg_map(List<Message> messages)
+    {
+        return messages.stream()
+                .collect(Collectors.toMap(
+                        Message::get_name,
+                        Function.identity()
+                ));
+    }
+
+    private Judgement replace_variable(Instance c,
+                                       Judgement j,
+                                       Set<String> vars,
+                                       Map<String, Message> map,
+                                       int seq_index)
+    {
+        for (String v: vars) {
+            Message m = map.get(v);
+            String target = mk_sync_var_str(c, m, m.get_index(c), seq_index);
+            j = j.replace_variable(v, target);
+        }
+        return j;
     }
 
     // We assume that the variables of properties will not cross different fragments.
@@ -929,7 +966,12 @@ public class VerificationEncoder {
 
     protected RealExpr mk_sync_var(Instance ins, Message m, int index, int seq_index)
     {
-        return w.mk_real_var(seq_index + "_" + ins.get_name() + "_" + m.get_name() + "_" + calculate_offset(index));
+        return w.mk_real_var(mk_sync_var_str(ins, m, index, seq_index));
+    }
+
+    protected String mk_sync_var_str(Instance ins, Message m, int index, int seq_index)
+    {
+        return seq_index + "_" + ins.get_name() + "_" + m.get_name() + "_" + calculate_offset(index);
     }
 
 }

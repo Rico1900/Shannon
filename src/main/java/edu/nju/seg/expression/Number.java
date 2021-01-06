@@ -58,8 +58,8 @@ public class Number extends Expr {
     }
 
     @Override
-    public void replace_variable(String source, String target) {
-
+    public Number replace_variable(String source, String target) {
+        return this;
     }
 
 }

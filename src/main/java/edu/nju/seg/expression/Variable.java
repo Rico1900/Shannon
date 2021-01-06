@@ -57,9 +57,11 @@ public class Variable extends Expr {
     }
 
     @Override
-    public void replace_variable(String source, String target) {
+    public Variable replace_variable(String source, String target) {
         if (name.equals(source)) {
-            name = target;
+            return new Variable(target);
+        } else {
+            return this;
         }
     }
 

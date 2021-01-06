@@ -63,10 +63,9 @@ public class Judgement {
         return false;
     }
 
-    public void replace_variable(String source, String target)
+    public Judgement replace_variable(String source, String target)
     {
-        left.replace_variable(source, target);
-        right.replace_variable(source, target);
+        return new Judgement(op, left.replace_variable(source, target), right.replace_variable(source, target));
     }
 
     @Override

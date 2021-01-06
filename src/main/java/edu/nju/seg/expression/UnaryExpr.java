@@ -67,7 +67,7 @@ public class UnaryExpr extends Expr {
     }
 
     @Override
-    public void replace_variable(String source, String target) {
-        expr.replace_variable(source, target);
+    public UnaryExpr replace_variable(String source, String target) {
+        return new UnaryExpr(op, expr.replace_variable(source, target));
     }
 }
