@@ -1,0 +1,129 @@
+MODULE main
+VAR c : converter();
+VAR p : PC();
+VAR s : sensor();
+VAR a : adc();
+
+SYNC c, p EVENTS report, report;
+SYNC p, c EVENTS response, response;
+SYNC s, c EVENTS send_data, send_data;
+SYNC p, c EVENTS reset, reset;
+SYNC a, c EVENTS report, report;
+SYNC a, c EVENTS response, response;
+SYNC a, c EVENTS send_data, send_data;
+SYNC a, c EVENTS reset, reset;
+SYNC a, p EVENTS report, report;
+SYNC a, p EVENTS response, response;
+SYNC a, p EVENTS reset, reset;
+SYNC a, s EVENTS send_data, send_data;
+
+INVARSPEC !(c.state=error & a.state=error);
+
+
+
+MODULE converter()
+VAR 
+    state: {wait, reset, handle, posted_task, error};
+    index: continuous;
+EVENT
+    ready, reset, done, send_data, report, response, e1, e2, e3, e4;
+INIT
+    state=wait & index=0;
+INVAR
+    index>=0
+FLOW
+    der(index)=0
+TRANS
+    (EVENT=ready -> next(state)=reset & next(index)=index) &    
+    (EVENT=reset & index>=0 -> next(state)=wait & next(index)=0) & 
+    (EVENT=done -> next(state)=wait & next(index)=index) &
+    (EVENT=send_data & index>=0 -> next(state)=handle & next(index)=index+1) &
+    (EVENT=report -> next(state)=posted_task & next(index)=index) &
+    (EVENT=response -> next(state)=handle & next(index)=index) &
+    (EVENT=e1 & index>3 -> next(state)=error & next(index)=index) &
+    (EVENT=e2 & index>3 -> next(state)=error & next(index)=index) &
+    (EVENT=e3 & index>3 -> next(state)=error & next(index)=index) &
+    (EVENT=e4 & index>3 -> next(state)=error & next(index)=index);
+
+
+MODULE PC()
+EVENT 
+    reset, report, response;
+VAR
+    state: {computing, idle};
+    x: continuous;
+INIT
+    state=idle & x=3;
+INVAR
+    x>=3;
+FLOW
+    (state=idle -> der(x)=0) &
+    (state=computing -> der(x)=1);
+TRANS
+    (EVENT=report -> next(state)=computing) &
+    (EVENT=response -> next(state)=idle) &
+    (EVENT=reset -> next(x)=3 & next(state)=computing);
+    
+
+MODULE sensor()
+EVENT
+    send_data;
+VAR
+    state: {sensoring};
+    y: continuous;
+INIT
+    state=sensoring;
+FLOW
+    der(y)=2
+TRANS
+    EVENT=send_data -> next(y)=0 & next(state)=computing;
+
+
+MODULE adc()
+EVENT
+    report, response, reset, send_data, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, e1, e2, e3, e4, e5, e6, e7, e8;
+VAR
+    state: {loc1, loc2, loc3, loc4, loc5, loc6, loc7, loc8, error};
+    loopcount: continuous;
+    intmark: continuous;
+    intcount: continuous;
+    x1: continuous;
+    x2: continuous;
+INIT
+    state=loc4 & intcount=0 & x1=0 & x2=0;
+FLOW
+    (state=loc1 -> der(x1)=0 & der(x2)=0 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0) & 
+    (state=loc2 -> der(x1)=1 & der(x2)=0 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0) & 
+    (state=loc3 -> der(x1)=0 & der(x2)=0 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0) & 
+    (state=loc4 -> der(x1)=0 & der(x2)=0 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0) & 
+    (state=loc5 -> der(x1)=0 & der(x2)=0 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0) & 
+    (state=loc6 -> der(x1)=0 & der(x2)=0 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0) & 
+    (state=loc7 -> der(x1)=0 & der(x2)=0 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0) & 
+    (state=loc8 -> der(x1)=0 & der(x2)=1 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0) & 
+    (state=error -> der(x1)=0 & der(x2)=0 & der(loopcount)=0 & der(intmark)=0 & der(intcount)=0);
+TRANS
+    (EVENT=report & loopcount<5 -> next(state)=loc2 & next(x1)=0 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=response & x1>5 -> next(state)=loc3 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=reset & x2>2 -> next(state)=loc6 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=send_data -> next(state)=loc8 & next(x1)=x1 & next(x2)=0 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=t1 -> next(state)=loc1 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=0 & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=t2 & loopcount<5 -> next(state)=loc1 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount+1 & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=t3 & loopcount>=5 -> next(state)=loc7 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=t4 & intcount<1 -> next(state)=loc5 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=1 & next(intcount)=intcount) &
+    (EVENT=t5 & intmark=1 -> next(state)=loc4 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount+1) &
+    (EVENT=t6 & intcount<1 -> next(state)=loc5 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=1 & next(intcount)=intcount) &
+    (EVENT=t7 & intmark=2 -> next(state)=loc1 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount+1) &
+    (EVENT=t8 & intcount<1 -> next(state)=loc5 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=3 & next(intcount)=intcount) &
+    (EVENT=t9 & intmark=3 -> next(state)=loc7 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount+1) &
+    (EVENT=t10 & intcount<1 -> next(state)=loc5 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=4 & next(intcount)=intcount) &
+    (EVENT=t11 & intmark=4 -> next(state)=loc2 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount+1) &
+    (EVENT=t12 & intcount<1 -> next(state)=loc5 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=5 & next(intcount)=intcount) &
+    (EVENT=t13 & intmark=5 -> next(state)=loc3 & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount+1) &
+    (EVENT=e1 & x1>=9 -> next(state)=error & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=e2 & x1>=9 -> next(state)=error & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=e3 & x1>=9 -> next(state)=error & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=e4 & x1>=9 -> next(state)=error & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=e5 & x1>=9 -> next(state)=error & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=e6 & x1>=9 -> next(state)=error & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=e7 & x1>=9 -> next(state)=error & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount) &
+    (EVENT=e8 & x1>=9 -> next(state)=error & next(x1)=x1 & next(x2)=x2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intcount)=intcount);

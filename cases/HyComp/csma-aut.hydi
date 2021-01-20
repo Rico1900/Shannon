@@ -1,0 +1,121 @@
+MODULE main
+VAR send1: Send1();
+VAR send2: Send2();
+VAR b: Bus();
+VAR c: csma();
+
+SYNC send1, b EVENTS send_1, send_1;
+SYNC send2, b EVENTS send_2, send_2;
+SYNC b, send2 EVENTS rec_2, rec_2;
+SYNC b, send1 EVENTS rec_1, rec_1;
+SYNC send1, b EVENTS cbusy_1, cbusy_1;
+SYNC send2, b EVENTS cbusy_2, cbusy_2;
+SYNC c, send1 EVENTS send_1, send_1;
+SYNC c, send1 EVENTS rec_1, rec_1;
+SYNC c, send1 EVENTS cbusy_1, cbusy_1;
+SYNC c, send2 EVENTS send_2, send_2;
+SYNC c, send2 EVENTS rec_2, rec_2;
+SYNC c, send2 EVENTS cbusy_2, cbusy_2;
+SYNC c, b EVENTS send_1, send_1;
+SYNC c, b EVENTS send_2, send_2;
+SYNC c, b EVENTS rec_2, rec_2;
+SYNC c, b EVENTS rec_1, rec_1;
+SYNC c, b EVENTS cbusy_2, cbusy_2;
+SYNC c, b EVENTS cbusy_1, cbusy_1;
+
+INVARSPEC !(send1.state=error & send2.state=error & b.state=error);
+
+MODULE Send1()
+VAR
+    state: {id0, id1, id2, error};
+    c1: continuous;
+EVENT
+    cd_1, send_1, rec_1, busy_1, rbusy_1, cbusy_1, rcd_1, e1, e2, e3;
+INIT
+    c1=0 & state=id0;
+INVAR
+    (state=id0 -> c1<52) & 
+    (state=id1 -> c1<=808) &
+    (state=id2 -> c1<52);
+FLOW
+    der(c1)=1;
+TRANS
+    (EVENT=cd_1 -> next(state)=id0 & next(c1)=0) &
+    (EVENT=send_1 & c1<52 -> next(state)=id1 & next(c1)=0) &
+    (EVENT=rec_1 -> next(state)=id0 & next(c1)=0) &
+    (EVENT=busy_1 -> next(state)=id0 & next(c1)=0) &
+    (EVENT=rbusy_1 -> next(state)=id1 & next(c1)=0) &
+    (EVENT=cbusy_1 & c1=808 -> next(state)=id2 & next(c1)=0) &
+    (EVENT=rcd_1 -> next(state)=id2 & next(c1)=0) &
+    (EVENT=e1 & c1<0 -> next(state)=error & next(c1)=0) &
+    (EVENT=e2 & c1<0 -> next(state)=error & next(c1)=0) &
+    (EVENT=e3 & c1<0 -> next(state)=error & next(c1)=0);
+
+
+MODULE Send2()
+VAR
+    state: {id6, id7, id8, error};
+    c2: continuous;
+EVENT
+    cd_2, send_2, rec_2, busy_2, rbusy_2, cbusy_2, rcd_2, e1, e2, e3;
+INIT
+    c2=0 & state=id6;
+INVAR
+    (state=id6 -> c2<52) & 
+    (state=id7 -> c2<=808) &
+    (state=id8 -> c2<52);
+FLOW
+    der(c2)=1;
+TRANS
+    (EVENT=cd_2 -> next(state)=id6 & next(c2)=0) &
+    (EVENT=send_2 & c2<52 -> next(state)=id7 & next(c2)=0) &
+    (EVENT=rec_2 -> next(state)=id6 & next(c2)=0) &
+    (EVENT=busy_2 -> next(state)=id6 & next(c2)=0) &
+    (EVENT=rbusy_2 -> next(state)=id7 & next(c2)=0) &
+    (EVENT=cbusy_2 & c2=808 -> next(state)=id8 & next(c2)=0) &
+    (EVENT=rcd_2 -> next(state)=id8 & next(c2)=0) &
+    (EVENT=e1 & c2<0 -> next(state)=error & next(c2)=c2) &
+    (EVENT=e2 & c2<0 -> next(state)=error & next(c2)=c2) &
+    (EVENT=e3 & c2<0 -> next(state)=error & next(c2)=c2);
+
+
+MODULE Bus()
+VAR
+    state: {id3, id4, id5};
+    c3: continuous;
+EVENT
+    send_2, send_1, rec_1, rec_2, evt_send, cbusy_1, cbusy_2, broadcast, e1, e2, e3;
+INIT
+    c3=0 & state=id5;
+INVAR
+    state=id3 -> c3<26;
+FLOW
+    der(c3)=1;
+TRANS
+    (EVENT=send_2 & c3<26 -> next(state)=id3 & next(c3)=0) &
+    (EVENT=send_1 & c3<26 -> next(state)=id3 & next(c3)=0) &
+    (EVENT=rec_1 & c3>=26 -> next(state)=id4 & next(c3)=c3) &
+    (EVENT=rec_2 & c3>=26 -> next(state)=id4 & next(c3)=c3) &
+    (EVENT=evt_send & c3<26 -> next(state)=id4 & next(c3)=0) &
+    (EVENT=cbusy_1 -> next(state)=id5 & next(c3)=0) &
+    (EVENT=cbusy_2 -> next(state)=id5 & next(c3)=0) &
+    (EVENT=broadcast -> next(state)=id4 & next(c3)=0) &
+    (EVENT=e1 & c3<0 -> next(state)=error & next(c3)=c3) &
+    (EVENT=e2 & c3<0 -> next(state)=error & next(c3)=c3) &
+    (EVENT=e3 & c3<0 -> next(state)=error & next(c3)=c3);
+
+
+MODULE csma()
+VAR
+    state: {loc1, loc2, loc3, loc4, loc5, loc6, loc7};
+EVENT
+    send_1, send_2, rec_1, rec_2, cbusy_1, cbusy_2;
+INIT
+    state=loc1;
+TRANS
+    (EVENT=send_1 -> next(state)=loc2) &
+    (EVENT=send_2 -> next(state)=loc3) &
+    (EVENT=rec_2 -> next(state)=loc4) &
+    (EVENT=rec_1 -> next(state)=loc5) &
+    (EVENT=cbusy_1 -> next(state)=loc6) &
+    (EVENT=cbusy_2 -> next(state)=loc7);

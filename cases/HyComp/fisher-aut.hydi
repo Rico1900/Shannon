@@ -1,0 +1,88 @@
+MODULE main
+VAR p1: P1();
+VAR p2: P2();
+VAR c: controller();
+
+SYNC p1, p2 EVENTS T-send, T-send;
+SYNC p2, p1 EVENTS T-rec, T-rec;
+SYNC c, p1 EVENTS T-send, T-send;
+SYNC c, p1 EVENTS T-rec, T-rec;
+SYNC c, p2 EVENTS T-send, T-send;
+SYNC c, p2 EVENTS T-rec, T-rec;
+
+INVARSPEC ! ((p1.state=error1 | p1.state=error2 | p1.state=error3) & (p2.state=error1 | p2.state=error2));
+
+
+MODULE P1()
+VAR
+    state: {id0, id1, id2, id3, error1, error2, error3};
+    x1: continuous;
+    d1: continuous;
+
+EVENT
+    T11, T12, T13, T-send, T-rec, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12;
+INIT
+    state=id0 & x1=0 & d1=0;
+INVAR
+    state=id1 -> x1<=3;
+FLOW
+    der(x1)=1 & der(d1)=0;
+TRANS
+    (EVENT=T12 & x1<=3 -> next(state)=id0 & next(x1)=0 & next(d1)=1) &
+    (EVENT=T13 & d1=0 -> next(state)=id1 & next(x1)=0 & next(d1)=d1) &
+    (EVENT=T11 & d1=0 -> next(state)=id1 & next(x1)=0 & next(d1)=d1) &
+    (EVENT=T-send & x1>3 & d1=1 -> next(state)=id3 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=T-rec -> next(state)=id2 & next(x1)=x1 & next(d1)=0) &
+    (EVENT=e1 & x1<0 -> next(state)=error1 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e2 & x1<0 -> next(state)=error1 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e3 & x1<0 -> next(state)=error1 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e4 & x1<0 -> next(state)=error1 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e5 & d1<0 -> next(state)=error2 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e6 & d1<0 -> next(state)=error2 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e7 & d1<0 -> next(state)=error2 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e8 & d1<0 -> next(state)=error2 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e9 & d1>2 -> next(state)=error3 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e10 & d1>2 -> next(state)=error3 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e11 & d1>2 -> next(state)=error3 & next(x1)=x1 & next(d1)=d1) &
+    (EVENT=e12 & d1>2 -> next(state)=error3 & next(x1)=x1 & next(d1)=d1);
+
+
+MODULE P2()
+VAR
+    state: {id4, id5, id6, id7, error1, error2};
+    x2: continuous;
+    d2: continuous;
+EVENT
+    T21, T22, T23, T-send, T-rec, e1, e2, e3, e4, e5, e6, e7, e8;
+INIT
+    state=id6 & x2=0 & d2=0;
+INVAR
+    state=id5 -> x2<=3;
+FLOW
+    der(x2)=1 & der(d2)=0;
+TRANS
+    (EVENT=T22 & x2<=3 -> next(state)=id4 & next(x2)=0 & next(d2)=2) &
+    (EVENT=T23 & d2=0 -> next(state)=id5 & next(x2)=0 & next(d2)=d2) &
+    (EVENT=T21 & d2=0 -> next(state)=id5 & next(x2)=0 & next(d2)=d2) &
+    (EVENT=T-send & x2>3 & d2=2 -> next(state)=id7 & next(x2)=x2 & next(d2)=d2) &
+    (EVENT=T-rec -> next(state)=id6 & next(x2)=x2 & next(d2)=0) &
+    (EVENT=e1 & x2<0 -> next(state)=error1 & next(x2)=x2 & next(d2)=d2) &
+    (EVENT=e2 & x2<0 -> next(state)=error1 & next(x2)=x2 & next(d2)=d2) &
+    (EVENT=e3 & x2<0 -> next(state)=error1 & next(x2)=x2 & next(d2)=d2) &
+    (EVENT=e4 & x2<0 -> next(state)=error1 & next(x2)=x2 & next(d2)=d2) &
+    (EVENT=e5 & d2<2 -> next(state)=error2 & next(x2)=x2 & next(d2)=d2) &
+    (EVENT=e6 & d2<2 -> next(state)=error2 & next(x2)=x2 & next(d2)=d2) &
+    (EVENT=e7 & d2<2 -> next(state)=error2 & next(x2)=x2 & next(d2)=d2) &
+    (EVENT=e8 & d2<2 -> next(state)=error2 & next(x2)=x2 & next(d2)=d2);
+
+
+MODULE controller()
+VAR
+    state: {loc1, loc2, loc3};
+EVENT
+    T-send, T-rec;
+INIT 
+    state=loc1;
+TRANS
+    (EVENT=T-send -> next(state)=loc2) & 
+    (EVENT=T-rec -> next(state)=loc3);

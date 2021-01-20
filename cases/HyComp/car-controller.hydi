@@ -1,0 +1,146 @@
+MODULE main
+VAR c: controller();
+VAR s: sensor();
+VAR ca: car();
+
+SYNC c, s EVENTS T1, T1;
+SYNC c, s EVENTS recovery, recovery;
+SYNC c, s EVENTS T3, T3;
+SYNC c, s EVENTS T4, T4;
+SYNC ca, c EVENTS T1, T1;
+SYNC ca, c EVENTS recovery, recovery;
+SYNC ca, c EVENTS T3, T3;
+SYNC ca, c EVENTS T4, T4;
+SYNC ca, s EVENTS T1, T1;
+SYNC ca, s EVENTS recovery, recovery;
+SYNC ca, s EVENTS T3, T3;
+SYNC ca, s EVENTS T4, T4;
+
+INVARSPEC !(c.state=error & (s.state=error1 | s.state=error2));
+
+
+MODULE controller()
+VAR
+    state: {controlling, down, error};
+    unit: continuous;
+EVENT
+    shut_down, recovery, T1, T3, T4, e1, e2;
+INIT
+    state=controlling & unit=0;
+FLOW
+    (state=controlling -> der(unit)=1) &
+    (state=down -> der(unit)=0) &
+    (state=error -> der(unit)=1);
+TRANS
+    (EVENT=shut_down -> next(state)=down & next(unit)=unit) &
+    (EVENT=recovery -> next(state)=controlling & next(unit)=unit) &
+    (EVENT=T1 -> next(state)=controlling & next(unit)=unit) &
+    (EVENT=T3 -> next(state)=controlling & next(unit)=unit) &
+    (EVENT=T4 -> next(state)=controlling & next(unit)=unit) &
+    (EVENT=e1 & unit<0 -> next(state)=error & next(unit)=unit) &
+    (EVENT=e2 & unit<0 -> next(state)=error & next(unit)=unit);
+
+
+MODULE sensor()
+VAR
+    state: {brake, balance, forward, broken, start, error1, error2};
+    t: continuous;
+    acce: continuous;
+    speed: continuous;
+EVENT
+    recovery, T1, T2, T3, T4, T5, T6, T7, T8, T9, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10;
+INIT
+    state=start & t=0 & acce=0 & speed=0;
+INVAR
+    (state=brake -> acce>=-10) &
+    (state=balance -> acce=0) &
+    (state=forward -> acce<=10 & speed<=100) &
+    (state=broken -> acce=0 & speed=0) &
+    (state=start -> acce=0 & speed=0);
+FLOW
+    (state=brake -> der(t)=1 & der(acce)=-1 & der(speed)=acce) &
+    (state=balance -> der(t)=1 & der(acce)=0 & der(speed)=0) &
+    (state=forward -> der(t)=1 & der(acce)=1 & der(speed)=acce) & 
+    (state=broken -> der(t)=1 & der(acce)=0 & der(speed)=0) & 
+    (state=start -> der(t)=0 & der(acce)=0 & der(speed)=0);
+TRANS
+    (EVENT=recovery -> next(state)=start & next(t)=t & next(acce)=acce & next(speed)=0) &
+    (EVENT=T1 -> next(state)=forward & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=T2 -> next(state)=balance & next(t)=t & next(acce)=0 & next(speed)=speed) &
+    (EVENT=T3 & acce=0 -> next(state)=forward & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=T4 & acce=0 -> next(state)=brake & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=T5 -> next(state)=brake & next(t)=t & next(acce)=0 & next(speed)=speed) &
+    (EVENT=T6 -> next(state)=brake & next(t)=t & next(acce)=0 & next(speed)=speed) &
+    (EVENT=T7 -> next(state)=brake & next(t)=t & next(acce)=0 & next(speed)=speed) &
+    (EVENT=T8 -> next(state)=brake & next(t)=t & next(acce)=0 & next(speed)=speed) &
+    (EVENT=T9 -> next(state)=brake & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e1 & t>=5 -> next(state)=error1 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e2 & t>=5 -> next(state)=error1 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e3 & t>=5 -> next(state)=error1 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e4 & t>=5 -> next(state)=error1 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e5 & t>=5 -> next(state)=error1 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e6 & acce<0 -> next(state)=error2 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e7 & acce<0 -> next(state)=error2 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e8 & acce<0 -> next(state)=error2 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e9 & acce<0 -> next(state)=error2 & next(t)=t & next(acce)=acce & next(speed)=speed) &
+    (EVENT=e10 & acce<0 -> next(state)=error2 & next(t)=t & next(acce)=acce & next(speed)=speed);
+
+MODULE car()
+VAR
+    state: {loc1, loc2, loc3, loc4, loc5, loc6, loc7, loc8, loc9, loc10};
+    intmark1: continuous;
+    intmark2: continuous;
+    intmark3: continuous;
+    intcount1: continuous;
+    intcount2: continuous;
+    intcount3: continuous;
+    loopcount1: continuous;
+EVENT
+    T1, T3, T4, recovery, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21, t22, t23, t24, t25, t26, t27, t28, t29, t30, t31, t32, t33, t34, t35;
+INIT
+    state=loc1 & intcount1=0 & intcount2=0 & intcount3=0;
+FLOW    
+    der(intmark1)=0 & der(intmark2)=0 & der(intmark3)=0 & der(intcount1)=0 & der(intcount2)=0 & der(intcount3)=0;
+TRANS
+    (EVENT=T1 & loopcount1<5 -> next(state)=loc3 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1+1) &
+    (EVENT=recovery -> next(state)=loc6 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=T3 -> next(state)=loc8 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=T4 -> next(state)=loc10 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t1 -> next(state)=loc2 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=0) &
+    (EVENT=t2 & loopcount1<5 -> next(state)=loc2 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1+1) &
+    (EVENT=t3 & loopcount1>=5 -> next(state)=loc4 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t4 & intcount1<1 -> next(state)=loc5 & next(intmark1)=1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t5 & intmark1=1 -> next(state)=loc1 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t6 & intcount1<1 -> next(state)=loc5 & next(intmark1)=2 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t7 & intmark1=2 -> next(state)=loc2 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t8 & intcount1<1 -> next(state)=loc5 & next(intmark1)=3 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t9 & intmark1=3 -> next(state)=loc3 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t10 & intcount1<1 -> next(state)=loc5 & next(intmark1)=4 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t11 & intmark1=4 -> next(state)=loc4 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t12 & intcount2<1 -> next(state)=loc7 & next(intmark1)=intmark1 & next(intmark2)=1 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t13 & intmark2=1 -> next(state)=loc1 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t14 & intcount2<1 -> next(state)=loc7 & next(intmark1)=intmark1 & next(intmark2)=2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t15 & intmark2=2 -> next(state)=loc2 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t16 & intcount2<1 -> next(state)=loc7 & next(intmark1)=intmark1 & next(intmark2)=3 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t17 & intmark2=3 -> next(state)=loc3 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t18 & intcount2<1 -> next(state)=loc7 & next(intmark1)=intmark1 & next(intmark2)=4 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t19 & intmark2=4 -> next(state)=loc4 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t20 & intcount2<1 -> next(state)=loc7 & next(intmark1)=intmark1 & next(intmark2)=5 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t21 & intmark2=5 -> next(state)=loc5 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t22 & intcount2<1 -> next(state)=loc7 & next(intmark1)=intmark1 & next(intmark2)=6 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t23 & intmark2=6 -> next(state)=loc6 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t24 & intcount3<1 -> next(state)=loc9 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=1 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t25 & intmark3=1 -> next(state)=loc1 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3+1 & next(loopcount1)=loopcount1) &
+    (EVENT=t26 & intcount3<1 -> next(state)=loc9 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=2 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t27 & intmark3=2 -> next(state)=loc2 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3+1 & next(loopcount1)=loopcount1) &
+    (EVENT=t28 & intcount3<1 -> next(state)=loc9 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t29 & intmark3=3 -> next(state)=loc3 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3+1 & next(loopcount1)=loopcount1) &
+    (EVENT=t30 & intcount3<1 -> next(state)=loc9 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=4 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t31 & intmark3=4 -> next(state)=loc4 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3+1 & next(loopcount1)=loopcount1) &
+    (EVENT=t32 & intcount3<1 -> next(state)=loc9 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=5 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t33 & intmark3=5 -> next(state)=loc5 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3+1 & next(loopcount1)=loopcount1) &
+    (EVENT=t34 & intcount3<1 -> next(state)=loc9 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=6 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3 & next(loopcount1)=loopcount1) &
+    (EVENT=t35 & intmark3=6 -> next(state)=loc6 & next(intmark1)=intmark1 & next(intmark2)=intmark2 & next(intmark3)=intmark3 & next(intcount1)=intcount1 & next(intcount2)=intcount2 & next(intcount3)=intcount3+1 & next(loopcount1)=loopcount1);
+
+
+

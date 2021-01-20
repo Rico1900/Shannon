@@ -1,0 +1,122 @@
+MODULE main
+VAR c : converter();
+VAR p : PC();
+VAR s : sensor();
+VAR a : adc();
+
+SYNC c, p EVENTS report, report;
+SYNC p, c EVENTS response, response;
+SYNC s, c EVENTS send_data, send_data;
+SYNC p, c EVENTS reset, reset;
+SYNC a, c EVENTS report, report;
+SYNC a, c EVENTS response, response;
+SYNC a, c EVENTS send_data, send_data;
+SYNC a, c EVENTS reset, reset;
+SYNC a, p EVENTS report, report;
+SYNC a, p EVENTS response, response;
+SYNC a, p EVENTS reset, reset;
+SYNC a, s EVENTS send_data, send_data;
+
+INVARSPEC !(c.state=error);
+
+
+
+MODULE converter()
+VAR 
+    state: {wait, reset, handle, posted_task, error};
+    index: continuous;
+EVENT
+    ready, reset, done, send_data, report, response, e1, e2, e3, e4;
+INIT
+    state=wait & index=0;
+INVAR
+    index>=0
+FLOW
+    der(index)=0
+TRANS
+    (EVENT=ready -> next(state)=reset & next(index)=index) &
+    (EVENT=reset & index>=0 -> next(state)=wait & next(index)=0) & 
+    (EVENT=done -> next(state)=wait & next(index)=index) &
+    (EVENT=send_data & index>=0 -> next(state)=handle & next(index)=index+1) &
+    (EVENT=report -> next(state)=posted_task & next(index)=index) &
+    (EVENT=response -> next(state)=handle & next(index)=index) &
+    (EVENT=e1 & index>3 -> next(state)=error & next(index)=index) &
+    (EVENT=e2 & index>3 -> next(state)=error & next(index)=index) &
+    (EVENT=e3 & index>3 -> next(state)=error & next(index)=index) &
+    (EVENT=e4 & index>3 -> next(state)=error & next(index)=index);
+
+
+MODULE PC()
+EVENT 
+    reset, report, response;
+VAR
+    state: {computing};
+INIT
+    state=computing;
+
+
+MODULE sensor()
+EVENT
+    send_data;
+VAR
+    state: {sensoring};
+INIT
+    state=sensoring;
+
+
+MODULE adc()
+EVENT
+    report, response, reset, send_data, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21, t22, t23, t24, t25, t26, t27;
+VAR
+    state: {loc1, loc2, loc3, loc4, loc5, loc6, loc7, loc8, loc9};
+    loopcount: continuous;
+    intmark: continuous;
+    intmark2: continuous;
+    time1: continuous;
+    intcount1: continuous;
+    intcount2: continuous;
+INIT
+    state=loc4 & intcount1=0 & intcount2=0;
+FLOW
+    (state=loc1 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=0 & der(intcount1)=0 & der(intcount2)=0) & 
+    (state=loc2 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=1 & der(intcount1)=0 & der(intcount2)=0) & 
+    (state=loc3 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=0 & der(intcount1)=0 & der(intcount2)=0) & 
+    (state=loc4 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=0 & der(intcount1)=0 & der(intcount2)=0) & 
+    (state=loc5 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=0 & der(intcount1)=0 & der(intcount2)=0) & 
+    (state=loc6 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=0 & der(intcount1)=0 & der(intcount2)=0) & 
+    (state=loc7 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=0 & der(intcount1)=0 & der(intcount2)=0) & 
+    (state=loc8 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=0 & der(intcount1)=0 & der(intcount2)=0) & 
+    (state=loc9 -> der(loopcount)=0 & der(intmark)=0 & der(intmark2)=0 & der(time1)=0 & der(intcount1)=0 & der(intcount2)=0);
+TRANS
+    (EVENT=report -> next(state)=loc2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=response & time1>3 -> next(state)=loc2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=reset -> next(state)=loc9 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=send_data -> next(state)=loc6 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t1 -> next(state)=loc1 & next(loopcount)=0 & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t2 & loopcount<5 -> next(state)=loc3 & next(loopcount)=loopcount+1 & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t3 & loopcount>=5 -> next(state)=loc7 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t4 & intcount1<1 -> next(state)=loc5 & next(loopcount)=loopcount & next(intmark)=1 & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t5 & intmark=1 -> next(state)=loc4 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2) &
+    (EVENT=t6 & intcount1<1 -> next(state)=loc5 & next(loopcount)=loopcount & next(intmark)=1 & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t7 & intmark=2 -> next(state)=loc1 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2) &
+    (EVENT=t8 & intcount1<1 -> next(state)=loc5 & next(loopcount)=loopcount & next(intmark)=3 & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t9 & intmark=3 -> next(state)=loc7 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2) &
+    (EVENT=t10 & intcount1<1 -> next(state)=loc5 & next(loopcount)=loopcount & next(intmark)=4 & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t11 & intmark=4 -> next(state)=loc2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2) &
+    (EVENT=t12 & intcount1<1 -> next(state)=loc5 & next(loopcount)=loopcount & next(intmark)=5 & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t13 & intmark=5 -> next(state)=loc3 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1+1 & next(intcount2)=intcount2) &
+    (EVENT=t14 & intcount2<1 -> next(state)=loc8 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=1 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t15 & intmark2=1 -> next(state)=loc4 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1) &
+    (EVENT=t16 & intcount2<1 -> next(state)=loc8 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t17 & intmark2=2 -> next(state)=loc1 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1) &
+    (EVENT=t18 & intcount2<1 -> next(state)=loc8 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=3 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t19 & intmark2=3 -> next(state)=loc5 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1) &
+    (EVENT=t20 & intcount2<1 -> next(state)=loc8 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=4 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t21 & intmark2=4 -> next(state)=loc2 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1) &
+    (EVENT=t22 & intcount2<1 -> next(state)=loc8 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=5 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t23 & intmark2=5 -> next(state)=loc3 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1) &
+    (EVENT=t24 & intcount2<=1 -> next(state)=loc8 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=6 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t25 & intmark2=6 -> next(state)=loc6 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1) &
+    (EVENT=t26 & intcount2<=1 -> next(state)=loc8 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=7 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2) &
+    (EVENT=t27 & intmark2=7 -> next(state)=loc7 & next(loopcount)=loopcount & next(intmark)=intmark & next(intmark2)=intmark2 & next(time1)=time1 & next(intcount1)=intcount1 & next(intcount2)=intcount2+1);
+

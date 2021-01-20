@@ -1,0 +1,106 @@
+MODULE main
+VAR s: system();
+VAR m: monitor();
+VAR p: processor();
+
+SYNC m, p EVENTS receive, receive CONDITION x, u;
+SYNC p, m EVENTS push, push;
+SYNC s, m EVENTS receive, receive;
+SYNC s, m EVENTS push, push;
+SYNC s, p EVENTS receive, receive;
+SYNC s, p EVENTS push, push;
+
+INVARSPEC !(p.state = error);
+
+
+MODULE system()
+VAR
+    state: {loc1, loc2, loc3, loc4, loc5, loc6};
+    intcount: continuous;
+    intmark: continuous;
+    loopcount: continuous;
+EVENT
+    push, receive, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11;
+INIT
+    state=loc3 & loopcount=0 & intcount=0;
+FLOW
+    der(intcount)=0 & der(intmark)=0 & der(loopcount)=0;
+TRANS
+    (EVENT=push -> next(state)=loc6 & next(loopcount)=loopcount & next(intcount)=intcount & next(intmark)=intmark) &
+    (EVENT=receive & loopcount<2 -> next(state)=loc2 & next(loopcount)=loopcount & next(intcount)=intcount & next(intmark)=intmark) &
+    (EVENT=t1 -> next(state)=loc1 & next(loopcount)=0 & next(intcount)=intcount & next(intmark)=intmark) &
+    (EVENT=t2 & loopcount<2 -> next(state)=loc1 & next(loopcount)=loopcount+1 & next(intcount)=intcount & next(intmark)=intmark) &
+    (EVENT=t3 -> next(state)=loc4 & next(loopcount)=loopcount & next(intcount)=intcount & next(intmark)=intmark) &
+    (EVENT=t4 & intcount<2 -> next(state)=loc5 & next(loopcount)=loopcount & next(intcount)=intcount & next(intmark)=1) &
+    (EVENT=t5 & intmark=1 -> next(state)=loc3 & next(loopcount)=loopcount & next(intcount)=intcount+1 & next(intmark)=intmark) &
+    (EVENT=t6 & intcount<2 -> next(state)=loc5 & next(loopcount)=loopcount & next(intcount)=intcount & next(intmark)=2) &
+    (EVENT=t7 & intmark=2 -> next(state)=loc1 & next(loopcount)=loopcount & next(intcount)=intcount+1 & next(intmark)=intmark) &
+    (EVENT=t8 & intcount<2 -> next(state)=loc5 & next(loopcount)=loopcount & next(intcount)=intcount & next(intmark)=3) &
+    (EVENT=t9 & intmark=3 -> next(state)=loc2 & next(loopcount)=loopcount & next(intcount)=intcount+1 & next(intmark)=intmark) &
+    (EVENT=t10 & intcount<2 -> next(state)=loc5 & next(loopcount)=loopcount & next(intcount)=intcount & next(intmark)=4) &
+    (EVENT=t11 & intmark=4 -> next(state)=loc4 & next(loopcount)=loopcount & next(intcount)=intcount+1 & next(intmark)=intmark);
+
+
+
+
+MODULE monitor()
+VAR
+    state: {P1, P2, P3, P4, P5, P6, P7, P8, P9};
+    x: continuous;
+EVENT
+    push, receive, acquire, t, t1, t2, t3, t4, t5, t6, t9, t10, t11;
+INIT
+    state=P1 & x=0;
+INVAR
+    x>=0;
+FLOW
+    der(x)=0;
+TRANS
+    (EVENT=push -> next(state)=P8 & next(x)=x+4) &
+    (EVENT=receive -> next(state)=P2 & next(x)=x) &
+    (EVENT=acquire -> next(state)=P8 & next(x)=x+2) &
+    (EVENT=t1 -> next(state)=P3 & next(x)=x+6) &
+    (EVENT=t2 -> next(state)=P4 & next(x)=x+3) &
+    (EVENT=t3 -> next(state)=P4 & next(x)=x+4) &
+    (EVENT=t4 -> next(state)=P4 & next(x)=x+5) &
+    (EVENT=t5 -> next(state)=P5 & next(x)=x+3) &
+    (EVENT=t6 & x<=13 -> next(state)=P6 & next(x)=x+2) &
+    (EVENT=t9 -> next(state)=P2 & next(x)=x) &
+    (EVENT=t10 -> next(state)=P7 & next(x)=x+6) &
+    (EVENT=t11 -> next(state)=P9 & next(x)=x+3) &
+    (EVENT=t -> next(state)=P2 & next(x)=x);
+
+
+
+
+MODULE processor()
+VAR
+    state: {calculating, receiving, idle, error};
+    u: continuous;
+    v: continuous;
+    j: continuous;
+EVENT
+    push, receive, c1, c2, c3, c4, c5, e1, e2, e3;
+INIT
+    state=idle & u=0 & v=0 & j=0;
+INVAR
+    state=calculating -> j<=20;
+FLOW 
+    (state=idle -> der(u)=0 & der(v)=0 & der(j)=0) &
+    (state=receiving -> der(u)=1 & der(v)=0 & der(j)=0) &
+    (state=calculating -> der(u)=0 & der(v)=1 & der(j)=2) &
+    (state=error -> der(u)=0 & der(v)=0 & der(j)=0);
+TRANS
+    (EVENT=push -> next(state)=calculating & next(u)=u & next(v)=10 & next(j)=j) & 
+    (EVENT=receive -> next(state)=receiving & next(u)=u & next(v)=v & next(j)=j) & 
+    (EVENT=c1 -> next(state)=calculating & next(u)=u & next(v)=v & next(j)=j) & 
+    (EVENT=c2 -> next(state)=receiving & next(u)=u & next(v)=v & next(j)=0) &
+    (EVENT=c3 -> next(state)=idle & next(u)=u & next(v)=v & next(j)=0) &  
+    (EVENT=c4 -> next(state)=calculating & next(u)=u & next(v)=v & next(j)=j) & 
+    (EVENT=c5 -> next(state)=idle & next(u)=u & next(v)=v & next(j)=j) & 
+    (EVENT=e1 & j>3 -> next(state)=error & next(u)=u & next(v)=v & next(j)=j) & 
+    (EVENT=e2 & j>3 -> next(state)=error & next(u)=u & next(v)=v & next(j)=j) & 
+    (EVENT=e3 & j>3 -> next(state)=error & next(u)=u & next(v)=v & next(j)=j);
+
+
+

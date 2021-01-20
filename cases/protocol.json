@@ -2,117 +2,62 @@
     "debug": false,
     "type": "ISD_AUTOMATA_VERIFICATION",
     "bound": 3,
-    "base_path": "/Users/rico/Documents/Working/ShallowInterrupt/cases/graph/Verification",
+    "base_path": "",
     "cases": [
         {
-            "runable": false,
+            "runable": true,
             "targets": [],
-            "input_folder": "/ADC-Bug-d-int/ADC-Bug-d-int-0",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/ADC-Bug-d-int/ADC-Bug-d-int-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/ADC-Bug-int/ADC-Bug-int-0",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/ADC-Bug-int/ADC-Bug-int-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/altitude-display/altitude-display-0",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/altitude-display/altitude-display-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/altitude-display-int/altitude-display-int-0",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/altitude-display-int/altitude-display-int-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/car-controller/car-controller-0",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/car-controller/car-controller-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/csma-aut/csma-aut-0",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/csma-aut/csma-aut-1",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/fischer-aut/fischer-aut-0",
-            "output_folder": ""
-        }, {
-            "runable": false,
-            "targets": [],
-            "input_folder": "/fischer-aut/fischer-aut-1",
+            "input_folder": "/ADC-Bug-d-int",
             "output_folder": ""
         }, {
             "runable": true,
             "targets": [],
-            "input_folder": "/hddi/hddi-0",
+            "input_folder": "/ADC-Bug-int",
             "output_folder": ""
         }, {
             "runable": true,
             "targets": [],
-            "input_folder": "/hddi/hddi-1",
+            "input_folder": "/altitude-display",
             "output_folder": ""
         }, {
-            "runable": false,
+            "runable": true,
             "targets": [],
-            "input_folder": "/learning-factory/learning-factory-0",
+            "input_folder": "/altitude-display-int",
             "output_folder": ""
         }, {
-            "runable": false,
+            "runable": true,
             "targets": [],
-            "input_folder": "/learning-factory/learning-factory-1",
+            "input_folder": "/car-controller",
             "output_folder": ""
         }, {
-            "runable": false,
+            "runable": true,
             "targets": [],
-            "input_folder": "/medical-monitor/medical-monitor-0",
+            "input_folder": "/csma-aut",
             "output_folder": ""
         }, {
-            "runable": false,
+            "runable": true,
             "targets": [],
-            "input_folder": "/medical-monitor/medical-monitor-1",
+            "input_folder": "/fischer-aut",
             "output_folder": ""
         }, {
-            "runable": false,
+            "runable": true,
             "targets": [],
-            "input_folder": "/water-tanks/water-tanks-0",
+            "input_folder": "/hddi",
             "output_folder": ""
         }, {
-            "runable": false,
+            "runable": true,
             "targets": [],
-            "input_folder": "/water-tanks/water-tanks-1",
+            "input_folder": "/learning-factory",
+            "output_folder": ""
+        }, {
+            "runable": true,
+            "targets": [],
+            "input_folder": "/medical-monitor",
+            "output_folder": ""
+        }, {
+            "runable": true,
+            "targets": [],
+            "input_folder": "/water-tanks",
             "output_folder": ""
         }
     ]

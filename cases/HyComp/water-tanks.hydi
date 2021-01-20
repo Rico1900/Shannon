@@ -1,0 +1,128 @@
+MODULE main
+VAR t1: Tank1();
+VAR t2: Tank2();
+VAR w : water();
+
+SYNC t1, t2
+    EVENTS flowto, flowto;
+SYNC t1, w
+    EVENTS flowto, flowto;
+SYNC t2, w
+    EVENTS flowto, flowto;
+
+INVARSPEC !(t1.state=error | t2.state=error);
+
+
+MODULE Tank1()
+EVENT 
+    T11, T12,T13, T14, T15, flowin1, flowto, E1, E2, E3, E4, E5, E6;
+
+VAR 
+    state: {empty-flow1, half-flow1, full-flow1, empty-unflow1, half-unflow1, full-unflow1, error};
+    q1: continuous;
+    inq1: continuous;
+    outq1: continuous;
+
+INIT 
+    q1=0 & inq1=0 & outq1=0 & state=empty-flow1
+
+INVAR
+    (state=half-flow1 -> (q1>=0 & q1<=100)) & 
+    (state=half-unflow1 -> (q1>=0 & q1<=100))
+
+FLOW
+    (state=empty-flow1 -> der(inq1)>0 & der(inq1)<=2 & der(outq1)>=1 & der(q1)=(der(inq1)-der(outq1))) &
+    (state=half-flow1 -> der(inq1)>0 & der(inq1)<=2 & der(outq1)>=1 & der(q1)=(der(inq1)-der(outq1))) &
+    (state=full-flow1 -> der(inq1)>0 & der(inq1)<=2 & der(outq1)>=1 & der(q1)=(der(inq1)-der(outq1))) &
+    (state=empty-unflow1 -> der(q1)=0 & der(inq1)=0 & der(outq1)>=1) &
+    (state=half-unflow1 -> der(inq1)=0 & der(outq1)>=1 & der(q1)=(der(inq1)-der(outq1))) &
+    (state=full-unflow1 -> der(inq1)=0 & der(outq1)>=1 & der(q1)=(der(inq1)-der(outq1))) &
+    (state=error -> der(inq1)=0 & der(outq1)>=1 & der(q1)=(der(inq1)-der(outq1)));
+
+TRANS
+    (EVENT=T11 -> next(state)=half-flow1) &
+    (EVENT=T12 -> next(state)=full-flow1) &
+    (EVENT=T13 -> next(state)=half-unflow1) &
+    (EVENT=T14 -> next(state)=empty-unflow1) &
+    (EVENT=T15 -> next(state)=full-flow1) & 
+    (EVENT=flowin1 -> next(state)=empty-flow1) &
+    (EVENT=flowto -> next(state)=full-unflow1) &
+    ((EVENT=E1 & (inq1>=5 | outq1<0 | q1>100)) -> next(state)=error) &
+    ((EVENT=E2 & (inq1>=5 | outq1<0 | q1>100)) -> next(state)=error) &
+    ((EVENT=E3 & (inq1>=5 | outq1<0 | q1>100)) -> next(state)=error) &
+    ((EVENT=E4 & (inq1>=5 | outq1<0 | q1>100)) -> next(state)=error) &
+    ((EVENT=E5 & (inq1>=5 | outq1<0 | q1>100)) -> next(state)=error) &
+    ((EVENT=E6 & (inq1>=5 | outq1<0 | q1>100)) -> next(state)=error) &
+    next(q1)=q1 &
+    next(inq1)=inq1 &
+    next(outq1)=outq1
+
+
+
+MODULE Tank2()
+EVENT 
+    T21, T22,T23, T24, T25, noflowin2, flowto, E1, E2, E3, E4, E5, E6;
+VAR 
+    state: {empty-flow2, half-flow2, full-flow2, empty-unflow2, half-unflow2, full-unflow2, error};
+    q2: continuous;
+    inq2: continuous;
+    outq2: continuous;
+
+INIT 
+    q2=0 & inq2=0 & outq2=0 & state=empty-unflow2
+
+INVAR
+    (state=half-flow2 -> (q2>=0 & q2<=100)) & 
+    (state=half-unflow2 -> (q2>=0 & q2<=100))
+
+FLOW
+    (state=empty-flow2 -> der(inq2)>0 & der(inq2)<=2 & der(outq2)>=1 & der(q2)=(der(inq2)-der(outq2))) &
+    (state=half-flow2 -> der(inq2)>0 & der(inq2)<=2 & der(outq2)>=1 & der(q2)=(der(inq2)-der(outq2))) &
+    (state=full-flow2 -> der(inq2)>0 & der(inq2)<=2 & der(outq2)>=1 & der(q2)=(der(inq2)-der(outq2))) &
+    (state=empty-unflow2 -> der(q2)=0 & der(inq2)=0 & der(outq2)>=2) &
+    (state=half-unflow2 -> der(inq2)=0 & der(outq2)>=1 & der(q2)=(der(inq2)-der(outq2))) &
+    (state=full-unflow2 -> der(inq2)=0 & der(outq2)>=1 & der(q2)=(der(inq2)-der(outq2))) &
+    (state=error -> der(inq2)=0 & der(outq2)>=1 & der(q2)=(der(inq2)-der(outq2)));
+
+TRANS
+    (EVENT=T21 -> next(state)=half-flow2 & next(q2)=q2) &
+    (EVENT=T22 -> next(state)=full-flow2 & next(q2)=100) &
+    (EVENT=T23 -> next(state)=half-unflow2 & next(q2)=q2) &
+    (EVENT=T24 -> next(state)=empty-unflow2 & next(q2)=q2) &
+    (EVENT=T25 -> next(state)=empty-unflow2 & next(q2)=q2) & 
+    (EVENT=noflowin2 -> next(state)=full-unflow2 & next(q2)=q2) &
+    (EVENT=flowto -> next(state)=empty-flow2) &
+    ((EVENT=E1 & (inq2<0 | outq2<0 | q2>100)) -> next(state)=error & next(q2)=q2) &
+    ((EVENT=E2 & (inq2<0 | outq2<0 | q2>100)) -> next(state)=error & next(q2)=q2) &
+    ((EVENT=E3 & (inq2<0 | outq2<0 | q2>100)) -> next(state)=error & next(q2)=q2) &
+    ((EVENT=E4 & (inq2<0 | outq2<0 | q2>100)) -> next(state)=error & next(q2)=q2) &
+    ((EVENT=E5 & (inq2<0 | outq2<0 | q2>100)) -> next(state)=error & next(q2)=q2) &
+    ((EVENT=E6 & (inq2<0 | outq2<0 | q2>100)) -> next(state)=error & next(q2)=q2) &
+    next(inq2)=inq2 &
+    next(outq2)=outq2
+
+
+MODULE water()
+EVENT 
+    t1, t2, t3, flowto;
+
+VAR
+    state: {loc1, loc2, loc3, loc4};
+    loopcount: continuous;
+
+INIT
+    state=loc3
+
+FLOW
+    der(loopcount)=0;
+
+TRANS
+    (EVENT=t1 -> next(state)=loc1 & next(loopcount)=0) &
+    (EVENT=t2 & loopcount<5 -> next(state)=loc1 & next(loopcount)=loopcount+1) &
+    (EVENT=t3 & loopcount>=5 -> next(state)=loc4 & next(loopcount)=loopcount) &
+    (EVENT=flowto &loopcount<5 -> next(state)=loc1 & next(loopcount)=loopcount)
+
+
+
+
+

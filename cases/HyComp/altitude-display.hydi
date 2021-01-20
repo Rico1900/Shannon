@@ -1,0 +1,102 @@
+MODULE main
+VAR a: altitude();
+VAR i: IO();
+VAR p: PC();
+
+SYNC i, p EVENTS d_display, d_display CONDITION altitude, truth;
+SYNC i, p EVENTS c_display, c_display CONDITION altitude, truth;
+SYNC i, p EVENTS g_display, g_display CONDITION altitude, truth;
+SYNC a, i EVENTS d_display, d_display;
+SYNC a, i EVENTS c_display, c_display;
+SYNC a, i EVENTS g_display, g_display;
+SYNC a, p EVENTS d_display, d_display;
+SYNC a, p EVENTS c_display, c_display;
+SYNC a, p EVENTS g_display, g_display;
+
+INVARSPEC !(p.state=error);
+
+
+MODULE altitude()
+VAR 
+    state: {loc1, loc2, loc3, loc4, loc5, loc6, loc7, loc8, loc9, loc10, loc11, loc12};
+    t: continuous;
+    loopcount: continuous;
+EVENT
+    t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, c_display, d_display, g_display;
+INIT
+    t=0 & state=loc11;
+FLOW
+    der(t)=1 & der(loopcount)=0;
+TRANS
+    (EVENT=c_display -> next(state)=loc2 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=d_display -> next(state)=loc8 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=g_display -> next(state)=loc4 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t1 -> next(state)=loc1 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t2 -> next(state)=loc3 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t3 -> next(state)=loc6 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t4 -> next(state)=loc6 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t5 -> next(state)=loc7 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t6 -> next(state)=loc5 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t7 -> next(state)=loc10 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t8 -> next(state)=loc10 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t9 -> next(state)=loc9 & next(t)=t & next(loopcount)=0) &
+    (EVENT=t10 & loopcount>=2 -> next(state)=loc2 & next(t)=t & next(loopcount)=loopcount) &
+    (EVENT=t11 & loopcount<2 -> next(state)=loc2 & next(t)=t & next(loopcount)=loopcount+1);
+
+
+MODULE IO()
+VAR
+    state: {glide, climb, descend};
+    altitude: continuous;
+EVENT
+    g_read, g_display, c2g, g2c, c_display, c_read, c2d, d2c, d2g, g2d, d_display, d_read;
+INIT
+    altitude=1500 & (state=climb | state=descend);
+INVAR
+    altitude>=1000 & altitude<=2000;
+FLOW
+    (state=glide -> der(altitude)=0) &
+    (state=climb -> der(altitude)=5) & 
+    (state=descend -> der(altitude)= -5);
+TRANS
+    (EVENT=g_read -> next(state)=glide & next(altitude)=altitude) &
+    (EVENT=g_display -> next(state)=glide & next(altitude)=altitude) &
+    (EVENT=c_read -> next(state)=climb & next(altitude)=altitude) &
+    (EVENT=c_display -> next(state)=climb & next(altitude)=altitude) &
+    (EVENT=d_read -> next(state)=descend & next(altitude)=altitude) &
+    (EVENT=d_display -> next(state)=descend & next(altitude)=altitude) &
+    (EVENT=c2g -> next(state)=glide & next(altitude)=altitude) &
+    (EVENT=d2g -> next(state)=glide & next(altitude)=altitude) &
+    (EVENT=g2c -> next(state)=climb & next(altitude)=altitude) &
+    (EVENT=d2c -> next(state)=climb & next(altitude)=altitude) &
+    (EVENT=g2d -> next(state)=descend & next(altitude)=altitude) &
+    (EVENT=c2d -> next(state)=descend & next(altitude)=altitude);
+
+
+
+MODULE PC()
+VAR
+    state: {circle, error};
+    penu: continuous;
+    pre: continuous;
+    cal: continuous;
+    truth: continuous;
+EVENT
+    c_read, c_display, d_read, d_display, g_read, g_display, e1, e2;
+INIT
+    penu=1500 & pre=1500 & cal=1500 & truth=1500 & state=circle;
+INVAR
+    truth>=1000 & truth<=2000;
+FLOW
+    der(penu)=0 & der(pre)=0 & der(cal)=0 & der(truth)=0;
+TRANS
+    (EVENT=c_read & truth>=1000 -> next(state)=circle & next(penu)=pre & next(pre)=cal & next(cal)=cal & next(truth)=truth) &
+    (EVENT=d_read & truth>=1000 -> next(state)=circle & next(penu)=pre & next(pre)=cal & next(cal)=cal & next(truth)=truth) &
+    (EVENT=g_read & truth>=1000 -> next(state)=circle & next(penu)=pre & next(pre)=cal & next(cal)=cal & next(truth)=truth) &
+    (EVENT=c_display & truth>=1000 -> next(state)=circle & next(penu)=pre & next(pre)=cal & next(cal)=(pre*2 - penu) & next(truth)=truth) &
+    (EVENT=d_display & truth>=1000 -> next(state)=circle & next(penu)=pre & next(pre)=cal & next(cal)=(pre*2 - penu) & next(truth)=truth) &
+    (EVENT=g_display & truth>=1000 -> next(state)=circle & next(penu)=pre & next(pre)=cal & next(cal)=(pre*2 - penu) & next(truth)=truth) &
+    (EVENT=e1 & (cal - truth)>5 -> next(state)=error & next(penu)=penu & next(pre)=pre & next(cal)=cal & next(truth)=truth) &
+    (EVENT=e2 & (cal - truth)<5 -> next(state)=error & next(penu)=penu & next(pre)=pre & next(cal)=cal & next(truth)=truth);
+
+
